@@ -8,6 +8,10 @@ declare(strict_types=1);
  */
 
 header('Content-Type: text/html; charset=utf-8');
+header('X-Frame-Options: SAMEORIGIN');
+header('X-Content-Type-Options: nosniff');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
 const DTH_DEFAULT_ADMIN_HASH = '$2y$12$PKMb6p4cl7PeYD7EEfpEg.NF2cqFJdgs/vnAXCHbiUYQbBDePJSOa'; // password_hash('845409', PASSWORD_BCRYPT)
@@ -91,6 +95,11 @@ function h($value)
     return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+function dth_admin_qr_src($code)
+{
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=96x96&margin=6&data=' . rawurlencode((string)$code);
+}
+
 function dth_admin_password_ok($password)
 {
     $hash = app_env('ADMIN_PASS_HASH', '');
@@ -134,8 +143,28 @@ function dth_admin_column_exists(PDO $pdo, $table, $column)
 
 function dth_admin_add_column(PDO $pdo, $table, $column, $definition)
 {
+    if (!preg_match('/^[A-Za-z0-9_]+$/', (string)$table) || !preg_match('/^[A-Za-z0-9_]+$/', (string)$column)) {
+        return;
+    }
     if (!dth_admin_column_exists($pdo, $table, $column)) {
-        $pdo->exec('ALTER TABLE `' . str_replace('`', '', $table) . '` ADD COLUMN `' . str_replace('`', '', $column) . '` ' . $definition);
+        $pdo->exec('ALTER TABLE `' . $table . '` ADD COLUMN `' . $column . '` ' . $definition);
+    }
+}
+
+function dth_admin_index_exists(PDO $pdo, $table, $index)
+{
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?');
+    $stmt->execute([$table, $index]);
+    return (int)$stmt->fetchColumn() > 0;
+}
+
+function dth_admin_add_index(PDO $pdo, $table, $index, $definition)
+{
+    if (!preg_match('/^[A-Za-z0-9_]+$/', (string)$table) || !preg_match('/^[A-Za-z0-9_]+$/', (string)$index)) {
+        return;
+    }
+    if (!dth_admin_index_exists($pdo, $table, $index)) {
+        $pdo->exec('ALTER TABLE `' . $table . '` ADD INDEX `' . $index . '` ' . $definition);
     }
 }
 
@@ -153,6 +182,8 @@ function dth_admin_auto_schema(PDO $pdo)
     dth_admin_add_column($pdo, 'products', 'category', 'VARCHAR(120) NULL');
     dth_admin_add_column($pdo, 'products', 'image', 'VARCHAR(700) NULL');
     dth_admin_add_column($pdo, 'products', 'price', 'INT NOT NULL DEFAULT 0');
+    dth_admin_add_index($pdo, 'products', 'idx_products_category', '(category)');
+    dth_admin_add_index($pdo, 'products', 'idx_products_price', '(price)');
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS qr_coupons (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -168,6 +199,7 @@ function dth_admin_auto_schema(PDO $pdo)
     dth_admin_add_column($pdo, 'qr_coupons', 'value', 'INT NOT NULL DEFAULT 0');
     dth_admin_add_column($pdo, 'qr_coupons', 'description', 'TEXT NULL');
     dth_admin_add_column($pdo, 'qr_coupons', 'is_used', 'TINYINT(1) NOT NULL DEFAULT 0');
+    dth_admin_add_index($pdo, 'qr_coupons', 'idx_qr_coupons_code', '(code)');
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS job_posts (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -185,6 +217,8 @@ function dth_admin_auto_schema(PDO $pdo)
     dth_admin_add_column($pdo, 'job_posts', 'tech_target_price', 'INT NOT NULL DEFAULT 0');
     dth_admin_add_column($pdo, 'job_posts', 'final_price', 'INT NOT NULL DEFAULT 0');
     dth_admin_add_column($pdo, 'job_posts', 'bot_message_id', 'BIGINT NULL');
+    dth_admin_add_index($pdo, 'job_posts', 'idx_job_posts_customer_phone', '(customer_phone)');
+    dth_admin_add_index($pdo, 'job_posts', 'idx_job_posts_status', '(status)');
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS finances (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -200,6 +234,7 @@ function dth_admin_auto_schema(PDO $pdo)
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uniq_banned_entities (ip_or_phone, type)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    dth_admin_add_index($pdo, 'banned_entities', 'idx_banned_entities_lookup', '(ip_or_phone, type)');
 }
 
 function dth_admin_money_int($value)
@@ -255,7 +290,7 @@ function dth_admin_handle_promo(PDO $pdo)
 function dth_admin_promos(PDO $pdo)
 {
     try {
-        $stmt = $pdo->query('SELECT id, code, discount_amount, quantity_left, created_at FROM qr_coupons ORDER BY id DESC LIMIT 300');
+        $stmt = $pdo->query('SELECT id, code, discount_amount, quantity_left, type, value, description, is_used, created_at FROM qr_coupons ORDER BY id DESC LIMIT 300');
         return $stmt ? $stmt->fetchAll() : [];
     } catch (Throwable $e) {
         error_log('[admin promos] ' . $e->getMessage());
@@ -315,6 +350,7 @@ if (!$loggedIn):
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin - Dien Tu Hieu</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%23dc2626%22/%3E%3Ctext x=%2232%22 y=%2241%22 font-size=%2228%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22700%22%3EH%3C/text%3E%3C/svg%3E">
     <style>
         body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111827;font-family:Arial,sans-serif;color:#111827}
         .box{width:min(420px,92vw);background:#fff;border:1px solid #e5e7eb;padding:28px;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
@@ -350,6 +386,7 @@ $csrf = dth_admin_csrf();
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Van phong giam doc - Dien Tu Hieu</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%23dc2626%22/%3E%3Ctext x=%2232%22 y=%2241%22 font-size=%2228%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22700%22%3EH%3C/text%3E%3C/svg%3E">
     <style>
         :root{--bg:#f8fafc;--panel:#fff;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;--brand:#dc2626;--ok:#16a34a;--warn:#d97706}
         *{box-sizing:border-box}
@@ -373,6 +410,10 @@ $csrf = dth_admin_csrf();
         th{background:#f1f5f9;color:#334155;font-size:12px;text-transform:uppercase}
         tr:last-child td{border-bottom:0}
         .thumb{width:46px;height:46px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;display:block}
+        .qr-mini{width:70px;height:70px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px;display:block}
+        .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid transparent}
+        .badge.ok{background:#ecfdf3;color:#047857;border-color:#bbf7d0}.badge.used{background:#fef2f2;color:#b91c1c;border-color:#fecaca}.badge.warn{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
+        .price-mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:12px}.price-mini .card b{display:block;margin-bottom:6px}
         input,select,textarea{width:100%;padding:9px 10px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;background:#fff}
         label{display:block;font-size:12px;color:#475569;font-weight:700;margin:10px 0 5px}
         .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:14px}
@@ -421,6 +462,12 @@ $csrf = dth_admin_csrf();
         <div class="row-actions" style="margin-bottom:12px">
             <button class="btn warn" onclick="sendTestJob()">Gui ca test len Bot 1</button>
             <button class="btn" onclick="loadJobs()">Tai lai</button>
+        </div>
+        <div class="price-mini">
+            <div class="card"><b>Ve sinh may lanh</b><span>Tho nhan 150.000 VND, bao khach +10% VAT, phi nen tang 5%.</span></div>
+            <div class="card"><b>Lap may lanh 1HP / 1.5HP</b><span>Cong 400.000 VND, chua gom vat tu phat sinh.</span></div>
+            <div class="card"><b>Lap may lanh 2HP / 3HP</b><span>Cong 500.000 VND, may am tran lien he hang.</span></div>
+            <div class="card"><b>Sua chua / tivi / loc nuoc</b><span>Cong tho 200.000 VND + linh kien/phu kien cong khai.</span></div>
         </div>
         <table><thead><tr><th>ID</th><th>Khach</th><th>Phone</th><th>Dich vu</th><th>Dia chi</th><th>Gia khach</th><th>Tho</th><th>TT</th><th>Ngay</th></tr></thead><tbody id="jobsBody"></tbody></table>
     </section>
@@ -480,7 +527,7 @@ $csrf = dth_admin_csrf();
             <div>
                 <h2>Promo Code Manual</h2>
                 <table>
-                    <thead><tr><th>ID</th><th>Code</th><th>Discount</th><th>Quantity</th><th>Created</th><th>Lenh</th></tr></thead>
+                    <thead><tr><th>ID</th><th>QR</th><th>Code</th><th>Discount / Quantity</th><th>Trang thai</th><th>Lenh</th></tr></thead>
                     <tbody>
                     <?php if (!$promoRows): ?>
                         <tr><td colspan="6" class="muted">Chua co promo code.</td></tr>
@@ -488,17 +535,27 @@ $csrf = dth_admin_csrf();
                         <?php foreach ($promoRows as $promo): ?>
                             <tr>
                                 <td><?= h($promo['id'] ?? '') ?></td>
+                                <td><img class="qr-mini" src="<?= h(dth_admin_qr_src($promo['code'] ?? '')) ?>" alt="QR <?= h($promo['code'] ?? '') ?>"></td>
                                 <td><b><?= h($promo['code'] ?? '') ?></b></td>
-                                <td colspan="3">
+                                <td>
                                     <form method="post" class="row-actions">
                                         <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
                                         <input type="hidden" name="promo_action" value="update">
                                         <input type="hidden" name="id" value="<?= h($promo['id'] ?? '') ?>">
                                         <input name="discount_amount" type="number" min="0" value="<?= h($promo['discount_amount'] ?? 0) ?>" style="max-width:130px">
                                         <input name="quantity_left" type="number" min="0" value="<?= h($promo['quantity_left'] ?? 0) ?>" style="max-width:110px">
-                                        <span class="muted"><?= h($promo['created_at'] ?? '') ?></span>
                                         <button class="btn success" type="submit">Luu</button>
                                     </form>
+                                </td>
+                                <td>
+                                    <?php if ((int)($promo['is_used'] ?? 0) === 1): ?>
+                                        <span class="badge used">Da dung</span>
+                                    <?php elseif ((int)($promo['quantity_left'] ?? 0) <= 0): ?>
+                                        <span class="badge warn">Het luot</span>
+                                    <?php else: ?>
+                                        <span class="badge ok">Chua dung</span>
+                                    <?php endif; ?>
+                                    <div class="muted"><?= h($promo['created_at'] ?? '') ?></div>
                                 </td>
                                 <td>
                                     <form method="post" onsubmit="return confirm('Xoa promo <?= h($promo['code'] ?? '') ?>?')">
@@ -514,8 +571,8 @@ $csrf = dth_admin_csrf();
                     </tbody>
                 </table>
             </div>
-            <div><h2>Voucher</h2><table><thead><tr><th>Code</th><th>Giam</th><th>Da dung</th><th>Han</th></tr></thead><tbody id="voucherBody"></tbody></table></div>
-            <div><h2>QR Coupon</h2><table><thead><tr><th>ID</th><th>Code</th><th>Loai</th><th>Gia tri</th><th>Mo ta</th><th>Da dung</th></tr></thead><tbody id="couponBody"></tbody></table></div>
+            <div><h2>Voucher</h2><table><thead><tr><th>QR</th><th>Code</th><th>Giam</th><th>Su dung</th><th>Trang thai</th><th>Han</th></tr></thead><tbody id="voucherBody"></tbody></table></div>
+            <div><h2>QR Coupon</h2><table><thead><tr><th>ID</th><th>QR</th><th>Code</th><th>Loai</th><th>Gia tri</th><th>Mo ta</th><th>Trang thai</th></tr></thead><tbody id="couponBody"></tbody></table></div>
         </div>
     </section>
 
@@ -638,8 +695,28 @@ function importProducts(){
     api('admin_import_excel',{data:rows},'POST').then(d=>{ msg(d.message||'Da import'); loadProducts(); });
 }
 
-function loadVouchers(){ api('admin_vouchers').then(d=>{ voucherBody.innerHTML=(d.data||[]).map(v=>`<tr><td><b>${esc(v.code)}</b></td><td>${esc(v.discount_percent||0)}%</td><td>${esc(v.used_count||0)}/${esc(v.max_uses||v.usage_limit||0)}</td><td>${esc(v.expires_at||'')}</td></tr>`).join(''); }); }
-function loadCoupons(){ api('admin_coupons').then(d=>{ couponBody.innerHTML=(d.data||[]).map(c=>`<tr><td>${c.id}</td><td><b>${esc(c.code)}</b></td><td>${esc(c.type)}</td><td>${esc(c.value)}</td><td>${esc(c.description)}</td><td>${c.is_used?'Yes':'No'}</td></tr>`).join(''); }); }
+function qrCodeUrl(code){ return 'https://api.qrserver.com/v1/create-qr-code/?size=96x96&margin=6&data=' + encodeURIComponent(String(code || '')); }
+function statusBadge(kind, text){ return `<span class="badge ${kind}">${esc(text)}</span>`; }
+function loadVouchers(){
+    api('admin_vouchers').then(d=>{
+        voucherBody.innerHTML=(d.data||[]).map(v=>{
+            const used = Number(v.used_count || 0);
+            const max = Number(v.max_uses || v.usage_limit || 0);
+            const exhausted = max > 0 && used >= max;
+            const badge = used > 0 ? statusBadge('used','Da dung') : (exhausted ? statusBadge('warn','Het luot') : statusBadge('ok','Chua dung'));
+            return `<tr><td><img class="qr-mini" src="${qrCodeUrl(v.code)}" alt="QR ${esc(v.code)}"></td><td><b>${esc(v.code)}</b></td><td>${esc(v.discount_percent||0)}%</td><td>${esc(used)}/${esc(max)}</td><td>${badge}</td><td>${esc(v.expires_at||'')}</td></tr>`;
+        }).join('');
+    });
+}
+function loadCoupons(){
+    api('admin_coupons').then(d=>{
+        couponBody.innerHTML=(d.data||[]).map(c=>{
+            const used = Number(c.is_used || 0) === 1;
+            const badge = used ? statusBadge('used','Da dung') : statusBadge('ok','Chua dung');
+            return `<tr><td>${esc(c.id)}</td><td><img class="qr-mini" src="${qrCodeUrl(c.code)}" alt="QR ${esc(c.code)}"></td><td><b>${esc(c.code)}</b></td><td>${esc(c.type)}</td><td>${esc(c.value || c.discount_amount || 0)}</td><td>${esc(c.description)}</td><td>${badge}</td></tr>`;
+        }).join('');
+    });
+}
 function generateVoucher(){ api('generate_voucher',{discount_percent:voucher_percent.value,count:voucher_count.value,max_uses:100},'POST').then(d=>{ voucherResult.textContent='Created: '+(d.codes||[]).join(', '); loadVouchers(); }); }
 function generateQR(){ api('generate_qr',{value:qr_value.value,description:qr_desc.value,count:qr_count.value,type:'discount'},'POST').then(d=>{ qrResult.textContent='Created: '+(d.codes||[]).join(', '); loadCoupons(); }); }
 

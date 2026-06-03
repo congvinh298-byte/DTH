@@ -15,6 +15,17 @@ declare(strict_types=1);
 
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
+function app_security_headers()
+{
+    if (headers_sent()) {
+        return;
+    }
+    header('X-Frame-Options: SAMEORIGIN');
+    header('X-Content-Type-Options: nosniff');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+}
+
 function app_load_env($path = null)
 {
     $path = $path ?? __DIR__ . '/.env';
@@ -113,6 +124,7 @@ function app_request_data(): array
 }
 
 app_load_env();
+app_security_headers();
 
 function dth_starts_with(string $haystack, string $needle): bool
 {
@@ -153,7 +165,7 @@ function clean_string($value, int $max = 500): string
 {
     $value = trim((string)$value);
     $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $value) ?? '';
-    return mb_substr($value, 0, $max, 'UTF-8');
+    return function_exists('mb_substr') ? mb_substr($value, 0, $max, 'UTF-8') : substr($value, 0, $max);
 }
 
 function digits_only($value): string
@@ -329,6 +341,25 @@ function add_column_if_missing(PDO $pdo, string $table, string $column, string $
         $pdo->exec('ALTER TABLE ' . db_ident($table) . ' ADD COLUMN ' . db_ident($column) . ' ' . $definition);
     } catch (Throwable $e) {
         error_log("[schema] add column skipped {$table}.{$column}: " . $e->getMessage());
+    }
+}
+
+function index_exists(PDO $pdo, string $table, string $index): bool
+{
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?');
+    $stmt->execute([$table, $index]);
+    return (int)$stmt->fetchColumn() > 0;
+}
+
+function add_index_if_missing(PDO $pdo, string $table, string $index, string $definition)
+{
+    if (!table_exists($pdo, $table) || index_exists($pdo, $table, $index)) {
+        return;
+    }
+    try {
+        $pdo->exec('ALTER TABLE ' . db_ident($table) . ' ADD INDEX ' . db_ident($index) . ' ' . $definition);
+    } catch (Throwable $e) {
+        error_log("[schema] add index skipped {$table}.{$index}: " . $e->getMessage());
     }
 }
 
@@ -655,6 +686,17 @@ function ensure_core_schema(PDO $pdo)
             add_column_if_missing($pdo, $table, $column, $definition);
         }
     }
+
+    add_index_if_missing($pdo, 'products', 'idx_products_category', '(category)');
+    add_index_if_missing($pdo, 'products', 'idx_products_price', '(price)');
+    add_index_if_missing($pdo, 'orders', 'idx_orders_customer_phone', '(customer_phone)');
+    add_index_if_missing($pdo, 'orders', 'idx_orders_status', '(status)');
+    add_index_if_missing($pdo, 'job_posts', 'idx_job_posts_customer_phone', '(customer_phone)');
+    add_index_if_missing($pdo, 'job_posts', 'idx_job_posts_status', '(status)');
+    add_index_if_missing($pdo, 'job_posts', 'idx_job_posts_worker', '(worker_id)');
+    add_index_if_missing($pdo, 'qr_coupons', 'idx_qr_coupons_code_lookup', '(code)');
+    add_index_if_missing($pdo, 'vouchers', 'idx_vouchers_code_lookup', '(code)');
+    add_index_if_missing($pdo, 'worker_profiles', 'idx_worker_profiles_blocked', '(is_receive_blocked, payment_blocked)');
 }
 
 function insert_compat(PDO $pdo, string $table, array $values, array $expressions = []): int

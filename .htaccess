@@ -10,6 +10,7 @@
 # === BẬT REWRITE ENGINE ===
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    DirectoryIndex index.php
 
     # ---- 1. ÉP BUỘC HTTPS ----
     RewriteCond %{HTTPS} off
@@ -28,18 +29,20 @@
     RewriteCond %{REQUEST_FILENAME} !-d
 
     # ---- 5. CHUYỂN HƯỚNG VỀ PUBLIC/ (code mới) ----
-    RewriteRule ^(.*)$ public/$1 [L]
+    RewriteRule ^.*$ index.php [L]
 </IfModule>
 
 # === BẢO VỆ FILE NHẠY CẢM ===
 <FilesMatch "\.(env|sql|json|md|log|lock)$">
-    Order Allow,Deny
-    Deny from all
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
 </FilesMatch>
 
 <FilesMatch "^(config/database\.php|store/db_config\.php|core/bootstrap\.php)$">
-    Order Allow,Deny
-    Deny from all
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
 </FilesMatch>
 
 # === CHẶN TRUY CẬP THƯ MỤC ===
@@ -47,8 +50,9 @@ Options -Indexes
 
 # === BẢO VỆ .HTACCESS ===
 <Files ".htaccess">
-    Order Allow,Deny
-    Deny from all
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
 </Files>
 
 # === CACHING CHO STATIC ASSETS ===
@@ -64,12 +68,8 @@ Options -Indexes
 </IfModule>
 
 # === CHỐNG HOTLINK ẢNH ===
-<IfModule mod_rewrite.c>
-    RewriteCond %{HTTP_REFERER} !^$
-    RewriteCond %{HTTP_REFERER} !^https?://(www\.)?%{HTTP_HOST}/ [NC]
-    RewriteCond %{REQUEST_URI} \.(jpg|jpeg|png|gif|webp)$ [NC]
-    RewriteRule .* - [F]
-</IfModule>
+# QR/logo/product images must remain readable by the public storefront.
+# Hotlink protection is disabled here because it caused false 403 responses for valid images.
 
 # === PHP SETTINGS (nếu server cho phép) ===
 <IfModule mod_php.c>
@@ -85,5 +85,5 @@ Options -Indexes
 </IfModule>
 
 # === CUSTOM 404/500 (fallback an toàn) ===
-ErrorDocument 404 /index.html
-ErrorDocument 500 /index.html
+ErrorDocument 404 /index.php
+ErrorDocument 500 /index.php
