@@ -1,0 +1,26 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Chặn truy cập thư mục
+    Options -Indexes
+    
+    # Chặn truy cập file ẩn
+    RewriteRule ^\.(.*)$ - [F,L]
+    
+    # Nếu file hoặc thư mục tồn tại, serve trực tiếp
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Rewrite tất cả request về index.php
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# Bảo vệ file cấu hình
+<FilesMatch "\.(env|config|sql|md|log)$">
+    Deny from all
+</FilesMatch>
+
+# Chặn truy cập thư mục
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>

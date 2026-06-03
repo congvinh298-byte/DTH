@@ -1,0 +1,29 @@
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Editor / deploy credentials
+.vscode/
+.vscode/sftp.json
+
+# Logs and runtime data
+error_log
+bot_log.txt
+storage/logs/
+*.log
+
+# User uploads and generated media
+uploads/
+public/uploads/
+
+# OS / cache
+.DS_Store
+Thumbs.db
+.sixth/
+
+# Dependencies and build output
+node_modules/
+vendor/
+dist/
+build/
