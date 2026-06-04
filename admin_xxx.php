@@ -709,9 +709,19 @@ $csrf = dth_admin_csrf();
         <div class="cols">
             <div class="card">
                 <h2>Khach hang</h2>
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <div style="flex:1;">
+                        <label>Ma so thue (MST)</label>
+                        <input id="sale_customer_tax_code" placeholder="Nhap MST cong ty/ca nhan">
+                    </div>
+                    <div style="align-self:flex-end;">
+                        <button class="btn primary" onclick="lookupMST_invoice()">Kiem tra</button>
+                    </div>
+                </div>
                 <label>Ten khach</label><input id="sale_customer_name" placeholder="Khach le">
                 <label>So dien thoai</label><input id="sale_customer_phone" inputmode="numeric">
                 <label>Dia chi</label><textarea id="sale_customer_address" rows="4"></textarea>
+                <div id="saleCustomerStatus" class="muted" style="margin-top:10px"></div>
             </div>
             <div class="card">
                 <h2>Hang hoa va uu dai</h2>
@@ -1040,6 +1050,7 @@ function invoicePayload(){
     return {
         customer_name:document.getElementById('sale_customer_name').value,
         customer_phone:document.getElementById('sale_customer_phone').value,
+        customer_tax_code:document.getElementById('sale_customer_tax_code').value,
         customer_address:document.getElementById('sale_customer_address').value,
         product_name:document.getElementById('sale_product_name').value,
         quantity:document.getElementById('sale_quantity').value,
@@ -1082,11 +1093,32 @@ function previewInvoice(quiet=false){
         throw e;
     });
 }
+function lookupMST_invoice(){
+    const mst = String(document.getElementById('sale_customer_tax_code').value||'').trim();
+    if(!mst){ msg('Vui long nhap Ma so thue'); return; }
+    document.getElementById('saleCustomerStatus').innerHTML = statusBadge('warn', 'Dang tra cuu MST...');
+    fetch('https://api.vietqr.io/v2/business/'+mst)
+        .then(r=>r.json())
+        .then(d=>{
+            if(d.code==='00' && d.data) {
+                document.getElementById('sale_customer_name').value = d.data.name || '';
+                document.getElementById('sale_customer_address').value = d.data.address || '';
+                document.getElementById('saleCustomerStatus').innerHTML = statusBadge('ok', 'Da tim thay thong tin MST');
+            } else {
+                document.getElementById('saleCustomerStatus').innerHTML = statusBadge('used', 'Khong tim thay thong tin MST');
+            }
+        })
+        .catch(e=>{
+            document.getElementById('saleCustomerStatus').innerHTML = statusBadge('used', 'Loi tra cuu MST');
+            msg('Loi tra cuu MST');
+        });
+}
 function resetSalesInvoiceForm(){
-    ['sale_customer_name','sale_customer_phone','sale_customer_address','sale_product_name','sale_gift_name','sale_promo_code','sale_note'].forEach(id=>document.getElementById(id).value='');
+    ['sale_customer_name','sale_customer_phone','sale_customer_tax_code','sale_customer_address','sale_product_name','sale_gift_name','sale_promo_code','sale_note'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('sale_quantity').value=1;
     document.getElementById('sale_unit_gross').value=0;
     document.getElementById('saleQuote').innerHTML='';
+    document.getElementById('saleCustomerStatus').textContent='';
     document.getElementById('saleQuoteStatus').textContent='Nhap hang hoa va gia de tinh hoa don.';
 }
 function createAndPrintInvoice(){
