@@ -429,9 +429,11 @@ $csrf = dth_admin_csrf();
         .warn{background:#d97706!important;color:#fff!important;border-color:#d97706!important}
         .muted{color:var(--muted)}
         .msg{margin:10px 0;padding:10px 12px;border-radius:6px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;display:none}
-        .print-box{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px;max-width:620px}
+        .print-box{background:#fff;border:1px solid var(--line);border-radius:8px;padding:24px;max-width:900px;margin:0 auto}
+        .invoice-print-head{display:flex;justify-content:space-between;gap:24px;border-bottom:2px solid #111827;padding-bottom:14px;margin-bottom:16px}.invoice-brand{display:flex;gap:14px;align-items:flex-start}.invoice-logo{width:96px;height:72px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:#fff}.invoice-print-head h1{margin:0 0 8px;font-size:23px}.invoice-print-head p{margin:3px 0}.invoice-print-title{text-align:right}.invoice-print-title h2{margin:0 0 8px;font-size:22px}.invoice-print-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;margin-bottom:16px}.invoice-print table{border-color:#94a3b8}.invoice-print th,.invoice-print td{border:1px solid #cbd5e1}.invoice-totals{margin-left:auto;width:min(420px,100%);margin-top:14px}.invoice-totals div{display:flex;justify-content:space-between;gap:20px;padding:5px 0}.invoice-totals .grand{border-top:2px solid #111827;font-size:17px;font-weight:800}.invoice-signatures{display:grid;grid-template-columns:1fr 1fr;gap:80px;text-align:center;margin-top:42px;min-height:100px}.quote-box{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:14px}.quote-box div{background:#f8fafc;border:1px solid var(--line);border-radius:6px;padding:10px}.quote-box span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;margin-bottom:5px}.quote-box b{font-size:15px}
         .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:16px 0 10px}.section-head h2{margin:0;font-size:18px}
         .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px;background:#fff}.table-wrap table{border:0;min-width:980px}
+        .table-wrap.compact-table table{min-width:0}
         .worker-name{font-weight:800}.worker-meta{display:block;color:var(--muted);font-size:11px;margin-top:3px}
         .money-due{font-weight:800;color:#b91c1c}.money-paid{font-weight:800;color:#047857}
         @media print{body>*:not(.print-only){display:none!important}.print-only{display:block!important}.print-box{border:0;max-width:none}}
@@ -447,6 +449,7 @@ $csrf = dth_admin_csrf();
 <main class="print-hide">
     <nav>
         <button class="active" data-page="dash">Dashboard</button>
+        <button data-page="sales">Ban hang</button>
         <button data-page="orders">Don hang</button>
         <button data-page="jobs">Goi tho</button>
         <button data-page="products">Kho san pham</button>
@@ -454,6 +457,7 @@ $csrf = dth_admin_csrf();
         <button data-page="workers">Tho va Unban</button>
         <button data-page="users">Khach hang</button>
         <button data-page="invoices">In hoa don</button>
+        <button data-page="bct">Bao cao BCT</button>
     </nav>
 
     <div id="globalMsg" class="msg"></div>
@@ -472,6 +476,52 @@ $csrf = dth_admin_csrf();
         <div class="table-wrap"><table><thead><tr><th>Tho</th><th>SDT / Ma dinh danh</th><th>Ca xong</th><th>Thu nhap</th><th>Da dong phi</th><th>No hien tai</th><th>Thanh toan</th><th>Trang thai</th><th>Lenh</th></tr></thead><tbody id="dashboardWorkersBody"></tbody></table></div>
         <div class="section-head"><h2>Thanh toan phi gan day</h2><span class="muted">SePay, admin va thong bao cho doi soat</span></div>
         <div class="table-wrap"><table><thead><tr><th>ID</th><th>Tho</th><th>So tien</th><th>Da phan bo</th><th>Phuong thuc</th><th>Ma tham chieu</th><th>Trang thai</th><th>Thoi gian</th></tr></thead><tbody id="paymentsBody"></tbody></table></div>
+    </section>
+
+    <section id="page-sales">
+        <div class="section-head"><div><h2>Ban hang tai quay</h2><span class="muted">Tao hoa don dien tu, cap nhat doanh thu va tich diem theo so dien thoai</span></div><button class="btn" onclick="loadRetailSale()">Tai lai</button></div>
+        <div class="cols">
+            <div class="card">
+                <h2>Khach hang</h2>
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <div style="flex:1;">
+                        <label>Ma so thue (MST)</label>
+                        <input id="pos_customer_tax_code" placeholder="Nhap MST cong ty/ca nhan">
+                    </div>
+                    <div style="align-self:flex-end;">
+                        <button class="btn primary" onclick="lookupMST()">Kiem tra</button>
+                    </div>
+                </div>
+                <label>Ten khach / Cong ty</label><input id="pos_customer_name" placeholder="Nhap ten khach / cong ty" required>
+                <label>So dien thoai tich diem</label><input id="pos_customer_phone" inputmode="numeric" placeholder="09xxxxxxxx" oninput="scheduleRetailCustomerLookup()" required>
+                <label>Dia chi</label><textarea id="pos_customer_address" rows="3"></textarea>
+                <div id="posCustomerStatus" class="muted" style="margin-top:10px">Nhap so dien thoai de nhan dien thanh vien.</div>
+            </div>
+            <div class="card">
+                <h2>Hang hoa</h2>
+                <input id="pos_product_id" type="hidden">
+                <input id="pos_product_source" type="hidden">
+                <label>Ten hang hoa</label><input id="pos_product_name" list="posProductList" oninput="selectRetailProduct();scheduleRetailQuote()" required>
+                <datalist id="posProductList"></datalist>
+                <label>So luong</label><input id="pos_quantity" type="number" min="1" max="10000" value="1" oninput="scheduleRetailQuote()">
+                <label>Don gia da gom VAT 10%</label><input id="pos_unit_gross" type="number" min="1" value="0" oninput="scheduleRetailQuote()">
+                <label>Qua tang kem</label><input id="pos_gift_name">
+            </div>
+            <div class="card">
+                <h2>Thanh toan</h2>
+                <label>Ma khuyen mai neu co</label><input id="pos_promo_code" oninput="scheduleRetailQuote()">
+                <label>Phuong thuc thanh toan</label><select id="pos_payment_method"><option value="cash">Tien mat</option><option value="bank">Chuyen khoan</option><option value="momo">MoMo</option><option value="card">The</option></select>
+                <label>Ghi chu</label><textarea id="pos_note" rows="3"></textarea>
+                <div class="row-actions">
+                    <button class="btn" onclick="previewRetailSale()">Tinh tien</button>
+                    <button class="btn success" onclick="completeRetailSale()">Ban hang va in hoa don</button>
+                </div>
+                <div id="posSaleStatus" class="muted" style="margin-top:12px">Moi <?= h(number_format(max(1, (int)app_env('LOYALTY_VND_PER_POINT', '10000')), 0, ',', '.')) ?> VND thanh toan duoc cong 1 diem.</div>
+            </div>
+        </div>
+        <div id="posQuote" class="quote-box"></div>
+        <div class="section-head"><h2>Hoa don ban hang gan day</h2><span class="muted">Co the in lai tu danh sach nay</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Ma / Ngay</th><th>Khach</th><th>Hang hoa</th><th>Thanh toan</th><th>Diem cong</th><th>Lenh</th></tr></thead><tbody id="posSalesBody"></tbody></table></div>
     </section>
 
     <section id="page-orders">
@@ -655,14 +705,95 @@ $csrf = dth_admin_csrf();
     </section>
 
     <section id="page-invoices">
-        <p class="muted">Chon mot don hang o bang duoi de in hoa don ban le.</p>
-        <table><thead><tr><th>ID</th><th>Khach</th><th>Phone</th><th>San pham</th><th>Tien</th><th>Lenh</th></tr></thead><tbody id="invoiceBody"></tbody></table>
+        <div class="section-head"><div><h2>Tao hoa don ban hang</h2><span class="muted">Gia nhap la gia da gom VAT 10%</span></div><button class="btn" onclick="loadInvoices()">Tai lai so hoa don</button></div>
+        <div class="cols">
+            <div class="card">
+                <h2>Khach hang</h2>
+                <label>Ten khach</label><input id="sale_customer_name" placeholder="Khach le">
+                <label>So dien thoai</label><input id="sale_customer_phone" inputmode="numeric">
+                <label>Dia chi</label><textarea id="sale_customer_address" rows="4"></textarea>
+            </div>
+            <div class="card">
+                <h2>Hang hoa va uu dai</h2>
+                <label>Hang hoa</label><input id="sale_product_name" oninput="scheduleInvoiceQuote()" required>
+                <label>So luong</label><input id="sale_quantity" type="number" min="1" max="10000" value="1" oninput="scheduleInvoiceQuote()">
+                <label>Gia moi san pham da gom VAT</label><input id="sale_unit_gross" type="number" min="1" value="0" oninput="scheduleInvoiceQuote()">
+                <label>Qua tang kem</label><input id="sale_gift_name">
+            </div>
+            <div class="card">
+                <h2>Khuyen mai va in</h2>
+                <label>Ma khuyen mai neu co</label><input id="sale_promo_code" oninput="scheduleInvoiceQuote()">
+                <label>Ghi chu</label><textarea id="sale_note" rows="3"></textarea>
+                <div class="row-actions">
+                    <button class="btn" onclick="previewInvoice()">Tinh lai</button>
+                    <button class="btn primary" onclick="createAndPrintInvoice()">Tao va in hoa don</button>
+                </div>
+                <div id="saleQuoteStatus" class="muted" style="margin-top:12px">Nhap hang hoa va gia de tinh hoa don.</div>
+            </div>
+        </div>
+        <div id="saleQuote" class="quote-box"></div>
+        <div class="section-head"><h2>Thong tin cong ty tren hoa don</h2><span class="muted">Cau hinh tu file .env</span></div>
+        <div id="invoiceCompanyInfo" class="card muted">Dang tai thong tin cong ty...</div>
+        <div class="section-head"><h2>So hoa don da tao</h2><span class="muted">Co the in lai bat ky luc nao</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Ma / Ngay</th><th>Khach</th><th>Hang hoa</th><th>Truoc VAT</th><th>VAT 10%</th><th>Giam</th><th>Thanh toan</th><th>Lenh</th></tr></thead><tbody id="invoiceBody"></tbody></table></div>
+    </section>
+
+    <section id="page-bct">
+        <div class="section-head">
+            <div><h2>Doi soat bao cao Bo Cong Thuong</h2><span class="muted">So lieu he thong, hoa don dau vao PDF va hoa don dau ra</span></div>
+            <div class="row-actions">
+                <input id="bct_from" type="date" value="<?= h(date('Y-01-01')) ?>" style="width:auto">
+                <input id="bct_to" type="date" value="<?= h(date('Y-m-d')) ?>" style="width:auto">
+                <button class="btn primary" onclick="loadBctReport()">Doi soat</button>
+            </div>
+        </div>
+        <div class="grid stats" id="bctStats"></div>
+        <div class="cols">
+            <div class="card">
+                <h2>Trang thai bao cao</h2>
+                <div id="bctReportStatus" class="muted">Chua tai doi soat.</div>
+                <p class="muted">API ket noi: <code><?= h(rtrim(app_env('APP_URL', 'https://dienmayhieu.com'), '/')) ?>/api_baocao_bct.php</code></p>
+                <p class="muted">Chi dung mat khau thuong hoac API key rieng. Chuoi hash trong .env khong the dung de dang nhap.</p>
+            </div>
+            <div class="card">
+                <h2>Van de can xu ly</h2>
+                <div class="table-wrap compact-table"><table><thead><tr><th>Muc do</th><th>Ma doi soat</th><th>So luong</th><th>ID lien quan</th></tr></thead><tbody id="bctIssuesBody"></tbody></table></div>
+            </div>
+        </div>
+
+        <div class="section-head"><h2>Nhap hoa don dien tu dau vao</h2><span class="muted">Chi them, khong ghi de; kiem tra cong thuc va SHA-256 cua PDF</span></div>
+        <form id="inputInvoiceForm" class="card" onsubmit="uploadInputInvoice(event)" enctype="multipart/form-data">
+            <div class="cols">
+                <div>
+                    <label>So hoa don</label><input name="invoice_number" required>
+                    <label>Ky hieu hoa don</label><input name="invoice_series" required>
+                    <label>Ngay hoa don</label><input name="invoice_date" type="date" value="<?= h(date('Y-m-d')) ?>" required>
+                    <label>Don vi ban</label><input name="seller_name" required>
+                    <label>Ma so thue don vi ban</label><input name="seller_tax_code" required>
+                </div>
+                <div>
+                    <label>Tien truoc thue</label><input id="input_subtotal" name="subtotal_amount" type="number" min="0" value="0" oninput="updateInputInvoiceTotal()" required>
+                    <label>VAT</label><input id="input_vat" name="vat_amount" type="number" min="0" value="0" oninput="updateInputInvoiceTotal()" required>
+                    <label>Dieu chinh (+/-)</label><input id="input_adjustment" name="adjustment_amount" type="number" value="0" oninput="updateInputInvoiceTotal()" required>
+                    <label>Tong thanh toan</label><input id="input_total" name="total_amount" type="number" value="0" readonly required>
+                </div>
+                <div>
+                    <label>PDF hoa don dien tu</label><input name="pdf" type="file" accept="application/pdf,.pdf" required>
+                    <label>Ghi chu doi soat</label><textarea name="note" rows="5"></textarea>
+                    <button class="btn success" type="submit">Luu PDF va doi soat</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="section-head"><h2>So hoa don dau vao</h2><button class="btn" onclick="loadInputInvoices()">Tai lai</button></div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>So / Ngay</th><th>Don vi ban</th><th>Truoc thue</th><th>VAT</th><th>Dieu chinh</th><th>Tong</th><th>PDF / SHA-256</th><th>Trang thai</th></tr></thead><tbody id="inputInvoicesBody"></tbody></table></div>
     </section>
 </main>
 
 <script>
 const API = 'api_master.php';
 const CSRF = <?= json_encode($csrf) ?>;
+const LOYALTY_VND_PER_POINT = <?= json_encode(max(1, (int)app_env('LOYALTY_VND_PER_POINT', '10000'))) ?>;
 
 function fmt(n){ return new Intl.NumberFormat('vi-VN').format(Number(n || 0)) + ' VND'; }
 function esc(s){ return String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
@@ -713,6 +844,7 @@ document.querySelectorAll('nav button').forEach(btn => {
 
 function loadPage(page){
     if (page === 'dash') loadDashboard();
+    if (page === 'sales') loadRetailSale();
     if (page === 'orders') loadOrders();
     if (page === 'jobs') loadJobs();
     if (page === 'products') loadProducts();
@@ -720,7 +852,142 @@ function loadPage(page){
     if (page === 'workers') { loadWorkers(); loadBans(); }
     if (page === 'users') loadUsers();
     if (page === 'invoices') loadInvoices();
+    if (page === 'bct') { loadBctReport(); loadInputInvoices(); }
 }
+
+let posProductRows = [];
+let posQuoteTimer = null;
+let posCustomerLookupTimer = null;
+function retailPayload(){
+    return {
+        customer_name:document.getElementById('pos_customer_name').value,
+        customer_phone:document.getElementById('pos_customer_phone').value,
+        customer_tax_code:document.getElementById('pos_customer_tax_code').value,
+        customer_address:document.getElementById('pos_customer_address').value,
+        product_id:document.getElementById('pos_product_id').value,
+        product_source:document.getElementById('pos_product_source').value,
+        product_name:document.getElementById('pos_product_name').value,
+        quantity:document.getElementById('pos_quantity').value,
+        unit_gross_amount:document.getElementById('pos_unit_gross').value,
+        gift_name:document.getElementById('pos_gift_name').value,
+        promo_code:document.getElementById('pos_promo_code').value,
+        payment_method:document.getElementById('pos_payment_method').value,
+        note:document.getElementById('pos_note').value
+    };
+}
+function loadRetailProducts(){
+    return api('admin_products').then(d=>{
+        posProductRows=d.data||[];
+        document.getElementById('posProductList').innerHTML=posProductRows.map(p=>`<option value="${esc(p.name)}">${fmt(p.price)} - Ton ${esc(p.stock_quantity||0)}</option>`).join('');
+    });
+}
+function selectRetailProduct(){
+    const name=String(document.getElementById('pos_product_name').value||'').trim().toLowerCase();
+    const product=posProductRows.find(p=>String(p.name||'').trim().toLowerCase()===name);
+    document.getElementById('pos_product_id').value=product?product.id:'';
+    document.getElementById('pos_product_source').value=product?product.src:'';
+    if(product) document.getElementById('pos_unit_gross').value=Number(product.price||0);
+}
+function scheduleRetailCustomerLookup(){
+    clearTimeout(posCustomerLookupTimer);
+    const phone=String(document.getElementById('pos_customer_phone').value||'').replace(/\D/g,'');
+    if(phone.length<8){
+        document.getElementById('posCustomerStatus').textContent='Nhap so dien thoai de nhan dien thanh vien.';
+        return;
+    }
+    posCustomerLookupTimer=setTimeout(()=>api('admin_customer_lookup',{phone}).then(d=>{
+        const c=d.data;
+        if(!c){
+            document.getElementById('posCustomerStatus').innerHTML=statusBadge('warn','Khach moi')+' Se tao thanh vien khi hoan tat ban hang.';
+            return;
+        }
+        if(!document.getElementById('pos_customer_name').value.trim()) document.getElementById('pos_customer_name').value=c.fullname||'';
+        document.getElementById('posCustomerStatus').innerHTML=statusBadge('ok',c.member_rank||'Thanh vien')+' Diem hien tai: <b>'+esc(c.loyalty_points||0)+'</b> - Tong chi: <b>'+fmt(c.total_spent||0)+'</b>';
+    }).catch(e=>msg(e.message)),350);
+}
+function lookupMST(){
+    const mst = String(document.getElementById('pos_customer_tax_code').value||'').trim();
+    if(!mst){ msg('Vui long nhap Ma so thue'); return; }
+    document.getElementById('posCustomerStatus').innerHTML = statusBadge('warn', 'Dang tra cuu MST...');
+    fetch('https://api.vietqr.io/v2/business/'+mst)
+        .then(r=>r.json())
+        .then(d=>{
+            if(d.code==='00' && d.data) {
+                document.getElementById('pos_customer_name').value = d.data.name || '';
+                document.getElementById('pos_customer_address').value = d.data.address || '';
+                document.getElementById('posCustomerStatus').innerHTML = statusBadge('ok', 'Da tim thay thong tin MST');
+            } else {
+                document.getElementById('posCustomerStatus').innerHTML = statusBadge('used', 'Khong tim thay thong tin MST');
+            }
+        })
+        .catch(e=>{
+            document.getElementById('posCustomerStatus').innerHTML = statusBadge('used', 'Loi tra cuu MST');
+            msg('Loi tra cuu MST');
+        });
+}
+function renderRetailQuote(c){
+    const discount=c.discount||{};
+    document.getElementById('posQuote').innerHTML=[
+        ['Tong truoc giam',fmt(c.gross_before_discount)],
+        ['Khuyen mai',discount.code?esc(discount.code)+' - '+fmt(c.discount_amount):'Khong ap ma'],
+        ['Tien truoc VAT',fmt(c.subtotal_amount)],
+        ['VAT 10%',fmt(c.vat_amount)],
+        ['Khach thanh toan',fmt(c.total_amount)],
+        ['Diem duoc cong',esc(c.loyalty_points_earned||0)+' diem']
+    ].map(i=>`<div><span>${esc(i[0])}</span><b>${i[1]}</b></div>`).join('');
+    document.getElementById('posSaleStatus').innerHTML=statusBadge('ok','Da tinh tien')+' Gia nhap duoc hieu la gia da gom VAT 10%.';
+}
+function scheduleRetailQuote(){
+    clearTimeout(posQuoteTimer);
+    const p=retailPayload();
+    if(!String(p.product_name||'').trim()||Number(p.unit_gross_amount||0)<=0){
+        document.getElementById('posQuote').innerHTML='';
+        return;
+    }
+    posQuoteTimer=setTimeout(()=>previewRetailSale(true).catch(()=>{}),400);
+}
+function previewRetailSale(quiet=false){
+    return api('admin_invoice_quote',retailPayload(),'POST').then(d=>{
+        if(d.status!=='success') throw new Error(d.message||'Khong tinh duoc giao dich');
+        renderRetailQuote(d.calculation||{});
+        return d.calculation||{};
+    }).catch(e=>{
+        document.getElementById('posSaleStatus').innerHTML=statusBadge('used','Khong hop le')+' '+esc(e.message);
+        document.getElementById('posQuote').innerHTML='';
+        if(!quiet) msg(e.message);
+        throw e;
+    });
+}
+function resetRetailSale(){
+    ['pos_customer_name','pos_customer_phone','pos_customer_tax_code','pos_customer_address','pos_product_id','pos_product_source','pos_product_name','pos_gift_name','pos_promo_code','pos_note'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('pos_quantity').value=1;
+    document.getElementById('pos_unit_gross').value=0;
+    document.getElementById('pos_payment_method').value='cash';
+    document.getElementById('posQuote').innerHTML='';
+    document.getElementById('posCustomerStatus').textContent='Nhap so dien thoai de nhan dien thanh vien.';
+    document.getElementById('posSaleStatus').textContent='Moi '+new Intl.NumberFormat('vi-VN').format(LOYALTY_VND_PER_POINT)+' VND thanh toan duoc cong 1 diem.';
+}
+function completeRetailSale(){
+    if(!confirm('Xac nhan hoan tat ban hang, cong diem va tao hoa don?')) return;
+    api('admin_retail_sale',retailPayload(),'POST').then(d=>{
+        if(d.status!=='success') throw new Error(d.message||'Khong hoan tat duoc giao dich');
+        const invoice=d.invoice||{};
+        invoiceCache[invoice.id]=invoice;
+        printSalesInvoice(invoice);
+        resetRetailSale();
+        loadRetailInvoices();
+    }).catch(e=>msg(e.message));
+}
+function loadRetailInvoices(){
+    return api('admin_sales_invoices').then(d=>{
+        const rows=(d.data||[]).filter(i=>Number(i.customer_id||0)>0);
+        document.getElementById('posSalesBody').innerHTML=rows.slice(0,100).map(i=>{
+            invoiceCache[i.id]=i;
+            return `<tr><td><b>${esc(i.invoice_code)}</b><span class="worker-meta">${esc(i.invoice_date||i.created_at)}</span></td><td>${esc(i.customer_name)}<span class="worker-meta">${esc(i.customer_phone)}</span></td><td>${esc(i.product_name)} x ${esc(i.quantity||1)}</td><td><b>${fmt(i.total_amount||i.total_price)}</b></td><td>${esc(i.loyalty_points_earned||0)} diem</td><td><button class="btn" onclick="printSavedInvoice(${Number(i.id)})">In lai</button></td></tr>`;
+        }).join('')||'<tr><td colspan="6" class="muted">Chua co giao dich ban hang tai quay.</td></tr>';
+    }).catch(e=>msg(e.message));
+}
+function loadRetailSale(){ loadRetailProducts().catch(e=>msg(e.message)); loadRetailInvoices(); }
 
 function loadStats(){
     api('admin_stats').then(d=>{
@@ -767,10 +1034,126 @@ function loadOrders(){
         document.getElementById('ordersBody').innerHTML=(d.data||[]).map(o=>`<tr><td>#${o.id}</td><td>${esc(o.customer_name)}</td><td>${esc(o.customer_phone)}</td><td>${esc(o.product_name)}</td><td>${fmt(o.total_price)}</td><td>${esc(o.status)}</td><td>${esc(o.created_at)}</td><td><button class="btn" onclick="printInvoice(${o.id})">In</button></td></tr>`).join('');
     });
 }
-function loadInvoices(){
-    api('admin_orders').then(d=>{
-        invoiceBody.innerHTML=(d.data||[]).filter(o=>o.status==='completed').map(o=>`<tr><td>${o.id}</td><td>${esc(o.customer_name)}</td><td>${esc(o.customer_phone)}</td><td>${esc(o.product_name)}</td><td>${fmt(o.total_price)}</td><td><button class="btn" onclick="printInvoice(${o.id})">In hoa don</button></td></tr>`).join('') || '<tr><td colspan="6" class="muted">Khong co don hang completed.</td></tr>';
+let invoiceCache = {};
+let invoiceQuoteTimer = null;
+function invoicePayload(){
+    return {
+        customer_name:document.getElementById('sale_customer_name').value,
+        customer_phone:document.getElementById('sale_customer_phone').value,
+        customer_address:document.getElementById('sale_customer_address').value,
+        product_name:document.getElementById('sale_product_name').value,
+        quantity:document.getElementById('sale_quantity').value,
+        unit_gross_amount:document.getElementById('sale_unit_gross').value,
+        gift_name:document.getElementById('sale_gift_name').value,
+        promo_code:document.getElementById('sale_promo_code').value,
+        note:document.getElementById('sale_note').value
+    };
+}
+function renderInvoiceQuote(c){
+    const discount=c.discount||{};
+    document.getElementById('saleQuote').innerHTML=[
+        ['Tong da gom VAT truoc giam',fmt(c.gross_before_discount)],
+        ['Khuyen mai',discount.code?esc(discount.code)+' - '+fmt(c.discount_amount):'Khong ap ma'],
+        ['Tien truoc VAT',fmt(c.subtotal_amount)],
+        ['VAT 10%',fmt(c.vat_amount)],
+        ['Khach thanh toan',fmt(c.total_amount)]
+    ].map(i=>`<div><span>${esc(i[0])}</span><b>${i[1]}</b></div>`).join('');
+    document.getElementById('saleQuoteStatus').innerHTML=statusBadge('ok','Da tinh dung VAT 10%')+' '+esc(discount.label||'');
+}
+function scheduleInvoiceQuote(){
+    clearTimeout(invoiceQuoteTimer);
+    const p=invoicePayload();
+    if(!String(p.product_name||'').trim() || Number(p.unit_gross_amount||0)<=0){
+        document.getElementById('saleQuote').innerHTML='';
+        document.getElementById('saleQuoteStatus').textContent='Nhap hang hoa va gia de tinh hoa don.';
+        return;
+    }
+    invoiceQuoteTimer=setTimeout(()=>previewInvoice(true).catch(()=>{}),400);
+}
+function previewInvoice(quiet=false){
+    return api('admin_invoice_quote',invoicePayload(),'POST').then(d=>{
+        if(d.status!=='success') throw new Error(d.message||'Khong tinh duoc hoa don');
+        renderInvoiceQuote(d.calculation||{});
+        return d.calculation||{};
+    }).catch(e=>{
+        document.getElementById('saleQuoteStatus').innerHTML=statusBadge('used','Khong hop le')+' '+esc(e.message);
+        document.getElementById('saleQuote').innerHTML='';
+        if(!quiet) msg(e.message);
+        throw e;
     });
+}
+function resetSalesInvoiceForm(){
+    ['sale_customer_name','sale_customer_phone','sale_customer_address','sale_product_name','sale_gift_name','sale_promo_code','sale_note'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('sale_quantity').value=1;
+    document.getElementById('sale_unit_gross').value=0;
+    document.getElementById('saleQuote').innerHTML='';
+    document.getElementById('saleQuoteStatus').textContent='Nhap hang hoa va gia de tinh hoa don.';
+}
+function createAndPrintInvoice(){
+    api('admin_create_sales_invoice',invoicePayload(),'POST').then(d=>{
+        if(d.status!=='success') throw new Error(d.message||'Khong tao duoc hoa don');
+        printSalesInvoice(d.invoice||{});
+        resetSalesInvoiceForm();
+        loadInvoices();
+    }).catch(e=>msg(e.message));
+}
+function loadInvoices(){
+    api('admin_sales_invoices').then(d=>{
+        if(d.status!=='success') throw new Error(d.message||'Khong tai duoc so hoa don');
+        invoiceCache={};
+        const company=d.company||{};
+        document.getElementById('invoiceCompanyInfo').innerHTML=`<b>${esc(company.name||'Chua cau hinh ten cong ty')}</b><br>MST: ${esc(company.tax_code||'Chua cau hinh')}<br>Dia chi: ${esc(company.address||'Chua cau hinh')}<br>Dien thoai: ${esc(company.phone||'Chua cau hinh')} | Email: ${esc(company.email||'Chua cau hinh')}<br>Website: ${esc(company.website||'Chua cau hinh')}`;
+        document.getElementById('invoiceBody').innerHTML=(d.data||[]).map(i=>{
+            invoiceCache[i.id]=i;
+            return `<tr><td><b>${esc(i.invoice_code)}</b><span class="worker-meta">${esc(i.invoice_date||i.created_at)}</span></td><td>${esc(i.customer_name||'Khach le')}<span class="worker-meta">${esc(i.customer_phone||'')}</span></td><td>${esc(i.product_name)} x ${esc(i.quantity||1)}${i.gift_name?`<span class="worker-meta">Qua: ${esc(i.gift_name)}</span>`:''}</td><td>${fmt(i.subtotal_amount)}</td><td>${fmt(i.vat_amount)}</td><td>${fmt(i.discount_amount)}</td><td><b>${fmt(i.total_amount||i.total_price)}</b></td><td><button class="btn" onclick="printSavedInvoice(${Number(i.id)})">In lai</button></td></tr>`;
+        }).join('') || '<tr><td colspan="8" class="muted">Chua co hoa don ban hang.</td></tr>';
+    }).catch(e=>msg(e.message));
+}
+
+function updateInputInvoiceTotal(){
+    const subtotal=Number(document.getElementById('input_subtotal').value||0);
+    const vat=Number(document.getElementById('input_vat').value||0);
+    const adjustment=Number(document.getElementById('input_adjustment').value||0);
+    document.getElementById('input_total').value=Math.round(subtotal+vat+adjustment);
+}
+function loadBctReport(){
+    const from=document.getElementById('bct_from').value;
+    const to=document.getElementById('bct_to').value;
+    api('admin_bct_reconciliation',{from,to,detail:0}).then(d=>{
+        if(d.status!=='success') throw new Error(d.message||'Khong tai duoc bao cao');
+        const r=d.report||{}, registers=r.invoice_registers||{}, ops=r.operational_records||{}, status=r.submission_status||{};
+        const input=registers.input_purchase_invoices||{}, output=registers.output_sales_invoices||{};
+        const orders=ops.confirmed_product_orders||{}, jobs=ops.completed_service_jobs||{}, fees=ops.platform_fee_accrual||{};
+        const items=[
+            ['HD dau vao',input.document_count||0],['Tong dau vao',fmt(input.total_amount)],
+            ['HD dau ra',output.document_count||0],['Tong dau ra',fmt(output.total_amount)],
+            ['Don da xac nhan',orders.count||0],['Tong don xac nhan',fmt(orders.total_amount)],
+            ['Ca dich vu xong',jobs.count||0],['Phi nen tang',fmt(fees.total_amount)]
+        ];
+        document.getElementById('bctStats').innerHTML=items.map(i=>`<div class="card"><div class="stat-label">${esc(i[0])}</div><div class="stat-value">${esc(i[1]??0)}</div></div>`).join('');
+        document.getElementById('bctReportStatus').innerHTML=(status.ready_for_submission?statusBadge('ok','San sang xuat bao cao'):statusBadge('used','Can doi soat'))
+            + `<p>Ky: <b>${esc((r.period||{}).from||from)}</b> den <b>${esc((r.period||{}).to||to)}</b></p>`
+            + `<p>Loi chan gui: <b>${esc(status.blocking_issue_count||0)}</b>. Canh bao: <b>${esc(status.warning_count||0)}</b>.</p>`;
+        document.getElementById('bctIssuesBody').innerHTML=(r.issues||[]).map(i=>`<tr><td>${i.severity==='blocking'?statusBadge('used','Chan gui'):statusBadge('warn','Canh bao')}</td><td><code>${esc(i.code)}</code></td><td>${esc(i.count||0)}</td><td>${esc((i.ids||[]).join(', ')||'-')}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Khong co van de trong pham vi doi soat he thong.</td></tr>';
+    }).catch(e=>msg(e.message));
+}
+function loadInputInvoices(){
+    api('admin_input_invoices').then(d=>{
+        if(d.status!=='success') throw new Error(d.message||'Khong tai duoc so hoa don');
+        document.getElementById('inputInvoicesBody').innerHTML=(d.data||[]).map(i=>`<tr><td>#${esc(i.id)}</td><td><b>${esc(i.invoice_series)} / ${esc(i.invoice_number)}</b><span class="worker-meta">${esc(i.invoice_date)}</span></td><td>${esc(i.seller_name)}<span class="worker-meta">MST ${esc(i.seller_tax_code)}</span></td><td>${fmt(i.subtotal_amount)}</td><td>${fmt(i.vat_amount)}</td><td>${fmt(i.adjustment_amount)}</td><td><b>${fmt(i.total_amount)}</b></td><td><a class="btn" href="${esc(i.download_url)}" target="_blank" rel="noopener">Mo PDF</a><span class="worker-meta">${esc(i.pdf_original_name)} / ${esc(String(i.pdf_sha256||'').slice(0,16))}...</span></td><td>${statusBadge(i.status==='active'?'ok':'warn',i.status||'-')}</td></tr>`).join('') || '<tr><td colspan="9" class="muted">Chua co hoa don dau vao.</td></tr>';
+    }).catch(e=>msg(e.message));
+}
+function uploadInputInvoice(event){
+    event.preventDefault();
+    const form=event.currentTarget;
+    const button=form.querySelector('button[type="submit"]');
+    button.disabled=true;
+    const data=new FormData(form);
+    fetch(API+'?action=admin_upload_input_invoice',{method:'POST',credentials:'same-origin',headers:{'X-CSRF-Token':CSRF},body:data})
+        .then(async r=>{const text=await r.text();let d;try{d=JSON.parse(text);}catch(e){throw new Error(text||'Phan hoi khong hop le');}if(!r.ok||d.status!=='success')throw new Error(d.message||'Tai len that bai');return d;})
+        .then(d=>{msg(d.message||'Da luu hoa don');form.reset();form.querySelector('[name="invoice_date"]').value=new Date().toISOString().slice(0,10);updateInputInvoiceTotal();loadInputInvoices();loadBctReport();})
+        .catch(e=>msg(e.message))
+        .finally(()=>{button.disabled=false;});
 }
 
 let cachedUsers = [];
@@ -787,7 +1170,7 @@ function loadUsers(){
             <td>${esc(u.phone)}</td>
             <td>
                 <span style="color:#047857; font-weight:bold;">${esc(u.member_rank)}</span><br>
-                <small class="muted">${fmt(u.total_spent)}</small>
+                <small class="muted">${fmt(u.total_spent)} - ${esc(u.loyalty_points||0)} diem</small>
             </td>
             <td>
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=DIENMAYHIEU-MEMBER-${u.id}" alt="QR" style="border-radius:4px; border:1px solid #ddd;">
@@ -826,6 +1209,8 @@ function openUserModal(user = null) {
                 <input id="u_rank" value="${user ? esc(user.member_rank) : 'Thành viên'}" style="margin-bottom:10px; width:100%; padding:8px;">
                 <label>Tong chi tieu (VND)</label>
                 <input type="number" id="u_spent" value="${user ? user.total_spent : 0}" style="margin-bottom:10px; width:100%; padding:8px;">
+                <label>Diem thanh vien</label>
+                <input type="number" id="u_points" value="${user ? user.loyalty_points : 0}" min="0" style="margin-bottom:10px; width:100%; padding:8px;">
                 <input type="hidden" id="u_active" value="${user ? user.is_active : 1}">
                 <div style="display:flex; gap:10px; margin-top:15px;">
                     <button type="submit" class="btn primary" style="flex:1;">Luu</button>
@@ -854,6 +1239,7 @@ function toggleUserStatus(id) {
         role: user.role,
         member_rank: user.member_rank,
         total_spent: user.total_spent,
+        loyalty_points: user.loyalty_points,
         is_active: Number(user.is_active) === 1 ? 0 : 1
     };
     api(newData.action, newData).then(d=>{
@@ -871,6 +1257,7 @@ function saveUser(e, id) {
         role: document.getElementById('u_role').value,
         member_rank: document.getElementById('u_rank').value,
         total_spent: document.getElementById('u_spent').value,
+        loyalty_points: document.getElementById('u_points').value,
         is_active: document.getElementById('u_active') ? document.getElementById('u_active').value : 1
     }).then(d=>{
         msg(d.message);
@@ -889,10 +1276,32 @@ function deleteUser(id) {
 
 function printInvoice(id){
     api('admin_invoice',{order_id:id}).then(d=>{
-        const o=d.order||{};
-        document.getElementById('printRoot').innerHTML=`<div class="print-box"><h1>DIEN TU HIEU</h1><p>Hoa don ban le #${esc(o.invoice_code||o.id)}</p><hr><p><b>Khach:</b> ${esc(o.customer_name||'Khach le')}</p><p><b>Phone:</b> ${esc(o.customer_phone||'')}</p><p><b>San pham:</b> ${esc(o.product_name||'')}</p><p><b>Tong tien:</b> ${fmt(o.total_price||0)}</p><p><b>Ngay:</b> ${esc(o.created_at||'')}</p><hr><p>Cam on quy khach.</p></div>`;
-        window.print();
-    });
+        if(d.status!=='success') throw new Error(d.message||'Khong tao duoc hoa don');
+        printSalesInvoice(d.invoice||{});
+    }).catch(e=>msg(e.message));
+}
+function printSavedInvoice(id){ const invoice=invoiceCache[id]; if(invoice) printSalesInvoice(invoice); }
+function printSalesInvoice(i){
+    const promo=i.promo_code?`<p><b>Ma khuyen mai:</b> ${esc(i.promo_code)}</p>`:'';
+    const gift=i.gift_name?`<p><b>Qua tang kem:</b> ${esc(i.gift_name)}</p>`:'';
+    const note=i.note?`<p><b>Ghi chu:</b> ${esc(i.note)}</p>`:'';
+    const points=Number(i.loyalty_points_earned||0);
+    const loyalty=points>0?`<p><b>Diem thanh vien duoc cong:</b> ${esc(points)} diem${i.customer_loyalty_points?' - Tong diem: '+esc(i.customer_loyalty_points):''}</p>`:'';
+    document.getElementById('printRoot').innerHTML=`<div class="print-box invoice-print">
+        <div class="invoice-print-head">
+            <div class="invoice-brand"><img id="invoiceLogo" class="invoice-logo" src="logo.jpg" alt="Logo Dien Tu Hieu"><div><h1>${esc(i.company_name||'DIEN TU HIEU')}</h1><p><b>MST:</b> ${esc(i.company_tax_code||'-')}</p><p><b>Dia chi:</b> ${esc(i.company_address||'-')}</p><p><b>Dien thoai:</b> ${esc(i.company_phone||'-')} &nbsp; <b>Email:</b> ${esc(i.company_email||'-')}</p><p><b>Website:</b> ${esc(i.company_website||'-')}</p></div></div>
+            <div class="invoice-print-title"><h2>HOA DON BAN HANG DIEN TU</h2><p><b>So:</b> ${esc(i.invoice_code||i.id)}</p><p><b>Ngay:</b> ${esc(i.invoice_date||i.created_at||'')}</p><p>Thue suat VAT: <b>10%</b></p><p>Chung tu do cong ty phat hanh tu he thong ban hang.</p></div>
+        </div>
+        <div class="invoice-print-meta"><div><b>Khach hang:</b> ${esc(i.customer_name||'Khach le')}</div><div><b>Ma so thue:</b> ${esc(i.customer_tax_code||'-')}</div><div><b>So dien thoai:</b> ${esc(i.customer_phone||'-')}</div><div><b>Phuong thuc thanh toan:</b> ${esc(i.payment_method||'-')}</div><div><b>Hang thanh vien:</b> ${esc(i.customer_member_rank||'-')}</div><div style="grid-column:1/-1"><b>Dia chi:</b> ${esc(i.customer_address||'-')}</div></div>
+        <table><thead><tr><th>Hang hoa</th><th>So luong</th><th>Don gia da gom VAT</th><th>Thanh tien truoc giam</th></tr></thead><tbody><tr><td>${esc(i.product_name||'')}</td><td>${esc(i.quantity||1)}</td><td>${fmt(i.unit_gross_amount||i.total_amount)}</td><td>${fmt(i.gross_before_discount||i.total_amount)}</td></tr></tbody></table>
+        ${gift}${promo}${loyalty}${note}
+        <div class="invoice-totals"><div><span>Tong da gom VAT truoc giam</span><b>${fmt(i.gross_before_discount||i.total_amount)}</b></div><div><span>Khuyen mai</span><b>- ${fmt(i.discount_amount||0)}</b></div><div><span>Tien hang truoc VAT</span><b>${fmt(i.subtotal_amount)}</b></div><div><span>VAT 10%</span><b>${fmt(i.vat_amount)}</b></div><div class="grand"><span>Khach thanh toan</span><b>${fmt(i.total_amount||i.total_price)}</b></div></div>
+        <div class="invoice-signatures"><div><b>Nguoi mua hang</b><p class="muted">Ky, ghi ro ho ten</p></div><div><b>Nguoi ban hang</b><p class="muted">Ky, ghi ro ho ten</p></div></div>
+    </div>`;
+    const logo=document.getElementById('invoiceLogo');
+    let printed=false;
+    const doPrint=()=>{if(printed)return;printed=true;window.print();};
+    if(!logo||logo.complete) doPrint(); else {logo.onload=doPrint;logo.onerror=doPrint;setTimeout(doPrint,1200);}
 }
 
 function loadJobs(){

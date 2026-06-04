@@ -11,6 +11,8 @@
 error_log
 bot_log.txt
 storage/logs/
+storage/private/*
+!storage/private/.htaccess
 *.log
 
 # User uploads and generated media

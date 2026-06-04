@@ -20,6 +20,9 @@
     RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
     RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
 
+    # Always route the public BCT report URL to the isolated portal.
+    RewriteRule ^api_baocao_bct\.php$ bct_portal.php [L]
+
     # ---- 3. GIỮ NGUYÊN store/ (code cũ vẫn chạy) ----
     RewriteRule ^store/ - [L]
     RewriteRule ^config/ - [L]

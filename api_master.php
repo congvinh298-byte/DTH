@@ -181,6 +181,17 @@ function money_int($value): int
     return max(0, (int)(preg_replace('/[^\d]/', '', (string)$value) ?: 0));
 }
 
+function signed_money_int($value): int
+{
+    if (is_numeric($value)) {
+        return (int)round((float)$value);
+    }
+    $raw = trim((string)$value);
+    $negative = strpos($raw, '-') !== false;
+    $amount = (int)(preg_replace('/[^\d]/', '', $raw) ?: 0);
+    return $negative ? -$amount : $amount;
+}
+
 function fmt_money($amount): string
 {
     return number_format((float)$amount, 0, ',', '.') . ' VND';
@@ -380,6 +391,9 @@ function ensure_core_schema(PDO $pdo)
         telegram_chat_id VARCHAR(60) NULL,
         telegram_username VARCHAR(150) NULL,
         is_active TINYINT(1) NOT NULL DEFAULT 1,
+        member_rank VARCHAR(50) NOT NULL DEFAULT 'Thanh vien',
+        total_spent BIGINT NOT NULL DEFAULT 0,
+        loyalty_points INT NOT NULL DEFAULT 0,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NULL DEFAULT NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
@@ -619,12 +633,79 @@ function ensure_core_schema(PDO $pdo)
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
         invoice_code VARCHAR(80) NOT NULL UNIQUE,
         order_id INT NULL,
+        customer_id INT NULL,
         customer_name VARCHAR(150) NULL,
         customer_phone VARCHAR(30) NULL,
+        customer_tax_code VARCHAR(50) NULL,
+        customer_address TEXT NULL,
         product_name VARCHAR(255) NULL,
+        quantity INT NOT NULL DEFAULT 1,
+        unit_gross_amount BIGINT NOT NULL DEFAULT 0,
+        gross_before_discount BIGINT NOT NULL DEFAULT 0,
+        discount_amount BIGINT NOT NULL DEFAULT 0,
+        promo_code VARCHAR(80) NULL,
+        gift_name VARCHAR(500) NULL,
+        invoice_date DATE NULL,
+        subtotal_amount BIGINT NOT NULL DEFAULT 0,
+        vat_amount BIGINT NOT NULL DEFAULT 0,
+        vat_rate DECIMAL(5,2) NOT NULL DEFAULT 10.00,
+        adjustment_amount BIGINT NOT NULL DEFAULT 0,
+        total_amount BIGINT NOT NULL DEFAULT 0,
         total_price INT NOT NULL DEFAULT 0,
+        company_name VARCHAR(255) NULL,
+        company_tax_code VARCHAR(50) NULL,
+        company_address TEXT NULL,
+        company_phone VARCHAR(50) NULL,
+        company_email VARCHAR(190) NULL,
+        company_website VARCHAR(255) NULL,
+        loyalty_points_earned INT NOT NULL DEFAULT 0,
+        payment_method VARCHAR(40) NULL,
+        note TEXT NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'active',
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_invoices_order (order_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS input_invoices (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        invoice_number VARCHAR(120) NOT NULL,
+        invoice_series VARCHAR(80) NOT NULL DEFAULT '',
+        invoice_date DATE NOT NULL,
+        seller_name VARCHAR(255) NOT NULL,
+        seller_tax_code VARCHAR(50) NOT NULL,
+        subtotal_amount BIGINT NOT NULL DEFAULT 0,
+        vat_amount BIGINT NOT NULL DEFAULT 0,
+        adjustment_amount BIGINT NOT NULL DEFAULT 0,
+        total_amount BIGINT NOT NULL DEFAULT 0,
+        currency VARCHAR(10) NOT NULL DEFAULT 'VND',
+        pdf_path VARCHAR(500) NOT NULL,
+        pdf_original_name VARCHAR(255) NOT NULL,
+        pdf_sha256 CHAR(64) NOT NULL,
+        pdf_size BIGINT NOT NULL DEFAULT 0,
+        status VARCHAR(30) NOT NULL DEFAULT 'active',
+        note TEXT NULL,
+        uploaded_by VARCHAR(150) NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NULL DEFAULT NULL,
+        UNIQUE KEY uniq_input_invoice_document (seller_tax_code, invoice_series, invoice_number),
+        UNIQUE KEY uniq_input_invoice_pdf (pdf_sha256),
+        INDEX idx_input_invoice_date (invoice_date),
+        INDEX idx_input_invoice_status (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS bct_report_access_log (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(190) NULL,
+        auth_mode VARCHAR(30) NULL,
+        period_from DATE NULL,
+        period_to DATE NULL,
+        response_sha256 CHAR(64) NULL,
+        client_ip VARCHAR(64) NULL,
+        user_agent VARCHAR(500) NULL,
+        success TINYINT(1) NOT NULL DEFAULT 0,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_bct_access_created (created_at),
+        INDEX idx_bct_access_user (username)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     foreach ([
@@ -638,6 +719,7 @@ function ensure_core_schema(PDO $pdo)
             'is_active' => 'TINYINT(1) NOT NULL DEFAULT 1',
             'member_rank' => "VARCHAR(50) NOT NULL DEFAULT 'Thành viên'",
             'total_spent' => 'INT NOT NULL DEFAULT 0',
+            'loyalty_points' => 'INT NOT NULL DEFAULT 0',
             'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
             'updated_at' => 'DATETIME NULL DEFAULT NULL',
         ],
@@ -799,10 +881,67 @@ function ensure_core_schema(PDO $pdo)
         'invoices' => [
             'invoice_code' => 'VARCHAR(80) NULL',
             'order_id' => 'INT NULL',
+            'customer_id' => 'INT NULL',
             'customer_name' => 'VARCHAR(150) NULL',
             'customer_phone' => 'VARCHAR(30) NULL',
+            'customer_tax_code' => 'VARCHAR(50) NULL',
+            'customer_address' => 'TEXT NULL',
             'product_name' => 'VARCHAR(255) NULL',
+            'quantity' => 'INT NOT NULL DEFAULT 1',
+            'unit_gross_amount' => 'BIGINT NOT NULL DEFAULT 0',
+            'gross_before_discount' => 'BIGINT NOT NULL DEFAULT 0',
+            'discount_amount' => 'BIGINT NOT NULL DEFAULT 0',
+            'promo_code' => 'VARCHAR(80) NULL',
+            'gift_name' => 'VARCHAR(500) NULL',
+            'invoice_date' => 'DATE NULL',
+            'subtotal_amount' => 'BIGINT NOT NULL DEFAULT 0',
+            'vat_amount' => 'BIGINT NOT NULL DEFAULT 0',
+            'vat_rate' => 'DECIMAL(5,2) NOT NULL DEFAULT 10.00',
+            'adjustment_amount' => 'BIGINT NOT NULL DEFAULT 0',
+            'total_amount' => 'BIGINT NOT NULL DEFAULT 0',
             'total_price' => 'INT NOT NULL DEFAULT 0',
+            'company_name' => 'VARCHAR(255) NULL',
+            'company_tax_code' => 'VARCHAR(50) NULL',
+            'company_address' => 'TEXT NULL',
+            'company_phone' => 'VARCHAR(50) NULL',
+            'company_email' => 'VARCHAR(190) NULL',
+            'company_website' => 'VARCHAR(255) NULL',
+            'loyalty_points_earned' => 'INT NOT NULL DEFAULT 0',
+            'payment_method' => 'VARCHAR(40) NULL',
+            'note' => 'TEXT NULL',
+            'status' => "VARCHAR(30) NOT NULL DEFAULT 'active'",
+        ],
+        'input_invoices' => [
+            'invoice_number' => 'VARCHAR(120) NOT NULL',
+            'invoice_series' => "VARCHAR(80) NOT NULL DEFAULT ''",
+            'invoice_date' => 'DATE NOT NULL',
+            'seller_name' => 'VARCHAR(255) NOT NULL',
+            'seller_tax_code' => 'VARCHAR(50) NOT NULL',
+            'subtotal_amount' => 'BIGINT NOT NULL DEFAULT 0',
+            'vat_amount' => 'BIGINT NOT NULL DEFAULT 0',
+            'adjustment_amount' => 'BIGINT NOT NULL DEFAULT 0',
+            'total_amount' => 'BIGINT NOT NULL DEFAULT 0',
+            'currency' => "VARCHAR(10) NOT NULL DEFAULT 'VND'",
+            'pdf_path' => 'VARCHAR(500) NOT NULL',
+            'pdf_original_name' => 'VARCHAR(255) NOT NULL',
+            'pdf_sha256' => 'CHAR(64) NOT NULL',
+            'pdf_size' => 'BIGINT NOT NULL DEFAULT 0',
+            'status' => "VARCHAR(30) NOT NULL DEFAULT 'active'",
+            'note' => 'TEXT NULL',
+            'uploaded_by' => 'VARCHAR(150) NULL',
+            'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
+            'updated_at' => 'DATETIME NULL DEFAULT NULL',
+        ],
+        'bct_report_access_log' => [
+            'username' => 'VARCHAR(190) NULL',
+            'auth_mode' => 'VARCHAR(30) NULL',
+            'period_from' => 'DATE NULL',
+            'period_to' => 'DATE NULL',
+            'response_sha256' => 'CHAR(64) NULL',
+            'client_ip' => 'VARCHAR(64) NULL',
+            'user_agent' => 'VARCHAR(500) NULL',
+            'success' => 'TINYINT(1) NOT NULL DEFAULT 0',
+            'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
         ],
     ] as $table => $columns) {
         foreach ($columns as $column => $definition) {
@@ -812,6 +951,7 @@ function ensure_core_schema(PDO $pdo)
 
     add_index_if_missing($pdo, 'products', 'idx_products_category', '(category)');
     add_index_if_missing($pdo, 'products', 'idx_products_price', '(price)');
+    add_index_if_missing($pdo, 'users', 'idx_users_phone', '(phone)');
     add_index_if_missing($pdo, 'orders', 'idx_orders_customer_phone', '(customer_phone)');
     add_index_if_missing($pdo, 'orders', 'idx_orders_status', '(status)');
     add_index_if_missing($pdo, 'job_posts', 'idx_job_posts_customer_phone', '(customer_phone)');
@@ -821,10 +961,15 @@ function ensure_core_schema(PDO $pdo)
     add_index_if_missing($pdo, 'job_posts', 'idx_job_posts_completed', '(completed_at)');
     add_index_if_missing($pdo, 'qr_coupons', 'idx_qr_coupons_code_lookup', '(code)');
     add_index_if_missing($pdo, 'vouchers', 'idx_vouchers_code_lookup', '(code)');
+    add_index_if_missing($pdo, 'invoices', 'idx_invoices_customer', '(customer_id)');
     add_index_if_missing($pdo, 'worker_profiles', 'idx_worker_profiles_blocked', '(is_receive_blocked, payment_blocked)');
     add_index_if_missing($pdo, 'worker_profiles', 'idx_worker_profiles_role', '(role, is_admin)');
     add_index_if_missing($pdo, 'worker_payments', 'idx_worker_payments_worker', '(worker_id)');
     add_index_if_missing($pdo, 'worker_payments', 'idx_worker_payments_status', '(status)');
+    add_index_if_missing($pdo, 'input_invoices', 'idx_input_invoice_date', '(invoice_date)');
+    add_index_if_missing($pdo, 'input_invoices', 'idx_input_invoice_status', '(status)');
+    add_index_if_missing($pdo, 'bct_report_access_log', 'idx_bct_access_created', '(created_at)');
+    add_index_if_missing($pdo, 'bct_report_access_log', 'idx_bct_access_user', '(username)');
 
     $pdo->exec("UPDATE job_pricing SET paid_amount = platform_fee, paid_at = COALESCE(paid_at, created_at)
         WHERE payment_status = 'paid' AND paid_amount = 0");
@@ -1422,14 +1567,25 @@ function settle_worker_payment(PDO $pdo, int $workerId, int $receivedAmount, str
     ];
 }
 
-function send_worker_debt_notice(PDO $pdo, int $workerId, string $reason = 'Nhac phi nen tang'): array
+function send_worker_debt_notice(PDO $pdo, int $workerId, string $reason = 'Nhac phi nen tang', bool $sendZeroBalance = false): array
 {
     $debt = worker_fee_debt($pdo, $workerId);
-    if ($debt <= 0) {
+    if ($debt <= 0 && !$sendZeroBalance) {
         return ['ok' => true, 'message' => 'Khong co cong no.', 'debt' => 0];
     }
     $profile = get_worker_profile($pdo, $workerId);
     $name = (string)($profile['telegram_name'] ?? "Tho {$workerId}");
+    if ($debt <= 0) {
+        $text = "<b>{$reason}</b>\n"
+            . "Tho: " . esc_html($name) . " ({$workerId})\n"
+            . "Phi nen tang can nop: <b>0 VND</b>\n"
+            . "Ban khong co cong no va van tiep tuc nhan ca binh thuong.";
+        $response = tg_send('worker', (string)$workerId, $text);
+        if (!empty($response['ok'])) {
+            $pdo->prepare('UPDATE worker_profiles SET last_fee_notice_at = NOW(), updated_at = NOW() WHERE telegram_user_id = ?')->execute([$workerId]);
+        }
+        return ['ok' => !empty($response['ok']), 'message' => !empty($response['ok']) ? 'Da gui thong bao 0 VND.' : 'Khong gui duoc thong bao.', 'debt' => 0];
+    }
     $code = worker_payment_code($workerId);
     $caption = "<b>{$reason}</b>\n"
         . "Tho: " . esc_html($name) . " ({$workerId})\n"
@@ -1455,10 +1611,7 @@ function notify_all_worker_debts(PDO $pdo, string $reason = 'Nhac phi nen tang')
     foreach ($stmt->fetchAll() as $row) {
         $workerId = (int)$row['telegram_user_id'];
         $debt = worker_fee_debt($pdo, $workerId);
-        if ($debt <= 0) {
-            continue;
-        }
-        $result = send_worker_debt_notice($pdo, $workerId, $reason);
+        $result = send_worker_debt_notice($pdo, $workerId, $reason, true);
         $totalDebt += $debt;
         if ($result['ok']) {
             $sent++;
@@ -1986,7 +2139,11 @@ function complete_worker_job(PDO $pdo, int $jobId, int $workerId, string $worker
     if ($groupChat !== '') {
         tg_send('worker', $groupChat, "Ca #{$jobId} da hoan thanh boi {$workerName}. Phi ca nay: " . fmt_money((int)($pricing['platform_fee'] ?? 0)) . ". Tong no phi den hien tai: " . fmt_money($cumulativeDebt));
     }
-    send_worker_debt_notice($pdo, $workerId, "Phi nen tang cong don sau ca #{$jobId}");
+    tg_send('worker', (string)$workerId, "<b>PHI NEN TANG CONG DON</b>\n"
+        . "Ca vua hoan thanh: #{$jobId}\n"
+        . "Phi ca nay: <b>" . fmt_money((int)($pricing['platform_fee'] ?? 0)) . "</b>\n"
+        . "Tong phi nen tang den hien tai: <b>" . fmt_money($cumulativeDebt) . "</b>\n"
+        . "Thong bao nop phi va QR thanh toan se duoc gui rieng vao 06:00 sang thu 2.");
     return ['ok' => true, 'message' => "Da danh dau ca #{$jobId} hoan thanh. Tong no phi nen tang: " . fmt_money($cumulativeDebt) . '.'];
 }
 
@@ -2225,6 +2382,367 @@ function apply_voucher_if_valid(PDO $pdo, string $code, int $subtotal): array
     $amount = min($subtotal, max(0, $amount));
     $pdo->prepare('UPDATE vouchers SET used_count = used_count + 1 WHERE id = ?')->execute([(int)$voucher['id']]);
     return ['amount' => $amount, 'voucher_id' => (int)$voucher['id']];
+}
+
+function invoice_company_profile(): array
+{
+    return [
+        'name' => app_env('COMPANY_NAME', app_env('VNB_HOLDER', app_env('BCT_COMPANY_NAME', 'CONG TY TNHH MTV DIEN TU HIEU'))),
+        'tax_code' => app_env('COMPANY_TAX_CODE', app_env('BCT_TAX_CODE', '1402228630')),
+        'address' => app_env('COMPANY_ADDRESS', '166, Ap Binh Thanh 1, Xa Lap Vo, Tinh Dong Thap'),
+        'phone' => app_env('COMPANY_PHONE', '0979.553.289'),
+        'email' => app_env('COMPANY_EMAIL', ''),
+        'website' => app_env('COMPANY_WEBSITE', app_env('BCT_WEBSITE', app_env('APP_URL', 'https://dienmayhieu.com'))),
+    ];
+}
+
+function loyalty_points_for_amount(int $amount): int
+{
+    $vndPerPoint = max(1, (int)app_env('LOYALTY_VND_PER_POINT', '10000'));
+    return max(0, (int)floor($amount / $vndPerPoint));
+}
+
+function loyalty_member_rank(int $points): string
+{
+    if ($points >= 1000) {
+        return 'Kim cuong';
+    }
+    if ($points >= 500) {
+        return 'Vang';
+    }
+    if ($points >= 100) {
+        return 'Bac';
+    }
+    return 'Thanh vien';
+}
+
+function retail_customer_row(array $row): array
+{
+    foreach (['id', 'is_active', 'total_spent', 'loyalty_points'] as $field) {
+        $row[$field] = (int)($row[$field] ?? 0);
+    }
+    return $row;
+}
+
+function retail_customer_by_phone(PDO $pdo, string $phone, bool $lock = false): ?array
+{
+    $phone = digits_only($phone);
+    if (strlen($phone) < 8) {
+        return null;
+    }
+    $suffix = $lock ? ' FOR UPDATE' : '';
+    $stmt = $pdo->prepare('SELECT * FROM users WHERE phone = ? ORDER BY id ASC LIMIT 1' . $suffix);
+    $stmt->execute([$phone]);
+    $row = $stmt->fetch();
+    return $row ? retail_customer_row($row) : null;
+}
+
+function reward_retail_customer(PDO $pdo, string $fullname, string $phone, int $saleAmount): array
+{
+    $fullname = clean_string($fullname, 150);
+    $phone = digits_only($phone);
+    if ($fullname === '' || strlen($phone) < 8) {
+        throw new InvalidArgumentException('Ban hang tich diem can ten khach va so dien thoai hop le.');
+    }
+
+    $earned = loyalty_points_for_amount($saleAmount);
+    $customer = retail_customer_by_phone($pdo, $phone, true);
+    if ($customer) {
+        $newTotalSpent = (int)$customer['total_spent'] + $saleAmount;
+        $newPoints = (int)$customer['loyalty_points'] + $earned;
+        update_compat($pdo, 'users', [
+            'fullname' => $fullname,
+            'is_active' => 1,
+            'member_rank' => loyalty_member_rank($newPoints),
+            'total_spent' => $newTotalSpent,
+            'loyalty_points' => $newPoints,
+        ], 'id = ?', [(int)$customer['id']], ['updated_at' => 'NOW()']);
+        $customer = retail_customer_by_phone($pdo, $phone, false) ?: $customer;
+    } else {
+        $customerId = insert_compat($pdo, 'users', [
+            'role' => 'buyer',
+            'fullname' => $fullname,
+            'phone' => $phone,
+            'is_active' => 1,
+            'member_rank' => loyalty_member_rank($earned),
+            'total_spent' => $saleAmount,
+            'loyalty_points' => $earned,
+        ], ['created_at' => 'NOW()']);
+        $customer = retail_customer_by_phone($pdo, $phone, false) ?: [
+            'id' => $customerId,
+            'fullname' => $fullname,
+            'phone' => $phone,
+            'member_rank' => loyalty_member_rank($earned),
+            'total_spent' => $saleAmount,
+            'loyalty_points' => $earned,
+        ];
+    }
+
+    $customer = retail_customer_row($customer);
+    $customer['points_earned'] = $earned;
+    return $customer;
+}
+
+function decrement_retail_stock(PDO $pdo, array $input, int $quantity)
+{
+    $productId = (int)($input['product_id'] ?? 0);
+    $source = clean_string($input['product_source'] ?? '', 30);
+    if ($productId <= 0 || $quantity <= 0) {
+        return;
+    }
+    if ($source === 'product' && table_exists($pdo, 'products')) {
+        $columns = legacy_product_columns($pdo);
+        $stockColumn = $columns['stock'] ?? null;
+        if ($stockColumn !== null) {
+            $updated = column_exists($pdo, 'products', 'updated_at') ? ', updated_at = NOW()' : '';
+            $pdo->prepare('UPDATE products SET ' . db_ident($stockColumn) . ' = GREATEST(' . db_ident($stockColumn) . ' - ?, 0)' . $updated . ' WHERE id = ?')
+                ->execute([$quantity, $productId]);
+        }
+        return;
+    }
+    if ($source === 'marketplace' && table_exists($pdo, 'marketplace_products') && column_exists($pdo, 'marketplace_products', 'stock')) {
+        $updated = column_exists($pdo, 'marketplace_products', 'updated_at') ? ', updated_at = NOW()' : '';
+        $pdo->prepare('UPDATE marketplace_products SET stock = GREATEST(stock - ?, 0)' . $updated . ' WHERE id = ?')
+            ->execute([$quantity, $productId]);
+    }
+}
+
+function manual_invoice_discount(PDO $pdo, string $rawCode, int $grossAmount, bool $consume = false): array
+{
+    $code = strtoupper(clean_string($rawCode, 80));
+    if ($code === '') {
+        return ['code' => '', 'source' => 'none', 'label' => 'Khong ap ma', 'amount' => 0];
+    }
+
+    $suffix = $consume ? ' FOR UPDATE' : '';
+    $stmt = $pdo->prepare('SELECT * FROM vouchers WHERE code = ? LIMIT 1' . $suffix);
+    $stmt->execute([$code]);
+    $voucher = $stmt->fetch();
+    if ($voucher) {
+        $maxUses = max(0, (int)($voucher['max_uses'] ?? $voucher['usage_limit'] ?? 0));
+        $used = max(0, (int)($voucher['used_count'] ?? 0));
+        $active = !array_key_exists('is_active', $voucher) || (int)$voucher['is_active'] === 1;
+        $expires = (string)($voucher['expires_at'] ?? '');
+        if (!$active || $maxUses <= 0 || $used >= $maxUses || ($expires !== '' && strtotime($expires) !== false && strtotime($expires) < time())) {
+            throw new DomainException('Ma khuyen mai da het han hoac het luot su dung.');
+        }
+        $percent = max(0, min(100, (int)($voucher['discount_percent'] ?? 0)));
+        $fixed = money_int($voucher['discount_amount'] ?? 0);
+        if ($fixed <= 0 && $percent <= 0 && isset($voucher['type'], $voucher['value'])) {
+            if ((string)$voucher['type'] === 'percent') {
+                $percent = max(0, min(100, (int)$voucher['value']));
+            } else {
+                $fixed = money_int($voucher['value']);
+            }
+        }
+        $amount = $percent > 0 ? max($fixed, (int)round($grossAmount * $percent / 100)) : $fixed;
+        $amount = min($grossAmount, max(0, $amount));
+        if ($consume) {
+            $pdo->prepare('UPDATE vouchers SET used_count = used_count + 1 WHERE id = ?')->execute([(int)$voucher['id']]);
+        }
+        return [
+            'code' => $code,
+            'source' => 'voucher',
+            'label' => $percent > 0 ? "Giam {$percent}%" : 'Giam tien truc tiep',
+            'amount' => $amount,
+        ];
+    }
+
+    $stmt = $pdo->prepare('SELECT * FROM qr_coupons WHERE code = ? LIMIT 1' . $suffix);
+    $stmt->execute([$code]);
+    $coupon = $stmt->fetch();
+    if (!$coupon) {
+        throw new DomainException('Khong tim thay ma khuyen mai.');
+    }
+    $quantityLeft = (int)($coupon['quantity_left'] ?? 0);
+    if ((int)($coupon['is_used'] ?? 0) === 1 || $quantityLeft <= 0) {
+        throw new DomainException('Ma khuyen mai da duoc su dung hoac het luot.');
+    }
+    $type = strtolower((string)($coupon['type'] ?? 'discount'));
+    $value = money_int($coupon['discount_amount'] ?? $coupon['value'] ?? 0);
+    $percent = in_array($type, ['percent', 'prize'], true) ? max(0, min(100, (int)($coupon['value'] ?? 0))) : 0;
+    $amount = $percent > 0 ? (int)round($grossAmount * $percent / 100) : $value;
+    $amount = min($grossAmount, max(0, $amount));
+    if ($consume) {
+        $pdo->prepare('UPDATE qr_coupons
+            SET is_used = IF(quantity_left <= 1, 1, is_used), quantity_left = GREATEST(quantity_left - 1, 0), used_by = ?, order_ref = ?
+            WHERE id = ?')->execute(['admin_invoice', 'manual_invoice', (int)$coupon['id']]);
+    }
+    return [
+        'code' => $code,
+        'source' => 'promo',
+        'label' => $percent > 0 ? "Giam {$percent}%" : 'Giam tien truc tiep',
+        'amount' => $amount,
+    ];
+}
+
+function manual_invoice_calculation(PDO $pdo, array $input, bool $consumeDiscount = false): array
+{
+    $quantity = max(1, min(10000, (int)($input['quantity'] ?? 1)));
+    $unitGross = money_int($input['unit_gross_amount'] ?? $input['gross_amount'] ?? 0);
+    if ($unitGross <= 0) {
+        throw new InvalidArgumentException('Gia da gom VAT phai lon hon 0.');
+    }
+    $grossBeforeDiscount = $unitGross * $quantity;
+    $discount = manual_invoice_discount($pdo, (string)($input['promo_code'] ?? ''), $grossBeforeDiscount, $consumeDiscount);
+    $total = max(0, $grossBeforeDiscount - (int)$discount['amount']);
+    $subtotal = (int)round($total * 100 / 110);
+    $vat = $total - $subtotal;
+    return [
+        'quantity' => $quantity,
+        'unit_gross_amount' => $unitGross,
+        'gross_before_discount' => $grossBeforeDiscount,
+        'discount' => $discount,
+        'discount_amount' => (int)$discount['amount'],
+        'subtotal_amount' => $subtotal,
+        'vat_rate' => 10,
+        'vat_amount' => $vat,
+        'total_amount' => $total,
+        'loyalty_points_earned' => loyalty_points_for_amount($total),
+    ];
+}
+
+function sales_invoice_row(array $row): array
+{
+    foreach ([
+        'id', 'order_id', 'customer_id', 'quantity', 'unit_gross_amount', 'gross_before_discount', 'discount_amount',
+        'subtotal_amount', 'vat_amount', 'adjustment_amount', 'total_amount', 'total_price', 'loyalty_points_earned',
+        'customer_loyalty_points', 'customer_total_spent',
+    ] as $field) {
+        $row[$field] = (int)($row[$field] ?? 0);
+    }
+    $row['vat_rate'] = (float)($row['vat_rate'] ?? 10);
+    $profile = invoice_company_profile();
+    foreach ($profile as $key => $value) {
+        $field = 'company_' . $key;
+        if (empty($row[$field])) {
+            $row[$field] = $value;
+        }
+    }
+    return $row;
+}
+
+function admin_sales_invoice_rows(PDO $pdo, int $limit = 300): array
+{
+    $limit = max(1, min(1000, $limit));
+    $stmt = $pdo->query("SELECT i.*, u.loyalty_points AS customer_loyalty_points, u.total_spent AS customer_total_spent,
+        u.member_rank AS customer_member_rank
+        FROM invoices i LEFT JOIN users u ON u.id = i.customer_id
+        WHERE i.status = 'active' ORDER BY i.id DESC LIMIT {$limit}");
+    return array_map('sales_invoice_row', $stmt->fetchAll());
+}
+
+function create_manual_sales_invoice(PDO $pdo, array $input, bool $rewardCustomer = false): array
+{
+    $productName = clean_string($input['product_name'] ?? '', 255);
+    if ($productName === '') {
+        throw new InvalidArgumentException('Ten hang hoa khong duoc de trong.');
+    }
+    $customerName = clean_string($input['customer_name'] ?? ($rewardCustomer ? '' : 'Khach le'), 150);
+    $customerPhone = digits_only((string)($input['customer_phone'] ?? ''));
+    $customerTaxCode = clean_string($input['customer_tax_code'] ?? '', 50);
+    $customerAddress = clean_string($input['customer_address'] ?? '', 1000);
+    $giftName = clean_string($input['gift_name'] ?? '', 500);
+    $note = clean_string($input['note'] ?? '', 2000);
+    $paymentMethod = clean_string($input['payment_method'] ?? 'cash', 40);
+    $profile = invoice_company_profile();
+    $customer = null;
+    $orderId = null;
+
+    $pdo->beginTransaction();
+    try {
+        $calculation = manual_invoice_calculation($pdo, $input, true);
+        if ($rewardCustomer) {
+            $customer = reward_retail_customer($pdo, $customerName, $customerPhone, (int)$calculation['total_amount']);
+            $orderId = insert_compat($pdo, 'orders', [
+                'order_code' => next_order_code(),
+                'customer_name' => $customerName,
+                'customer_phone' => $customerPhone,
+                'product_id' => (int)($input['product_id'] ?? 0),
+                'product_name' => $productName,
+                'total_price' => $calculation['total_amount'],
+                'total' => $calculation['total_amount'],
+                'subtotal' => $calculation['gross_before_discount'],
+                'discount' => $calculation['discount_amount'],
+                'status' => order_status($pdo, 'confirmed'),
+                'payment_method' => $paymentMethod,
+                'payment_status' => 'paid',
+                'coupon_code' => $calculation['discount']['code'],
+                'voucher_code' => $calculation['discount']['code'],
+                'note' => $note,
+                'confirmed_by' => 'admin_pos',
+            ], ['created_at' => 'NOW()', 'confirmed_at' => 'NOW()']);
+            if (table_exists($pdo, 'order_items')) {
+                insert_compat($pdo, 'order_items', [
+                    'order_id' => $orderId,
+                    'product_id' => (int)($input['product_id'] ?? 0),
+                    'product_name' => $productName,
+                    'product_type' => clean_string($input['product_source'] ?? 'input', 30),
+                    'quantity' => $calculation['quantity'],
+                    'price' => $calculation['unit_gross_amount'],
+                    'subtotal' => $calculation['gross_before_discount'],
+                ], ['created_at' => 'NOW()']);
+            }
+            decrement_retail_stock($pdo, $input, (int)$calculation['quantity']);
+        }
+        $invoiceCode = 'HD-' . date('Ymd-His') . '-' . strtoupper(bin2hex(random_bytes(4)));
+        $invoiceId = insert_compat($pdo, 'invoices', [
+            'invoice_code' => $invoiceCode,
+            'order_id' => $orderId,
+            'customer_id' => $customer['id'] ?? null,
+            'customer_name' => $customerName !== '' ? $customerName : 'Khach le',
+            'customer_phone' => $customerPhone,
+            'customer_tax_code' => $customerTaxCode,
+            'customer_address' => $customerAddress,
+            'product_name' => $productName,
+            'quantity' => $calculation['quantity'],
+            'unit_gross_amount' => $calculation['unit_gross_amount'],
+            'gross_before_discount' => $calculation['gross_before_discount'],
+            'discount_amount' => $calculation['discount_amount'],
+            'promo_code' => $calculation['discount']['code'],
+            'gift_name' => $giftName,
+            'invoice_date' => date('Y-m-d'),
+            'subtotal_amount' => $calculation['subtotal_amount'],
+            'vat_amount' => $calculation['vat_amount'],
+            'vat_rate' => 10,
+            'adjustment_amount' => 0,
+            'total_amount' => $calculation['total_amount'],
+            'total_price' => $calculation['total_amount'],
+            'company_name' => $profile['name'],
+            'company_tax_code' => $profile['tax_code'],
+            'company_address' => $profile['address'],
+            'company_phone' => $profile['phone'],
+            'company_email' => $profile['email'],
+            'company_website' => $profile['website'],
+            'loyalty_points_earned' => $rewardCustomer ? $calculation['loyalty_points_earned'] : 0,
+            'payment_method' => $paymentMethod,
+            'note' => $note,
+            'status' => 'active',
+        ], ['created_at' => 'NOW()']);
+        insert_compat($pdo, 'finances', [
+            'type' => 'sales_invoice',
+            'amount' => $calculation['total_amount'],
+            'source_type' => 'invoice',
+            'source_id' => $invoiceId,
+            'note' => ($rewardCustomer ? 'Retail POS sale invoice ' : 'Manual sales invoice ') . $invoiceCode,
+        ], ['created_at' => 'NOW()']);
+        $pdo->commit();
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $e;
+    }
+
+    $stmt = $pdo->prepare('SELECT * FROM invoices WHERE id = ? LIMIT 1');
+    $stmt->execute([$invoiceId]);
+    $invoice = sales_invoice_row($stmt->fetch() ?: ['id' => $invoiceId]);
+    if ($customer) {
+        $invoice['customer_loyalty_points'] = (int)($customer['loyalty_points'] ?? 0);
+        $invoice['customer_total_spent'] = (int)($customer['total_spent'] ?? 0);
+        $invoice['customer_member_rank'] = (string)($customer['member_rank'] ?? 'Thanh vien');
+    }
+    return $invoice;
 }
 
 function get_order_row(PDO $pdo, int $orderId)
@@ -2693,19 +3211,26 @@ function send_daily_business_report(PDO $pdo): array
 {
     $stats = admin_stats($pdo);
     $paidToday = 0;
+    $platformFeeToday = 0;
     if (table_exists($pdo, 'worker_payments')) {
         $paidToday = (int)$pdo->query("SELECT COALESCE(SUM(applied_amount),0) FROM worker_payments WHERE status = 'confirmed' AND DATE(confirmed_at) = CURDATE()")->fetchColumn();
+    }
+    if (table_exists($pdo, 'job_pricing') && table_exists($pdo, 'job_posts')) {
+        $platformFeeToday = (int)$pdo->query("SELECT COALESCE(SUM(jp.platform_fee),0)
+            FROM job_pricing jp JOIN job_posts j ON j.id = jp.job_id
+            WHERE DATE(j.completed_at) = CURDATE()")->fetchColumn();
     }
     $text = "<b>BAO CAO NGAY " . date('d/m/Y') . "</b>\n"
         . "Don hang: " . (int)$stats['today_orders'] . "\n"
         . "Doanh thu don hang: " . fmt_money((int)$stats['today_revenue']) . "\n"
         . "Ca goi tho hom nay: " . (int)$stats['today_jobs'] . "\n"
         . "Tong tho: " . (int)($stats['total_workers'] ?? 0) . "\n"
+        . "Phi nen tang phat sinh hom nay: " . fmt_money($platformFeeToday) . "\n"
         . "Phi nen tang da thu hom nay: " . fmt_money($paidToday) . "\n"
         . "Tong no phi nen tang: " . fmt_money((int)$stats['unpaid_total']);
     $chatId = telegram_chat('sales');
     $response = $chatId !== '' ? tg_send('sales', $chatId, $text) : ['ok' => false];
-    return ['sent' => !empty($response['ok']), 'stats' => $stats, 'paid_today' => $paidToday];
+    return ['sent' => !empty($response['ok']), 'stats' => $stats, 'platform_fee_today' => $platformFeeToday, 'paid_today' => $paidToday];
 }
 
 function create_job_action(array $input): array
@@ -2840,10 +3365,10 @@ function legacy_products_for_store(PDO $pdo, string $keyword = '', string $sort 
             'price' => $price,
             'gia_ban_fm' => fmt_money($price),
             'stock_quantity' => (int)($row['stock_quantity'] ?? 0),
-            'image' => (string)($row['image_url'] ?? ''),
-            'image_url' => (string)($row['image_url'] ?? ''),
+            'image' => (string)$row['image_url'] ?? '',
+            'image_url' => (string)$row['image_url'] ?? '',
             'category' => (string)($row['category'] ?? 'Store'),
-            'created_at' => (string)($row['created_at'] ?? ''),
+            'created_at' => (string)$row['created_at'] ?? '',
             'src' => 'product',
         ];
     }
@@ -2893,7 +3418,7 @@ function marketplace_products_for_store(PDO $pdo, string $keyword = '', string $
             'image' => $image,
             'image_url' => $image,
             'category' => (string)($row['type'] ?? 'Marketplace'),
-            'created_at' => (string)($row['created_at'] ?? ''),
+            'created_at' => (string)$row['created_at'] ?? '',
             'src' => 'marketplace',
         ];
     }
@@ -3086,6 +3611,427 @@ function admin_worker_payments(PDO $pdo, int $limit = 200): array
         FROM worker_payments p LEFT JOIN worker_profiles wp ON wp.telegram_user_id = p.worker_id
         ORDER BY p.id DESC LIMIT {$limit}");
     return $stmt->fetchAll();
+}
+
+function bct_validate_period(string $from, string $to): array
+{
+    $from = trim($from);
+    $to = trim($to);
+    $start = DateTimeImmutable::createFromFormat('!Y-m-d', $from);
+    $startErrors = DateTimeImmutable::getLastErrors();
+    $end = DateTimeImmutable::createFromFormat('!Y-m-d', $to);
+    $endErrors = DateTimeImmutable::getLastErrors();
+    $startInvalid = !$start || ($startErrors !== false && ((int)$startErrors['warning_count'] > 0 || (int)$startErrors['error_count'] > 0));
+    $endInvalid = !$end || ($endErrors !== false && ((int)$endErrors['warning_count'] > 0 || (int)$endErrors['error_count'] > 0));
+    if ($startInvalid || $endInvalid || $start->format('Y-m-d') !== $from || $end->format('Y-m-d') !== $to) {
+        throw new InvalidArgumentException('Ky bao cao phai dung dinh dang YYYY-MM-DD.');
+    }
+    if ($start > $end) {
+        throw new InvalidArgumentException('Ngay bat dau khong duoc sau ngay ket thuc.');
+    }
+    $maxDays = max(1, (int)app_env('BCT_REPORT_MAX_DAYS', '370'));
+    $days = (int)$start->diff($end)->format('%a') + 1;
+    if ($days > $maxDays) {
+        throw new InvalidArgumentException("Ky bao cao toi da {$maxDays} ngay.");
+    }
+    return [$start->format('Y-m-d'), $end->format('Y-m-d')];
+}
+
+function input_invoice_storage_root(): string
+{
+    $root = __DIR__ . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'private' . DIRECTORY_SEPARATOR . 'bct-invoices';
+    if (!is_dir($root) && !mkdir($root, 0700, true) && !is_dir($root)) {
+        throw new RuntimeException('Khong tao duoc thu muc luu hoa don dau vao.');
+    }
+    $real = realpath($root);
+    if ($real === false) {
+        throw new RuntimeException('Khong xac dinh duoc thu muc luu hoa don dau vao.');
+    }
+    return $real;
+}
+
+function input_invoice_row_for_admin(array $row): array
+{
+    foreach (['id', 'subtotal_amount', 'vat_amount', 'adjustment_amount', 'total_amount', 'pdf_size'] as $field) {
+        $row[$field] = (int)($row[$field] ?? 0);
+    }
+    $row['download_url'] = 'api_master.php?action=admin_input_invoice_file&id=' . (int)$row['id'];
+    unset($row['pdf_path']);
+    return $row;
+}
+
+function admin_input_invoice_rows(PDO $pdo, int $limit = 300): array
+{
+    $limit = max(1, min(1000, $limit));
+    $stmt = $pdo->query("SELECT * FROM input_invoices ORDER BY invoice_date DESC, id DESC LIMIT {$limit}");
+    return array_map('input_invoice_row_for_admin', $stmt->fetchAll());
+}
+
+function admin_save_input_invoice_pdf(PDO $pdo, array $input, array $file): array
+{
+    $invoiceNumber = clean_string($input['invoice_number'] ?? '', 120);
+    $invoiceSeries = strtoupper(clean_string($input['invoice_series'] ?? '', 80));
+    $invoiceDate = clean_string($input['invoice_date'] ?? '', 10);
+    $sellerName = clean_string($input['seller_name'] ?? '', 255);
+    $sellerTaxCode = strtoupper(clean_string($input['seller_tax_code'] ?? '', 50));
+    $note = clean_string($input['note'] ?? '', 2000);
+    bct_validate_period($invoiceDate, $invoiceDate);
+    if ($invoiceNumber === '' || $invoiceSeries === '' || $sellerName === '' || $sellerTaxCode === '') {
+        throw new InvalidArgumentException('So hoa don, ky hieu hoa don, ngay hoa don, don vi ban va ma so thue la bat buoc.');
+    }
+    if (!preg_match('/^\d{10}(?:-\d{3})?$/', $sellerTaxCode)) {
+        throw new InvalidArgumentException('Ma so thue don vi ban phai gom 10 chu so hoac 10 chu so kem - va 3 chu so don vi phu thuoc.');
+    }
+
+    $subtotal = money_int($input['subtotal_amount'] ?? 0);
+    $vat = money_int($input['vat_amount'] ?? 0);
+    $adjustment = signed_money_int($input['adjustment_amount'] ?? 0);
+    $total = money_int($input['total_amount'] ?? 0);
+    if ($subtotal + $vat + $adjustment !== $total) {
+        throw new InvalidArgumentException('Tong hoa don phai bang tien truoc thue + VAT + dieu chinh.');
+    }
+
+    $uploadError = (int)($file['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($uploadError !== UPLOAD_ERR_OK) {
+        throw new InvalidArgumentException('File PDF khong duoc tai len hop le. Ma loi: ' . $uploadError);
+    }
+    $tmp = (string)($file['tmp_name'] ?? '');
+    $originalName = clean_string(basename((string)($file['name'] ?? 'hoa-don.pdf')), 255);
+    $size = (int)($file['size'] ?? 0);
+    $maxBytes = max(1, (int)app_env('BCT_INPUT_PDF_MAX_MB', '20')) * 1024 * 1024;
+    if ($tmp === '' || !is_uploaded_file($tmp) || $size <= 0 || $size > $maxBytes) {
+        throw new InvalidArgumentException('PDF rong, qua dung luong cho phep hoac khong phai file upload hop le.');
+    }
+    if (strtolower((string)pathinfo($originalName, PATHINFO_EXTENSION)) !== 'pdf') {
+        throw new InvalidArgumentException('Chi chap nhan file PDF.');
+    }
+    $head = file_get_contents($tmp, false, null, 0, 1024);
+    if (!is_string($head) || strpos($head, '%PDF-') === false) {
+        throw new InvalidArgumentException('Noi dung file khong phai dinh dang PDF.');
+    }
+    if (class_exists('finfo')) {
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = (string)$finfo->file($tmp);
+        if (!in_array($mime, ['application/pdf', 'application/x-pdf', 'application/octet-stream'], true)) {
+            throw new InvalidArgumentException('MIME cua file khong phai PDF.');
+        }
+    }
+    $sha256 = hash_file('sha256', $tmp);
+    if (!is_string($sha256) || strlen($sha256) !== 64) {
+        throw new RuntimeException('Khong tao duoc SHA-256 cho PDF.');
+    }
+
+    $duplicate = $pdo->prepare('SELECT id FROM input_invoices WHERE pdf_sha256 = ? OR (seller_tax_code = ? AND invoice_series = ? AND invoice_number = ?) LIMIT 1');
+    $duplicate->execute([$sha256, $sellerTaxCode, $invoiceSeries, $invoiceNumber]);
+    if ($duplicate->fetchColumn()) {
+        throw new DomainException('Hoa don hoac PDF nay da ton tai, he thong khong ghi trung.');
+    }
+
+    $root = input_invoice_storage_root();
+    $subdir = date('Y/m', strtotime($invoiceDate));
+    $targetDir = $root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $subdir);
+    if (!is_dir($targetDir) && !mkdir($targetDir, 0700, true) && !is_dir($targetDir)) {
+        throw new RuntimeException('Khong tao duoc thu muc luu PDF theo ky.');
+    }
+    $storedName = date('Ymd', strtotime($invoiceDate)) . '-' . bin2hex(random_bytes(16)) . '.pdf';
+    $target = $targetDir . DIRECTORY_SEPARATOR . $storedName;
+    if (!move_uploaded_file($tmp, $target)) {
+        throw new RuntimeException('Khong luu duoc PDF hoa don.');
+    }
+    @chmod($target, 0600);
+    $relativePath = $subdir . '/' . $storedName;
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO input_invoices
+            (invoice_number, invoice_series, invoice_date, seller_name, seller_tax_code, subtotal_amount, vat_amount, adjustment_amount,
+             total_amount, currency, pdf_path, pdf_original_name, pdf_sha256, pdf_size, status, note, uploaded_by, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'VND', ?, ?, ?, ?, 'active', ?, 'admin', NOW())");
+        $stmt->execute([
+            $invoiceNumber, $invoiceSeries, $invoiceDate, $sellerName, $sellerTaxCode, $subtotal, $vat, $adjustment,
+            $total, $relativePath, $originalName, $sha256, $size, $note,
+        ]);
+        $id = (int)$pdo->lastInsertId();
+    } catch (Throwable $e) {
+        @unlink($target);
+        throw $e;
+    }
+
+    $stmt = $pdo->prepare('SELECT * FROM input_invoices WHERE id = ? LIMIT 1');
+    $stmt->execute([$id]);
+    return input_invoice_row_for_admin($stmt->fetch() ?: ['id' => $id]);
+}
+
+function admin_stream_input_invoice(PDO $pdo, int $id)
+{
+    $stmt = $pdo->prepare('SELECT pdf_path, pdf_original_name, pdf_sha256 FROM input_invoices WHERE id = ? LIMIT 1');
+    $stmt->execute([$id]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        json_out(['status' => 'error', 'message' => 'Khong tim thay PDF hoa don.'], 404);
+    }
+    $root = input_invoice_storage_root();
+    $relative = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, (string)$row['pdf_path']);
+    $path = realpath($root . DIRECTORY_SEPARATOR . $relative);
+    $rootPrefix = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    if ($path === false || strpos($path, $rootPrefix) !== 0 || !is_file($path)) {
+        json_out(['status' => 'error', 'message' => 'PDF hoa don khong con tren kho luu tru.'], 404);
+    }
+    if (!hash_equals((string)$row['pdf_sha256'], hash_file('sha256', $path))) {
+        json_out(['status' => 'error', 'message' => 'PDF khong vuot qua kiem tra toan ven SHA-256.'], 409);
+    }
+    $original = basename((string)$row['pdf_original_name']);
+    $asciiName = preg_replace('/[^A-Za-z0-9._-]+/', '-', $original) ?: 'hoa-don.pdf';
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    header('Content-Type: application/pdf');
+    header('Content-Length: ' . filesize($path));
+    header('Content-Disposition: inline; filename="' . $asciiName . '"; filename*=UTF-8\'\'' . rawurlencode($original));
+    header('Cache-Control: private, no-store, no-cache, must-revalidate');
+    readfile($path);
+    exit;
+}
+
+function bct_money_summary(array $rows): array
+{
+    $summary = [
+        'document_count' => count($rows),
+        'subtotal_amount' => 0,
+        'vat_amount' => 0,
+        'adjustment_amount' => 0,
+        'total_amount' => 0,
+    ];
+    foreach ($rows as $row) {
+        foreach (['subtotal_amount', 'vat_amount', 'adjustment_amount', 'total_amount'] as $field) {
+            $summary[$field] += (int)($row[$field] ?? 0);
+        }
+    }
+    return $summary;
+}
+
+function bct_reconciliation_report(PDO $pdo, string $from, string $to, bool $includeDetails = true): array
+{
+    list($from, $to) = bct_validate_period($from, $to);
+    $issues = [];
+    $companyProfile = invoice_company_profile();
+    $companyName = app_env('BCT_COMPANY_NAME', $companyProfile['name']);
+    $companyTaxCode = app_env('BCT_TAX_CODE', $companyProfile['tax_code']);
+    $companyWebsite = app_env('BCT_WEBSITE', $companyProfile['website']);
+    if (!preg_match('/^\d{10}(?:-\d{3})?$/', $companyTaxCode)) {
+        $issues[] = ['severity' => 'blocking', 'code' => 'company_tax_code_missing_or_invalid', 'count' => 1, 'ids' => []];
+    }
+
+    $stmt = $pdo->prepare("SELECT id, invoice_number, invoice_series, invoice_date, seller_name, seller_tax_code,
+        subtotal_amount, vat_amount, adjustment_amount, total_amount, currency, pdf_original_name, pdf_sha256, pdf_size, created_at
+        FROM input_invoices WHERE status = 'active' AND invoice_date BETWEEN ? AND ? ORDER BY invoice_date, id");
+    $stmt->execute([$from, $to]);
+    $inputRows = $stmt->fetchAll();
+    $inputFormulaIds = [];
+    $inputIntegrityIds = [];
+    foreach ($inputRows as &$row) {
+        foreach (['id', 'subtotal_amount', 'vat_amount', 'adjustment_amount', 'total_amount', 'pdf_size'] as $field) {
+            $row[$field] = (int)($row[$field] ?? 0);
+        }
+        if ($row['subtotal_amount'] + $row['vat_amount'] + $row['adjustment_amount'] !== $row['total_amount']) {
+            $inputFormulaIds[] = $row['id'];
+        }
+        if (!preg_match('/^[a-f0-9]{64}$/i', (string)$row['pdf_sha256']) || $row['pdf_size'] <= 0) {
+            $inputIntegrityIds[] = $row['id'];
+        }
+    }
+    unset($row);
+    if ($inputFormulaIds) {
+        $issues[] = ['severity' => 'blocking', 'code' => 'input_invoice_formula_mismatch', 'count' => count($inputFormulaIds), 'ids' => $inputFormulaIds];
+    }
+    if ($inputIntegrityIds) {
+        $issues[] = ['severity' => 'blocking', 'code' => 'input_invoice_pdf_integrity_missing', 'count' => count($inputIntegrityIds), 'ids' => $inputIntegrityIds];
+    }
+    if ($inputRows) {
+        $issues[] = ['severity' => 'warning', 'code' => 'input_invoice_pdf_values_require_manual_attestation', 'count' => count($inputRows), 'ids' => array_column($inputRows, 'id')];
+    }
+
+    $stmt = $pdo->prepare("SELECT i.id, i.invoice_code, i.order_id, COALESCE(i.invoice_date, DATE(i.created_at)) invoice_date,
+        i.subtotal_amount, i.vat_amount, i.adjustment_amount,
+        CASE WHEN i.total_amount > 0 THEN i.total_amount ELSE i.total_price END total_amount,
+        i.total_amount recorded_total_amount, i.total_price legacy_total_price, i.status, i.created_at,
+        o.total_price order_total, o.status order_status
+        FROM invoices i LEFT JOIN orders o ON o.id = i.order_id
+        WHERE i.status = 'active' AND COALESCE(i.invoice_date, DATE(i.created_at)) BETWEEN ? AND ?
+        ORDER BY COALESCE(i.invoice_date, DATE(i.created_at)), i.id");
+    $stmt->execute([$from, $to]);
+    $outputRows = $stmt->fetchAll();
+    $outputFormulaIds = [];
+    $outputBreakdownMissingIds = [];
+    $outputVatZeroIds = [];
+    $outputOrderMismatchIds = [];
+    foreach ($outputRows as &$row) {
+        foreach (['id', 'order_id', 'subtotal_amount', 'vat_amount', 'adjustment_amount', 'total_amount', 'recorded_total_amount', 'legacy_total_price', 'order_total'] as $field) {
+            $row[$field] = (int)($row[$field] ?? 0);
+        }
+        if ($row['recorded_total_amount'] > 0 && $row['subtotal_amount'] + $row['vat_amount'] + $row['adjustment_amount'] !== $row['recorded_total_amount']) {
+            $outputFormulaIds[] = $row['id'];
+        }
+        if ($row['recorded_total_amount'] <= 0 && $row['legacy_total_price'] > 0) {
+            $outputBreakdownMissingIds[] = $row['id'];
+        }
+        if ($row['total_amount'] > 0 && $row['vat_amount'] === 0) {
+            $outputVatZeroIds[] = $row['id'];
+        }
+        if ($row['order_id'] > 0 && $row['order_total'] !== $row['total_amount']) {
+            $outputOrderMismatchIds[] = $row['id'];
+        }
+    }
+    unset($row);
+    if ($outputFormulaIds) {
+        $issues[] = ['severity' => 'blocking', 'code' => 'output_invoice_formula_mismatch', 'count' => count($outputFormulaIds), 'ids' => $outputFormulaIds];
+    }
+    if ($outputOrderMismatchIds) {
+        $issues[] = ['severity' => 'blocking', 'code' => 'output_invoice_order_total_mismatch', 'count' => count($outputOrderMismatchIds), 'ids' => $outputOrderMismatchIds];
+    }
+    if ($outputBreakdownMissingIds) {
+        $issues[] = ['severity' => 'warning', 'code' => 'legacy_output_invoice_missing_vat_breakdown', 'count' => count($outputBreakdownMissingIds), 'ids' => $outputBreakdownMissingIds];
+    }
+    if ($outputVatZeroIds) {
+        $issues[] = ['severity' => 'warning', 'code' => 'output_invoice_vat_zero_or_not_separated', 'count' => count($outputVatZeroIds), 'ids' => $outputVatZeroIds];
+    }
+    if ($outputRows) {
+        $issues[] = ['severity' => 'warning', 'code' => 'output_invoice_signed_einvoice_document_not_stored', 'count' => count($outputRows), 'ids' => array_column($outputRows, 'id')];
+    }
+
+    $stmt = $pdo->prepare("SELECT id, order_code, total_price, status, COALESCE(confirmed_at, created_at) accounting_time
+        FROM orders
+        WHERE status IN ('confirmed','shipped','processing','completed')
+          AND DATE(COALESCE(confirmed_at, created_at)) BETWEEN ? AND ?
+        ORDER BY id");
+    $stmt->execute([$from, $to]);
+    $orderRows = $stmt->fetchAll();
+    $orderTotal = 0;
+    $missingInvoiceOrderIds = [];
+    $invoiceOutsidePeriodOrderIds = [];
+    $confirmedOrderInvoiceCount = 0;
+    $outputOrderIds = [];
+    foreach ($outputRows as $invoice) {
+        if ((int)$invoice['order_id'] > 0) {
+            $outputOrderIds[(int)$invoice['order_id']] = true;
+        }
+    }
+    $allActiveInvoiceOrderIds = [];
+    $allInvoiceStmt = $pdo->query("SELECT DISTINCT order_id FROM invoices WHERE status = 'active' AND order_id IS NOT NULL");
+    foreach ($allInvoiceStmt->fetchAll() as $invoice) {
+        $allActiveInvoiceOrderIds[(int)$invoice['order_id']] = true;
+    }
+    foreach ($orderRows as &$row) {
+        $row['id'] = (int)$row['id'];
+        $row['total_price'] = (int)$row['total_price'];
+        $orderTotal += $row['total_price'];
+        if (isset($outputOrderIds[$row['id']])) {
+            $confirmedOrderInvoiceCount++;
+        } elseif (isset($allActiveInvoiceOrderIds[$row['id']])) {
+            $invoiceOutsidePeriodOrderIds[] = $row['id'];
+        } else {
+            $missingInvoiceOrderIds[] = $row['id'];
+        }
+    }
+    unset($row);
+    if ($missingInvoiceOrderIds) {
+        $issues[] = ['severity' => 'blocking', 'code' => 'confirmed_order_missing_output_invoice', 'count' => count($missingInvoiceOrderIds), 'ids' => $missingInvoiceOrderIds];
+    }
+    if ($invoiceOutsidePeriodOrderIds) {
+        $issues[] = ['severity' => 'blocking', 'code' => 'confirmed_order_output_invoice_outside_report_period', 'count' => count($invoiceOutsidePeriodOrderIds), 'ids' => $invoiceOutsidePeriodOrderIds];
+    }
+
+    $stmt = $pdo->prepare("SELECT j.id, DATE(j.completed_at) completed_date, j.service_type, j.final_total customer_total,
+        COALESCE((SELECT jp.platform_fee FROM job_pricing jp WHERE jp.job_id = j.id ORDER BY jp.id DESC LIMIT 1), 0) platform_fee,
+        COALESCE((SELECT jp.vat_amount FROM job_pricing jp WHERE jp.job_id = j.id ORDER BY jp.id DESC LIMIT 1), 0) vat_amount
+        FROM job_posts j WHERE j.completed_at IS NOT NULL AND DATE(j.completed_at) BETWEEN ? AND ? ORDER BY j.id");
+    $stmt->execute([$from, $to]);
+    $jobRows = $stmt->fetchAll();
+    $jobCustomerTotal = 0;
+    $platformFeeTotal = 0;
+    $jobVatTotal = 0;
+    foreach ($jobRows as &$row) {
+        foreach (['id', 'customer_total', 'platform_fee', 'vat_amount'] as $field) {
+            $row[$field] = (int)($row[$field] ?? 0);
+        }
+        $jobCustomerTotal += $row['customer_total'];
+        $platformFeeTotal += $row['platform_fee'];
+        $jobVatTotal += $row['vat_amount'];
+    }
+    unset($row);
+
+    $inputSummary = bct_money_summary($inputRows);
+    $outputSummary = bct_money_summary($outputRows);
+    $blockingCount = count(array_filter($issues, static function (array $issue): bool {
+        return ($issue['severity'] ?? '') === 'blocking';
+    }));
+    $warningCount = count(array_filter($issues, static function (array $issue): bool {
+        return ($issue['severity'] ?? '') === 'warning';
+    }));
+
+    $report = [
+        'schema_version' => 'dth-bct-report-1.0',
+        'generated_at' => date(DATE_ATOM),
+        'period' => ['from' => $from, 'to' => $to, 'timezone' => 'Asia/Ho_Chi_Minh'],
+        'company' => [
+            'name' => $companyName,
+            'tax_code' => $companyTaxCode,
+            'website' => $companyWebsite,
+        ],
+        'submission_status' => [
+            'ready_for_submission' => $blockingCount === 0,
+            'blocking_issue_count' => $blockingCount,
+            'warning_count' => $warningCount,
+        ],
+        'invoice_registers' => [
+            'input_purchase_invoices' => $inputSummary,
+            'output_sales_invoices' => $outputSummary,
+        ],
+        'operational_records' => [
+            'confirmed_product_orders' => ['count' => count($orderRows), 'total_amount' => $orderTotal],
+            'completed_service_jobs' => ['count' => count($jobRows), 'customer_total' => $jobCustomerTotal, 'vat_amount' => $jobVatTotal],
+            'platform_fee_accrual' => ['count' => count($jobRows), 'total_amount' => $platformFeeTotal],
+        ],
+        'reconciliation' => [
+            'output_invoice_minus_confirmed_order_amount' => $outputSummary['total_amount'] - $orderTotal,
+            'output_invoice_count_for_confirmed_orders' => $confirmedOrderInvoiceCount,
+            'confirmed_orders_missing_output_invoice_count' => count($missingInvoiceOrderIds),
+            'confirmed_orders_invoice_outside_report_period_count' => count($invoiceOutsidePeriodOrderIds),
+            'input_output_invoice_value_difference' => $outputSummary['total_amount'] - $inputSummary['total_amount'],
+        ],
+        'issues' => $issues,
+        'transparency_notes' => [
+            'Input invoice values are admin-entered metadata linked to immutable PDF files and SHA-256 hashes; PDF monetary content is not automatically OCR-verified.',
+            'Output invoice totals are reconciled against confirmed product orders. Legacy invoices without VAT breakdown and missing signed e-invoice documents are disclosed as warnings.',
+            'Service job customer totals and platform fees are operational records, not represented as legally issued electronic invoices by this system.',
+            'This export is a system reconciliation report and does not replace legally issued electronic invoices or an official authority-specific schema.',
+        ],
+    ];
+    if ($includeDetails) {
+        $report['details'] = [
+            'input_purchase_invoices' => $inputRows,
+            'output_sales_invoices' => $outputRows,
+            'confirmed_product_orders' => $orderRows,
+            'completed_service_jobs' => $jobRows,
+        ];
+    }
+    return $report;
+}
+
+function bct_log_report_access(PDO $pdo, string $username, string $authMode, ?string $from, ?string $to, ?string $responseHash, bool $success)
+{
+    $stmt = $pdo->prepare("INSERT INTO bct_report_access_log
+        (username, auth_mode, period_from, period_to, response_sha256, client_ip, user_agent, success, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->execute([
+        clean_string($username, 190),
+        clean_string($authMode, 30),
+        $from,
+        $to,
+        $responseHash,
+        client_ip(),
+        clean_string($_SERVER['HTTP_USER_AGENT'] ?? '', 500),
+        $success ? 1 : 0,
+    ]);
 }
 
 function xml_cell($value, string $type = 'String'): string
@@ -3324,6 +4270,10 @@ function require_admin_for_action(string $action)
     }
 }
 
+if (defined('DTH_API_LIBRARY_ONLY') && DTH_API_LIBRARY_ONLY) {
+    return;
+}
+
 $action = clean_string($_GET['action'] ?? '', 80);
 if ($action === '') {
     json_out(['status' => 'ok', 'message' => 'api_master online']);
@@ -3503,7 +4453,11 @@ try {
 
     case 'admin_users':
         $stmt = $pdo->query("SELECT * FROM users ORDER BY id DESC");
-        json_out(['status' => 'success', 'data' => $stmt->fetchAll()]);
+        json_out(['status' => 'success', 'data' => array_map('retail_customer_row', $stmt->fetchAll())]);
+
+    case 'admin_customer_lookup':
+        $phone = digits_only((string)($input['phone'] ?? $_GET['phone'] ?? ''));
+        json_out(['status' => 'success', 'data' => retail_customer_by_phone($pdo, $phone, false)]);
 
     case 'admin_save_user':
         $id = (int)($input['id'] ?? 0);
@@ -3513,17 +4467,18 @@ try {
         $isActive = (int)($input['is_active'] ?? 1);
         $memberRank = clean_string($input['member_rank'] ?? 'Thành viên', 50);
         $totalSpent = (int)($input['total_spent'] ?? 0);
+        $loyaltyPoints = max(0, (int)($input['loyalty_points'] ?? 0));
 
         if ($fullname === '' || $phone === '') {
             json_out(['status' => 'error', 'message' => 'Tên và Số điện thoại không được để trống.'], 400);
         }
 
         if ($id > 0) {
-            $stmt = $pdo->prepare("UPDATE users SET role = ?, fullname = ?, phone = ?, is_active = ?, member_rank = ?, total_spent = ?, updated_at = NOW() WHERE id = ?");
-            $stmt->execute([$role, $fullname, $phone, $isActive, $memberRank, $totalSpent, $id]);
+            $stmt = $pdo->prepare("UPDATE users SET role = ?, fullname = ?, phone = ?, is_active = ?, member_rank = ?, total_spent = ?, loyalty_points = ?, updated_at = NOW() WHERE id = ?");
+            $stmt->execute([$role, $fullname, $phone, $isActive, $memberRank, $totalSpent, $loyaltyPoints, $id]);
         } else {
-            $stmt = $pdo->prepare("INSERT INTO users (role, fullname, phone, is_active, member_rank, total_spent, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-            $stmt->execute([$role, $fullname, $phone, $isActive, $memberRank, $totalSpent]);
+            $stmt = $pdo->prepare("INSERT INTO users (role, fullname, phone, is_active, member_rank, total_spent, loyalty_points, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+            $stmt->execute([$role, $fullname, $phone, $isActive, $memberRank, $totalSpent, $loyaltyPoints]);
             $id = (int)$pdo->lastInsertId();
         }
         json_out(['status' => 'success', 'message' => 'Đã lưu khách hàng.', 'id' => $id]);
@@ -3539,6 +4494,46 @@ try {
     case 'admin_orders':
         json_out(['status' => 'success', 'data' => admin_orders($pdo)]);
 
+    case 'admin_sales_invoices':
+        json_out(['status' => 'success', 'data' => admin_sales_invoice_rows($pdo), 'company' => invoice_company_profile()]);
+
+    case 'admin_invoice_quote':
+        try {
+            json_out([
+                'status' => 'success',
+                'calculation' => manual_invoice_calculation($pdo, $input, false),
+                'company' => invoice_company_profile(),
+            ]);
+        } catch (DomainException $e) {
+            json_out(['status' => 'error', 'message' => $e->getMessage()], 409);
+        } catch (InvalidArgumentException $e) {
+            json_out(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+
+    case 'admin_create_sales_invoice':
+        try {
+            $invoice = create_manual_sales_invoice($pdo, $input);
+            json_out(['status' => 'success', 'message' => 'Da tao hoa don ban hang.', 'invoice' => $invoice]);
+        } catch (DomainException $e) {
+            json_out(['status' => 'error', 'message' => $e->getMessage()], 409);
+        } catch (InvalidArgumentException $e) {
+            json_out(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+
+    case 'admin_retail_sale':
+        try {
+            $invoice = create_manual_sales_invoice($pdo, $input, true);
+            json_out([
+                'status' => 'success',
+                'message' => 'Da ban hang, cong diem va tao hoa don dien tu.',
+                'invoice' => $invoice,
+            ]);
+        } catch (DomainException $e) {
+            json_out(['status' => 'error', 'message' => $e->getMessage()], 409);
+        } catch (InvalidArgumentException $e) {
+            json_out(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+
     case 'admin_invoice':
         $orderId = (int)($input['order_id'] ?? $_GET['order_id'] ?? 0);
         $order = get_order_row($pdo, $orderId);
@@ -3546,18 +4541,83 @@ try {
             json_out(['status' => 'error', 'message' => 'Khong tim thay don hang.'], 404);
         }
         $invoiceCode = 'INV-' . date('Ymd') . '-' . str_pad((string)$orderId, 5, '0', STR_PAD_LEFT);
-        $pdo->prepare("INSERT IGNORE INTO invoices (invoice_code, order_id, customer_name, customer_phone, product_name, total_price, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, NOW())")->execute([
+        $total = money_int($order['total_price'] ?? $order['total'] ?? 0);
+        $subtotal = (int)round($total * 100 / 110);
+        $vat = $total - $subtotal;
+        $profile = invoice_company_profile();
+        $pdo->prepare("INSERT IGNORE INTO invoices
+            (invoice_code, order_id, customer_name, customer_phone, product_name, quantity, unit_gross_amount,
+             gross_before_discount, discount_amount, promo_code, invoice_date, subtotal_amount, vat_amount, vat_rate,
+             adjustment_amount, total_amount, total_price, company_name, company_tax_code, company_address,
+             company_phone, company_email, company_website, status, created_at)
+            VALUES (?, ?, ?, ?, ?, 1, ?, ?, 0, ?, CURDATE(), ?, ?, 10, 0, ?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW())")->execute([
                 $invoiceCode,
                 $orderId,
                 (string)($order['customer_name'] ?? ''),
                 (string)($order['customer_phone'] ?? ''),
                 (string)($order['product_name'] ?? ''),
-                money_int($order['total_price'] ?? $order['total'] ?? 0),
+                $total,
+                $total,
+                (string)($order['coupon_code'] ?? $order['voucher_code'] ?? ''),
+                $subtotal,
+                $vat,
+                $total,
+                $total,
+                $profile['name'],
+                $profile['tax_code'],
+                $profile['address'],
+                $profile['phone'],
+                $profile['email'],
+                $profile['website'],
             ]);
+        update_compat($pdo, 'invoices', [
+            'subtotal_amount' => $subtotal,
+            'vat_amount' => $vat,
+            'vat_rate' => 10,
+            'total_amount' => $total,
+            'total_price' => $total,
+            'company_name' => $profile['name'],
+            'company_tax_code' => $profile['tax_code'],
+            'company_address' => $profile['address'],
+            'company_phone' => $profile['phone'],
+            'company_email' => $profile['email'],
+            'company_website' => $profile['website'],
+        ], 'invoice_code = ?', [$invoiceCode]);
         $order['invoice_code'] = $invoiceCode;
-        $order['total_price'] = money_int($order['total_price'] ?? $order['total'] ?? 0);
-        json_out(['status' => 'success', 'order' => $order]);
+        $order['total_price'] = $total;
+        $stmt = $pdo->prepare('SELECT * FROM invoices WHERE invoice_code = ? LIMIT 1');
+        $stmt->execute([$invoiceCode]);
+        json_out(['status' => 'success', 'order' => $order, 'invoice' => sales_invoice_row($stmt->fetch() ?: [])]);
+
+    case 'admin_input_invoices':
+        json_out(['status' => 'success', 'data' => admin_input_invoice_rows($pdo)]);
+
+    case 'admin_upload_input_invoice':
+        try {
+            $saved = admin_save_input_invoice_pdf($pdo, $input, (array)($_FILES['pdf'] ?? []));
+            json_out(['status' => 'success', 'message' => 'Da luu PDF hoa don dau vao va SHA-256.', 'data' => $saved]);
+        } catch (DomainException $e) {
+            json_out(['status' => 'error', 'message' => $e->getMessage()], 409);
+        } catch (InvalidArgumentException $e) {
+            json_out(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+
+    case 'admin_input_invoice_file':
+        $invoiceId = (int)($input['id'] ?? $_GET['id'] ?? 0);
+        if ($invoiceId <= 0) {
+            json_out(['status' => 'error', 'message' => 'ID hoa don khong hop le.'], 400);
+        }
+        admin_stream_input_invoice($pdo, $invoiceId);
+
+    case 'admin_bct_reconciliation':
+        try {
+            $from = clean_string($input['from'] ?? date('Y-01-01'), 10);
+            $to = clean_string($input['to'] ?? date('Y-m-d'), 10);
+            $includeDetails = (string)($input['detail'] ?? '1') !== '0';
+            json_out(['status' => 'success', 'report' => bct_reconciliation_report($pdo, $from, $to, $includeDetails)]);
+        } catch (InvalidArgumentException $e) {
+            json_out(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
 
     case 'admin_products':
         $target = admin_product_target($pdo);
