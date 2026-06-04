@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * Public actions:
  *   get_products, create_order, create_job, check_voucher, save_wheel_prize,
- *   gemini_chat, telegram_webhook
+ *   gemini_chat, telegram_webhook, sepay_webhook, momo_worker_payment, momo_ipn, cron_*
  *
  * Admin actions:
  *   admin_*, generate_qr, generate_voucher
@@ -23,7 +23,7 @@ function app_security_headers()
     header('X-Frame-Options: SAMEORIGIN');
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: strict-origin-when-cross-origin');
-    header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+    header('Permissions-Policy: camera=(), microphone=(), geolocation=(self)');
 }
 
 function app_load_env($path = null)
@@ -411,12 +411,15 @@ function ensure_core_schema(PDO $pdo)
         customer_phone VARCHAR(30) NULL,
         service_type VARCHAR(150) NULL,
         address TEXT NULL,
+        map_lat DECIMAL(10,7) NULL,
+        map_lng DECIMAL(10,7) NULL,
         description TEXT NULL,
         quantity INT NOT NULL DEFAULT 1,
         customer_total INT NOT NULL DEFAULT 0,
         discount INT NOT NULL DEFAULT 0,
         final_total INT NOT NULL DEFAULT 0,
         worker_id BIGINT NULL,
+        telegram_worker_id BIGINT NULL,
         status VARCHAR(30) NOT NULL DEFAULT 'pending',
         spam_count INT NOT NULL DEFAULT 0,
         cancel_reason TEXT NULL,
@@ -437,8 +440,12 @@ function ensure_core_schema(PDO $pdo)
         discount_amount INT NOT NULL DEFAULT 0,
         final_customer_price INT NOT NULL DEFAULT 0,
         platform_fee INT NOT NULL DEFAULT 0,
+        paid_amount INT NOT NULL DEFAULT 0,
         tech_net_income INT NOT NULL DEFAULT 0,
         payment_status VARCHAR(30) NOT NULL DEFAULT 'unpaid',
+        payment_method VARCHAR(40) NULL,
+        payment_reference VARCHAR(150) NULL,
+        paid_at DATETIME NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_job_pricing_job (job_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
@@ -447,6 +454,14 @@ function ensure_core_schema(PDO $pdo)
         telegram_user_id BIGINT PRIMARY KEY,
         telegram_name VARCHAR(150) NULL,
         telegram_username VARCHAR(150) NULL,
+        phone VARCHAR(30) NULL,
+        identity_code VARCHAR(100) NULL,
+        worker_type VARCHAR(80) NULL DEFAULT 'ho_kinh_doanh',
+        role VARCHAR(30) NOT NULL DEFAULT 'worker',
+        is_admin TINYINT(1) NOT NULL DEFAULT 0,
+        registered_by BIGINT NULL,
+        last_seen_bot VARCHAR(30) NULL,
+        last_seen_at DATETIME NULL,
         cancel_count INT NOT NULL DEFAULT 0,
         abuse_count INT NOT NULL DEFAULT 0,
         jobs_claimed INT NOT NULL DEFAULT 0,
@@ -456,8 +471,29 @@ function ensure_core_schema(PDO $pdo)
         blocked_until DATETIME NULL,
         block_reason VARCHAR(255) NULL,
         last_fee_notice_at DATETIME NULL,
+        total_paid_fee INT NOT NULL DEFAULT 0,
+        last_payment_amount INT NOT NULL DEFAULT 0,
+        last_payment_at DATETIME NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NULL DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS worker_payments (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        worker_id BIGINT NOT NULL,
+        amount INT NOT NULL DEFAULT 0,
+        applied_amount INT NOT NULL DEFAULT 0,
+        method VARCHAR(40) NOT NULL DEFAULT 'manual',
+        reference_code VARCHAR(150) NULL,
+        external_transaction_id VARCHAR(150) NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'pending',
+        note TEXT NULL,
+        confirmed_by VARCHAR(150) NULL,
+        confirmed_at DATETIME NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_worker_payment_external (external_transaction_id),
+        INDEX idx_worker_payments_worker (worker_id),
+        INDEX idx_worker_payments_status (status)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS job_claims (
@@ -592,6 +628,19 @@ function ensure_core_schema(PDO $pdo)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     foreach ([
+        'users' => [
+            'role' => "VARCHAR(30) NOT NULL DEFAULT 'buyer'",
+            'fullname' => 'VARCHAR(150) NOT NULL',
+            'phone' => 'VARCHAR(30) NOT NULL',
+            'password_hash' => 'VARCHAR(255) NULL',
+            'telegram_chat_id' => 'VARCHAR(60) NULL',
+            'telegram_username' => 'VARCHAR(150) NULL',
+            'is_active' => 'TINYINT(1) NOT NULL DEFAULT 1',
+            'member_rank' => "VARCHAR(50) NOT NULL DEFAULT 'Thành viên'",
+            'total_spent' => 'INT NOT NULL DEFAULT 0',
+            'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
+            'updated_at' => 'DATETIME NULL DEFAULT NULL',
+        ],
         'products' => [
             'price' => 'INT NOT NULL DEFAULT 0',
             'stock_quantity' => 'INT NOT NULL DEFAULT 0',
@@ -606,11 +655,13 @@ function ensure_core_schema(PDO $pdo)
             'product_id' => 'INT NOT NULL DEFAULT 0',
             'product_name' => 'VARCHAR(255) NULL',
             'total_price' => 'INT NOT NULL DEFAULT 0',
+            'status' => "VARCHAR(30) NOT NULL DEFAULT 'pending'",
             'payment_method' => "VARCHAR(40) NULL DEFAULT 'cod'",
             'coupon_code' => 'VARCHAR(80) NULL',
             'note' => 'TEXT NULL',
             'confirmed_by' => 'VARCHAR(150) NULL',
             'confirmed_at' => 'DATETIME NULL',
+            'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
             'updated_at' => 'DATETIME NULL DEFAULT NULL',
         ],
         'job_posts' => [
@@ -618,38 +669,110 @@ function ensure_core_schema(PDO $pdo)
             'customer_phone' => 'VARCHAR(30) NULL',
             'service_type' => 'VARCHAR(150) NULL',
             'address' => 'TEXT NULL',
+            'map_lat' => 'DECIMAL(10,7) NULL',
+            'map_lng' => 'DECIMAL(10,7) NULL',
+            'description' => 'TEXT NULL',
             'quantity' => 'INT NOT NULL DEFAULT 1',
             'customer_total' => 'INT NOT NULL DEFAULT 0',
             'discount' => 'INT NOT NULL DEFAULT 0',
             'final_total' => 'INT NOT NULL DEFAULT 0',
             'worker_id' => 'BIGINT NULL',
+            'telegram_worker_id' => 'BIGINT NULL',
+            'status' => "VARCHAR(30) NOT NULL DEFAULT 'pending'",
             'spam_count' => 'INT NOT NULL DEFAULT 0',
             'cancel_reason' => 'TEXT NULL',
             'assigned_at' => 'DATETIME NULL',
             'completed_at' => 'DATETIME NULL',
             'cancelled_at' => 'DATETIME NULL',
+            'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
             'updated_at' => 'DATETIME NULL DEFAULT NULL',
         ],
         'vouchers' => [
             'discount_percent' => 'INT NOT NULL DEFAULT 0',
             'discount_amount' => 'INT NOT NULL DEFAULT 0',
+            'type' => "VARCHAR(30) NULL DEFAULT 'percent'",
+            'value' => 'INT NOT NULL DEFAULT 0',
             'max_uses' => 'INT NOT NULL DEFAULT 100',
+            'usage_limit' => 'INT NOT NULL DEFAULT 100',
             'used_count' => 'INT NOT NULL DEFAULT 0',
+            'is_active' => 'TINYINT(1) NOT NULL DEFAULT 1',
             'expires_at' => 'DATETIME NULL',
+            'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
         ],
         'qr_coupons' => [
+            'discount_amount' => 'INT NOT NULL DEFAULT 0',
+            'quantity_left' => 'INT NOT NULL DEFAULT 0',
+            'type' => "VARCHAR(30) NOT NULL DEFAULT 'discount'",
+            'value' => 'INT NOT NULL DEFAULT 0',
+            'description' => 'TEXT NULL',
             'is_used' => 'TINYINT(1) NOT NULL DEFAULT 0',
             'used_by' => 'VARCHAR(80) NULL',
             'order_ref' => 'VARCHAR(80) NULL',
+            'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
         ],
         'worker_profiles' => [
+            'telegram_name' => 'VARCHAR(150) NULL',
             'telegram_username' => 'VARCHAR(150) NULL',
+            'phone' => 'VARCHAR(30) NULL',
+            'identity_code' => 'VARCHAR(100) NULL',
+            'worker_type' => "VARCHAR(80) NULL DEFAULT 'ho_kinh_doanh'",
+            'role' => "VARCHAR(30) NOT NULL DEFAULT 'worker'",
+            'is_admin' => 'TINYINT(1) NOT NULL DEFAULT 0',
+            'registered_by' => 'BIGINT NULL',
+            'last_seen_bot' => 'VARCHAR(30) NULL',
+            'last_seen_at' => 'DATETIME NULL',
+            'cancel_count' => 'INT NOT NULL DEFAULT 0',
             'abuse_count' => 'INT NOT NULL DEFAULT 0',
             'jobs_claimed' => 'INT NOT NULL DEFAULT 0',
             'jobs_completed' => 'INT NOT NULL DEFAULT 0',
+            'is_receive_blocked' => 'TINYINT(1) NOT NULL DEFAULT 0',
             'payment_blocked' => 'TINYINT(1) NOT NULL DEFAULT 0',
+            'blocked_until' => 'DATETIME NULL',
+            'block_reason' => 'VARCHAR(255) NULL',
             'last_fee_notice_at' => 'DATETIME NULL',
+            'total_paid_fee' => 'INT NOT NULL DEFAULT 0',
+            'last_payment_amount' => 'INT NOT NULL DEFAULT 0',
+            'last_payment_at' => 'DATETIME NULL',
+            'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
             'updated_at' => 'DATETIME NULL DEFAULT NULL',
+        ],
+        'job_pricing' => [
+            'tech_target_base' => 'INT NOT NULL DEFAULT 0',
+            'vat_amount' => 'INT NOT NULL DEFAULT 0',
+            'profit_amount' => 'INT NOT NULL DEFAULT 0',
+            'gross_customer_price' => 'INT NOT NULL DEFAULT 0',
+            'discount_amount' => 'INT NOT NULL DEFAULT 0',
+            'final_customer_price' => 'INT NOT NULL DEFAULT 0',
+            'platform_fee' => 'INT NOT NULL DEFAULT 0',
+            'tech_net_income' => 'INT NOT NULL DEFAULT 0',
+            'payment_status' => "VARCHAR(30) NOT NULL DEFAULT 'unpaid'",
+            'paid_amount' => 'INT NOT NULL DEFAULT 0',
+            'payment_method' => 'VARCHAR(40) NULL',
+            'payment_reference' => 'VARCHAR(150) NULL',
+            'paid_at' => 'DATETIME NULL',
+        ],
+        'worker_payments' => [
+            'worker_id' => 'BIGINT NOT NULL',
+            'amount' => 'INT NOT NULL DEFAULT 0',
+            'applied_amount' => 'INT NOT NULL DEFAULT 0',
+            'method' => "VARCHAR(40) NOT NULL DEFAULT 'manual'",
+            'reference_code' => 'VARCHAR(150) NULL',
+            'external_transaction_id' => 'VARCHAR(150) NULL',
+            'status' => "VARCHAR(30) NOT NULL DEFAULT 'pending'",
+            'note' => 'TEXT NULL',
+            'confirmed_by' => 'VARCHAR(150) NULL',
+            'confirmed_at' => 'DATETIME NULL',
+            'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
+        ],
+        'client_abuse' => [
+            'identifier' => 'VARCHAR(255) NOT NULL',
+            'identifier_type' => 'VARCHAR(30) NOT NULL',
+            'request_count' => 'INT NOT NULL DEFAULT 0',
+            'fake_count' => 'INT NOT NULL DEFAULT 0',
+            'last_job_id' => 'INT NULL',
+            'banned_at' => 'DATETIME NULL',
+            'updated_at' => 'DATETIME NULL DEFAULT NULL',
+            'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
         ],
         'banned_devices' => [
             'ban_type' => "VARCHAR(30) NOT NULL DEFAULT 'device'",
@@ -694,9 +817,30 @@ function ensure_core_schema(PDO $pdo)
     add_index_if_missing($pdo, 'job_posts', 'idx_job_posts_customer_phone', '(customer_phone)');
     add_index_if_missing($pdo, 'job_posts', 'idx_job_posts_status', '(status)');
     add_index_if_missing($pdo, 'job_posts', 'idx_job_posts_worker', '(worker_id)');
+    add_index_if_missing($pdo, 'job_posts', 'idx_job_posts_telegram_worker', '(telegram_worker_id)');
+    add_index_if_missing($pdo, 'job_posts', 'idx_job_posts_completed', '(completed_at)');
     add_index_if_missing($pdo, 'qr_coupons', 'idx_qr_coupons_code_lookup', '(code)');
     add_index_if_missing($pdo, 'vouchers', 'idx_vouchers_code_lookup', '(code)');
     add_index_if_missing($pdo, 'worker_profiles', 'idx_worker_profiles_blocked', '(is_receive_blocked, payment_blocked)');
+    add_index_if_missing($pdo, 'worker_profiles', 'idx_worker_profiles_role', '(role, is_admin)');
+    add_index_if_missing($pdo, 'worker_payments', 'idx_worker_payments_worker', '(worker_id)');
+    add_index_if_missing($pdo, 'worker_payments', 'idx_worker_payments_status', '(status)');
+
+    $pdo->exec("UPDATE job_pricing SET paid_amount = platform_fee, paid_at = COALESCE(paid_at, created_at)
+        WHERE payment_status = 'paid' AND paid_amount = 0");
+    try {
+        $pdo->exec("UPDATE job_posts j
+            JOIN job_claims jc ON jc.id = (
+                SELECT MAX(jc2.id) FROM job_claims jc2
+                WHERE jc2.job_id = j.id AND jc2.outcome = 'claimed'
+            )
+            SET j.telegram_worker_id = jc.telegram_user_id
+            WHERE j.telegram_worker_id IS NULL");
+    } catch (Throwable $e) {
+        error_log('[schema] telegram worker backfill skipped: ' . $e->getMessage());
+    }
+
+    seed_known_telegram_profiles($pdo);
 }
 
 function insert_compat(PDO $pdo, string $table, array $values, array $expressions = []): int
@@ -887,6 +1031,126 @@ function telegram_chat(string $role): string
     return app_env('WORKER_CHAT_ID', '');
 }
 
+function admin_telegram_id(): int
+{
+    return (int)app_env('ADMIN_TELEGRAM_ID', '648065292');
+}
+
+function is_admin_telegram_id(int $telegramUserId): bool
+{
+    return $telegramUserId > 0 && $telegramUserId === admin_telegram_id();
+}
+
+function seed_known_telegram_profiles(PDO $pdo)
+{
+    $adminId = admin_telegram_id();
+    if ($adminId > 0) {
+        $pdo->prepare("INSERT INTO worker_profiles (telegram_user_id, telegram_name, identity_code, role, is_admin, created_at, updated_at)
+            VALUES (?, 'Vinh Tran.2908', 'ADMIN', 'admin', 1, NOW(), NOW())
+            ON DUPLICATE KEY UPDATE role = 'admin', is_admin = 1, identity_code = COALESCE(identity_code, 'ADMIN')")
+            ->execute([$adminId]);
+    }
+
+    $workerId = (int)app_env('INITIAL_WORKER_TELEGRAM_ID', '8729878070');
+    if ($workerId > 0 && $workerId !== $adminId) {
+        $pdo->prepare("INSERT INTO worker_profiles (telegram_user_id, telegram_name, identity_code, worker_type, role, is_admin, registered_by, created_at, updated_at)
+            VALUES (?, ?, ?, 'ho_kinh_doanh', 'worker', 0, ?, NOW(), NOW())
+            ON DUPLICATE KEY UPDATE role = 'worker', is_admin = 0, worker_type = COALESCE(worker_type, 'ho_kinh_doanh')")
+            ->execute([$workerId, "Ho kinh doanh {$workerId}", (string)$workerId, $adminId]);
+    }
+}
+
+function app_public_url(): string
+{
+    return rtrim(app_env('APP_URL', 'https://dienmayhieu.com'), '/');
+}
+
+function worker_payment_code(int $workerId): string
+{
+    return 'DTHP' . $workerId;
+}
+
+function vietqr_payment_url(int $amount, int $workerId): string
+{
+    $bank = rawurlencode(app_env('VNB_BIN', 'ICB'));
+    $account = rawurlencode(app_env('VNB_ACC', ''));
+    $holder = rawurlencode(app_env('VNB_HOLDER', 'DIEN TU HIEU'));
+    $code = rawurlencode(worker_payment_code($workerId));
+    if ($account === '') {
+        return app_public_url() . '/QR_THANH_TOAN.jpg';
+    }
+    return "https://img.vietqr.io/image/{$bank}-{$account}-compact2.jpg?amount={$amount}&addInfo={$code}&accountName={$holder}";
+}
+
+function vietqr_bank_deeplink(int $amount, int $workerId): string
+{
+    $account = app_env('VNB_ACC', '');
+    $bank = app_env('VNB_BIN', 'ICB');
+    $holder = app_env('VNB_HOLDER', 'DIEN TU HIEU');
+    if ($account === '') {
+        return vietqr_payment_url($amount, $workerId);
+    }
+    return 'https://dl.vietqr.io/pay?ba=' . rawurlencode($account . '@' . $bank)
+        . '&am=' . $amount
+        . '&tn=' . rawurlencode(worker_payment_code($workerId))
+        . '&bn=' . rawurlencode($holder);
+}
+
+function payment_url_from_template(string $template, int $amount, int $workerId): string
+{
+    return strtr($template, [
+        '{amount}' => (string)$amount,
+        '{code}' => rawurlencode(worker_payment_code($workerId)),
+        '{worker_id}' => (string)$workerId,
+    ]);
+}
+
+function momo_payment_configured(): bool
+{
+    foreach (['MOMO_PARTNER_CODE', 'MOMO_ACCESS_KEY', 'MOMO_SECRET_KEY'] as $key) {
+        if (trim(app_env($key, '')) === '') {
+            return false;
+        }
+    }
+    return true;
+}
+
+function momo_worker_payment_signature(int $workerId): string
+{
+    return hash_hmac('sha256', 'worker_payment|' . $workerId, app_env('MOMO_SECRET_KEY', ''));
+}
+
+function momo_worker_payment_link(int $workerId): string
+{
+    return app_public_url() . '/api_master.php?action=momo_worker_payment&worker_id=' . $workerId
+        . '&token=' . rawurlencode(momo_worker_payment_signature($workerId));
+}
+
+function worker_payment_keyboard(int $workerId, int $amount): array
+{
+    $bankUrl = trim(app_env('BANK_PAYMENT_URL', ''));
+    if ($bankUrl === '') {
+        $bankUrl = vietqr_bank_deeplink($amount, $workerId);
+    } else {
+        $bankUrl = payment_url_from_template($bankUrl, $amount, $workerId);
+    }
+    $row = [['text' => 'Thanh toan ngan hang', 'url' => $bankUrl]];
+    $momoUrl = momo_payment_configured() ? momo_worker_payment_link($workerId) : trim(app_env('MOMO_PAYMENT_URL', ''));
+    if ($momoUrl !== '') {
+        $row[] = [
+            'text' => 'Thanh toan MoMo',
+            'url' => momo_payment_configured() ? $momoUrl : payment_url_from_template($momoUrl, $amount, $workerId),
+        ];
+    }
+    return [
+        'inline_keyboard' => [
+            $row,
+            [['text' => 'Xem QR chuyen khoan', 'url' => vietqr_payment_url($amount, $workerId)]],
+            [['text' => 'Toi da chuyen khoan', 'callback_data' => "paid_notice_{$workerId}"]],
+        ],
+    ];
+}
+
 function tg_api(string $token, string $method, array $payload): array
 {
     if ($token === '') {
@@ -935,6 +1199,20 @@ function tg_send(string $role, string $chatId, string $text, $replyMarkup = null
     return tg_api(telegram_token($role), 'sendMessage', $payload);
 }
 
+function tg_send_photo(string $role, string $chatId, string $photoUrl, string $caption, $replyMarkup = null): array
+{
+    $payload = [
+        'chat_id' => $chatId,
+        'photo' => $photoUrl,
+        'caption' => $caption,
+        'parse_mode' => 'HTML',
+    ];
+    if ($replyMarkup !== null) {
+        $payload['reply_markup'] = $replyMarkup;
+    }
+    return tg_api(telegram_token($role), 'sendPhoto', $payload);
+}
+
 function tg_answer_callback(string $role, string $callbackId, string $text, bool $alert = false)
 {
     tg_api(telegram_token($role), 'answerCallbackQuery', [
@@ -972,15 +1250,19 @@ function worker_name(array $from): string
     return clean_string($name, 150);
 }
 
-function upsert_worker(PDO $pdo, int $telegramUserId, string $name, string $username = '')
+function upsert_worker(PDO $pdo, int $telegramUserId, string $name, string $username = '', string $botRole = 'worker')
 {
     if ($telegramUserId <= 0) {
         return;
     }
-    $stmt = $pdo->prepare("INSERT INTO worker_profiles (telegram_user_id, telegram_name, telegram_username, created_at, updated_at)
-        VALUES (?, ?, ?, NOW(), NOW())
-        ON DUPLICATE KEY UPDATE telegram_name = VALUES(telegram_name), telegram_username = VALUES(telegram_username), updated_at = NOW()");
-    $stmt->execute([$telegramUserId, $name, $username]);
+    $isAdmin = is_admin_telegram_id($telegramUserId) ? 1 : 0;
+    $role = $isAdmin === 1 ? 'admin' : 'worker';
+    $stmt = $pdo->prepare("INSERT INTO worker_profiles (telegram_user_id, telegram_name, telegram_username, role, is_admin, last_seen_bot, last_seen_at, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())
+        ON DUPLICATE KEY UPDATE telegram_name = VALUES(telegram_name), telegram_username = VALUES(telegram_username),
+            role = IF(is_admin = 1, role, VALUES(role)), is_admin = GREATEST(is_admin, VALUES(is_admin)),
+            last_seen_bot = VALUES(last_seen_bot), last_seen_at = NOW(), updated_at = NOW()");
+    $stmt->execute([$telegramUserId, $name, $username, $role, $isAdmin, $botRole]);
 }
 
 function get_worker_profile(PDO $pdo, int $telegramUserId): array
@@ -988,6 +1270,296 @@ function get_worker_profile(PDO $pdo, int $telegramUserId): array
     $stmt = $pdo->prepare('SELECT * FROM worker_profiles WHERE telegram_user_id = ? LIMIT 1');
     $stmt->execute([$telegramUserId]);
     return $stmt->fetch() ?: [];
+}
+
+function worker_fee_debt(PDO $pdo, int $workerId): int
+{
+    if ($workerId <= 0) {
+        return 0;
+    }
+    $stmt = $pdo->prepare("SELECT COALESCE(SUM(GREATEST(jp.platform_fee - COALESCE(jp.paid_amount, 0), 0)), 0)
+        FROM job_pricing jp
+        JOIN job_posts j ON j.id = jp.job_id
+        WHERE COALESCE(j.telegram_worker_id, j.worker_id) = ? AND j.completed_at IS NOT NULL");
+    $stmt->execute([$workerId]);
+    return max(0, (int)$stmt->fetchColumn());
+}
+
+function worker_map_coordinates(array $job): array
+{
+    $lat = isset($job['map_lat']) && is_numeric($job['map_lat']) ? (float)$job['map_lat'] : null;
+    $lng = isset($job['map_lng']) && is_numeric($job['map_lng']) ? (float)$job['map_lng'] : null;
+    if ($lat === null || $lng === null) {
+        $address = (string)($job['address'] ?? $job['location'] ?? '');
+        if (preg_match('/(?:Toa do|Tọa độ)\s*:\s*(-?\d{1,3}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)/iu', $address, $m)) {
+            $lat = (float)$m[1];
+            $lng = (float)$m[2];
+        }
+    }
+    if ($lat === null || $lng === null || abs($lat) > 90 || abs($lng) > 180) {
+        return [];
+    }
+    return ['lat' => $lat, 'lng' => $lng, 'text' => number_format($lat, 6, '.', '') . ',' . number_format($lng, 6, '.', '')];
+}
+
+function worker_google_maps_url(array $job): string
+{
+    $coords = worker_map_coordinates($job);
+    if ($coords === []) {
+        return '';
+    }
+    return 'https://www.google.com/maps/dir/?api=1&destination=' . rawurlencode($coords['text']);
+}
+
+function payment_status_message(int $amount, int $remaining, bool $wasBlocked): string
+{
+    if ($remaining > 0) {
+        return 'Da ghi nhan thanh toan ' . fmt_money($amount) . '. No phi nen tang con lai: ' . fmt_money($remaining) . '.';
+    }
+    if ($wasBlocked || (int)date('N') >= 2) {
+        return 'Da ghi nhan thanh toan phi nen tang ' . fmt_money($amount) . '. Da mo khoa chuc nang nhan ca.';
+    }
+    return 'Da ghi nhan thanh toan phi nen tang ' . fmt_money($amount) . '. Tai khoan nhan ca hoat dong binh thuong.';
+}
+
+function settle_worker_payment(PDO $pdo, int $workerId, int $receivedAmount, string $method, string $reference, string $confirmedBy, string $externalId = ''): array
+{
+    if ($workerId <= 0 || $receivedAmount <= 0) {
+        return ['ok' => false, 'message' => 'Thong tin thanh toan khong hop le.'];
+    }
+    if ($externalId !== '') {
+        $check = $pdo->prepare('SELECT * FROM worker_payments WHERE external_transaction_id = ? LIMIT 1');
+        $check->execute([$externalId]);
+        $existing = $check->fetch();
+        if ($existing) {
+            return ['ok' => true, 'message' => 'Giao dich da duoc ghi nhan truoc do.', 'payment_id' => (int)$existing['id'], 'duplicate' => true];
+        }
+    }
+
+    $before = worker_fee_debt($pdo, $workerId);
+    if ($before <= 0) {
+        return ['ok' => false, 'message' => 'Tho khong con no phi nen tang.', 'remaining' => 0];
+    }
+    $profile = get_worker_profile($pdo, $workerId);
+    $wasBlocked = (int)($profile['payment_blocked'] ?? 0) === 1;
+    $plannedApply = min($before, $receivedAmount);
+    $remainingToApply = $plannedApply;
+    $appliedActual = 0;
+
+    $pdo->beginTransaction();
+    try {
+        $stmt = $pdo->prepare("SELECT jp.id, jp.platform_fee, COALESCE(jp.paid_amount, 0) paid_amount
+            FROM job_pricing jp
+            JOIN job_posts j ON j.id = jp.job_id
+            WHERE COALESCE(j.telegram_worker_id, j.worker_id) = ? AND j.completed_at IS NOT NULL AND jp.platform_fee > COALESCE(jp.paid_amount, 0)
+            ORDER BY j.completed_at ASC, jp.id ASC FOR UPDATE");
+        $stmt->execute([$workerId]);
+        foreach ($stmt->fetchAll() as $fee) {
+            if ($remainingToApply <= 0) {
+                break;
+            }
+            $balance = max(0, (int)$fee['platform_fee'] - (int)$fee['paid_amount']);
+            $allocated = min($balance, $remainingToApply);
+            $newPaid = (int)$fee['paid_amount'] + $allocated;
+            $newStatus = $newPaid >= (int)$fee['platform_fee'] ? 'paid' : 'partial';
+            $paidAtExpr = $newStatus === 'paid' ? 'NOW()' : 'paid_at';
+            $update = $pdo->prepare("UPDATE job_pricing SET paid_amount = ?, payment_status = ?, payment_method = ?, payment_reference = ?, paid_at = {$paidAtExpr} WHERE id = ?");
+            $update->execute([$newPaid, $newStatus, $method, $reference, (int)$fee['id']]);
+            $remainingToApply -= $allocated;
+            $appliedActual += $allocated;
+        }
+
+        $paymentId = insert_compat($pdo, 'worker_payments', [
+            'worker_id' => $workerId,
+            'amount' => $receivedAmount,
+            'applied_amount' => $appliedActual,
+            'method' => $method,
+            'reference_code' => $reference,
+            'external_transaction_id' => $externalId !== '' ? $externalId : null,
+            'status' => 'confirmed',
+            'note' => $receivedAmount > $appliedActual ? 'Received amount exceeds current platform fee debt or was reconciled concurrently.' : '',
+            'confirmed_by' => $confirmedBy,
+        ], ['confirmed_at' => 'NOW()', 'created_at' => 'NOW()']);
+
+        $pdo->prepare("UPDATE worker_profiles SET total_paid_fee = total_paid_fee + ?, last_payment_amount = ?,
+            last_payment_at = NOW(), updated_at = NOW()
+            WHERE telegram_user_id = ?")->execute([$appliedActual, $appliedActual, $workerId]);
+        $pdo->prepare("UPDATE worker_payments SET status = 'superseded' WHERE worker_id = ? AND status = 'pending' AND id <> ?")
+            ->execute([$workerId, $paymentId]);
+        $pdo->commit();
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $e;
+    }
+
+    $remaining = worker_fee_debt($pdo, $workerId);
+    if ($remaining <= 0) {
+        $pdo->prepare("UPDATE worker_profiles SET payment_blocked = 0,
+            blocked_until = IF(is_receive_blocked = 0 AND block_reason LIKE 'platform_fee%', NULL, blocked_until),
+            block_reason = IF(is_receive_blocked = 0 AND block_reason LIKE 'platform_fee%', NULL, block_reason), updated_at = NOW()
+            WHERE telegram_user_id = ?")->execute([$workerId]);
+    } elseif ((int)date('N') >= 2) {
+        enforce_worker_payment_lock($pdo, $workerId);
+    }
+    $finalProfile = get_worker_profile($pdo, $workerId);
+    if ($appliedActual <= 0) {
+        $message = 'Da ghi nhan giao dich ' . fmt_money($receivedAmount) . ' nhung khong con cong no de phan bo. Admin se kiem tra phan tien du.';
+    } else {
+        $message = $remaining === 0 && worker_is_blocked($finalProfile)
+            ? 'Da ghi nhan thanh toan phi nen tang ' . fmt_money($appliedActual) . '. Tai khoan van dang bi khoa vi ly do khac; vui long lien he admin.'
+            : payment_status_message($appliedActual, $remaining, $wasBlocked);
+    }
+    tg_send('worker', (string)$workerId, $message);
+    return [
+        'ok' => true,
+        'message' => $message,
+        'payment_id' => $paymentId,
+        'received_amount' => $receivedAmount,
+        'applied_amount' => $appliedActual,
+        'remaining' => $remaining,
+    ];
+}
+
+function send_worker_debt_notice(PDO $pdo, int $workerId, string $reason = 'Nhac phi nen tang'): array
+{
+    $debt = worker_fee_debt($pdo, $workerId);
+    if ($debt <= 0) {
+        return ['ok' => true, 'message' => 'Khong co cong no.', 'debt' => 0];
+    }
+    $profile = get_worker_profile($pdo, $workerId);
+    $name = (string)($profile['telegram_name'] ?? "Tho {$workerId}");
+    $code = worker_payment_code($workerId);
+    $caption = "<b>{$reason}</b>\n"
+        . "Tho: " . esc_html($name) . " ({$workerId})\n"
+        . "Tong phi nen tang con no den hien tai: <b>" . fmt_money($debt) . "</b>\n"
+        . "Noi dung chuyen khoan: <code>{$code}</code>\n"
+        . "Thanh toan thu 2: tai khoan hoat dong binh thuong. Tu thu 3 neu con no: khoa nhan ca.";
+    $response = tg_send_photo('worker', (string)$workerId, vietqr_payment_url($debt, $workerId), $caption, worker_payment_keyboard($workerId, $debt));
+    if (empty($response['ok'])) {
+        $response = tg_send('worker', (string)$workerId, $caption, worker_payment_keyboard($workerId, $debt));
+    }
+    if (!empty($response['ok'])) {
+        $pdo->prepare('UPDATE worker_profiles SET last_fee_notice_at = NOW(), updated_at = NOW() WHERE telegram_user_id = ?')->execute([$workerId]);
+    }
+    return ['ok' => !empty($response['ok']), 'message' => !empty($response['ok']) ? 'Da gui nhac phi.' : 'Khong gui duoc nhac phi.', 'debt' => $debt];
+}
+
+function notify_all_worker_debts(PDO $pdo, string $reason = 'Nhac phi nen tang'): array
+{
+    $stmt = $pdo->query("SELECT telegram_user_id FROM worker_profiles WHERE is_admin = 0 AND role = 'worker' ORDER BY telegram_user_id");
+    $sent = 0;
+    $failed = 0;
+    $totalDebt = 0;
+    foreach ($stmt->fetchAll() as $row) {
+        $workerId = (int)$row['telegram_user_id'];
+        $debt = worker_fee_debt($pdo, $workerId);
+        if ($debt <= 0) {
+            continue;
+        }
+        $result = send_worker_debt_notice($pdo, $workerId, $reason);
+        $totalDebt += $debt;
+        if ($result['ok']) {
+            $sent++;
+        } else {
+            $failed++;
+        }
+    }
+    return ['sent' => $sent, 'failed' => $failed, 'total_debt' => $totalDebt];
+}
+
+function enforce_worker_payment_lock(PDO $pdo, int $workerId): array
+{
+    $debt = worker_fee_debt($pdo, $workerId);
+    if ($debt > 0 && (int)date('N') >= 2) {
+        $pdo->prepare("UPDATE worker_profiles SET payment_blocked = 1,
+            block_reason = IF(is_receive_blocked = 1, block_reason, ?),
+            blocked_until = IF(is_receive_blocked = 1, blocked_until, NULL), updated_at = NOW() WHERE telegram_user_id = ?")
+            ->execute(['platform_fee_debt: ' . $debt, $workerId]);
+    }
+    return get_worker_profile($pdo, $workerId);
+}
+
+function lock_all_workers_with_debt(PDO $pdo): array
+{
+    $stmt = $pdo->query("SELECT telegram_user_id FROM worker_profiles WHERE is_admin = 0 AND role = 'worker'");
+    $locked = 0;
+    $totalDebt = 0;
+    foreach ($stmt->fetchAll() as $row) {
+        $workerId = (int)$row['telegram_user_id'];
+        $debt = worker_fee_debt($pdo, $workerId);
+        if ($debt <= 0) {
+            continue;
+        }
+        $pdo->prepare("UPDATE worker_profiles SET payment_blocked = 1,
+            block_reason = IF(is_receive_blocked = 1, block_reason, ?),
+            blocked_until = IF(is_receive_blocked = 1, blocked_until, NULL), updated_at = NOW() WHERE telegram_user_id = ?")
+            ->execute(['platform_fee_debt: ' . $debt, $workerId]);
+        tg_send('worker', (string)$workerId, 'Tai khoan da bi khoa nhan ca do con no phi nen tang ' . fmt_money($debt) . '. Thanh toan xong he thong se mo khoa.');
+        send_worker_debt_notice($pdo, $workerId, 'Yeu cau thanh toan de mo khoa nhan ca');
+        $locked++;
+        $totalDebt += $debt;
+    }
+    return ['locked' => $locked, 'total_debt' => $totalDebt];
+}
+
+function record_worker_payment_notice(PDO $pdo, int $workerId): array
+{
+    $debt = worker_fee_debt($pdo, $workerId);
+    if ($debt <= 0) {
+        return ['ok' => true, 'message' => 'He thong khong ghi nhan cong no can thanh toan.'];
+    }
+    $check = $pdo->prepare("SELECT COUNT(*) FROM worker_payments WHERE worker_id = ? AND status = 'pending' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)");
+    $check->execute([$workerId]);
+    if ((int)$check->fetchColumn() > 0) {
+        return ['ok' => true, 'message' => 'Yeu cau doi soat da duoc gui. Vui long cho admin hoac SePay xac nhan.'];
+    }
+    $reference = 'NOTICE-' . $workerId . '-' . date('YmdHis');
+    insert_compat($pdo, 'worker_payments', [
+        'worker_id' => $workerId,
+        'amount' => $debt,
+        'applied_amount' => 0,
+        'method' => 'worker_notice',
+        'reference_code' => $reference,
+        'status' => 'pending',
+        'note' => 'Worker clicked paid notice; waiting for SePay or admin confirmation.',
+    ], ['created_at' => 'NOW()']);
+    $profile = get_worker_profile($pdo, $workerId);
+    $name = (string)($profile['telegram_name'] ?? "Tho {$workerId}");
+    $bossChat = telegram_chat('sales');
+    if ($bossChat !== '') {
+        tg_send('sales', $bossChat, "<b>THO BAO DA THANH TOAN</b>\nTho: " . esc_html($name) . " ({$workerId})\nCong no dang cho doi soat: <b>" . fmt_money($debt) . "</b>", [
+            'inline_keyboard' => [[
+                ['text' => 'Xac nhan da thu', 'callback_data' => "confirm_worker_pay_{$workerId}"],
+            ]],
+        ]);
+    }
+    return ['ok' => true, 'message' => 'Da bao admin kiem tra giao dich. He thong se mo khoa sau khi xac nhan thanh toan.'];
+}
+
+function register_worker_from_admin_command(PDO $pdo, int $senderId, string $text, string $botRole): array
+{
+    if (!is_admin_telegram_id($senderId)) {
+        return ['ok' => false, 'message' => 'Chi admin duoc dung lenh /idtelegram.'];
+    }
+    $parts = array_map('trim', preg_split('/\|/u', $text) ?: []);
+    $workerId = isset($parts[1]) ? (int)digits_only($parts[1]) : 0;
+    $phone = isset($parts[2]) ? digits_only($parts[2]) : '';
+    $name = clean_string($parts[3] ?? "Ho kinh doanh {$workerId}", 150);
+    if ($workerId <= 0 || strlen($phone) < 8) {
+        return ['ok' => false, 'message' => 'Dung cu phap: /idtelegram | TELEGRAM_ID | SO_DIEN_THOAI | TEN_THO (ten co the bo trong).'];
+    }
+    if ($workerId === admin_telegram_id()) {
+        return ['ok' => false, 'message' => 'Telegram ID nay la admin, khong dang ky thanh tho.'];
+    }
+    $stmt = $pdo->prepare("INSERT INTO worker_profiles (telegram_user_id, telegram_name, phone, identity_code, worker_type, role, is_admin, registered_by, last_seen_bot, created_at, updated_at)
+        VALUES (?, ?, ?, ?, 'ho_kinh_doanh', 'worker', 0, ?, ?, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE telegram_name = VALUES(telegram_name), phone = VALUES(phone), identity_code = VALUES(identity_code),
+            worker_type = 'ho_kinh_doanh', role = 'worker', is_admin = 0, registered_by = VALUES(registered_by), last_seen_bot = VALUES(last_seen_bot), updated_at = NOW()");
+    $stmt->execute([$workerId, $name, $phone, (string)$workerId, $senderId, $botRole]);
+    $count = (int)$pdo->query("SELECT COUNT(*) FROM worker_profiles WHERE is_admin = 0 AND role = 'worker'")->fetchColumn();
+    return ['ok' => true, 'message' => "Da dang ky tho {$name}. Telegram ID: {$workerId}. SDT: {$phone}. Tong so tho: {$count}.", 'worker_id' => $workerId, 'worker_count' => $count];
 }
 
 function tech_cancel_limit(): int
@@ -998,7 +1570,10 @@ function tech_cancel_limit(): int
 
 function worker_is_blocked(array $profile): bool
 {
-    if ((int)($profile['is_receive_blocked'] ?? 0) === 1 || (int)($profile['payment_blocked'] ?? 0) === 1) {
+    if ((int)($profile['payment_blocked'] ?? 0) === 1) {
+        return true;
+    }
+    if ((int)($profile['is_receive_blocked'] ?? 0) === 1) {
         $until = (string)($profile['blocked_until'] ?? '');
         return $until === '' || strtotime($until) === false || strtotime($until) > time();
     }
@@ -1024,7 +1599,7 @@ function increment_worker_penalty(PDO $pdo, int $workerId, string $reason): arra
 function active_identifiers(array $input, string $phone = ''): array
 {
     $items = [];
-    $device = clean_string($input['device_fingerprint'] ?? $input['fingerprint'] ?? $input['device_id'] ?? '', 255);
+    $device = clean_string((string)($input['device_fingerprint'] ?? $input['fingerprint'] ?? $input['device_id'] ?? ''), 255);
     if ($device !== '') {
         $items[] = ['identifier' => $device, 'type' => 'device'];
     }
@@ -1087,6 +1662,40 @@ function get_job_pricing(PDO $pdo, int $jobId): array
     return $stmt->fetch() ?: [];
 }
 
+function job_worker_telegram_id(array $job): int
+{
+    $telegramWorkerId = (int)($job['telegram_worker_id'] ?? 0);
+    return $telegramWorkerId > 0 ? $telegramWorkerId : (int)($job['worker_id'] ?? 0);
+}
+
+function job_assignment_values(PDO $pdo, int $workerId): array
+{
+    $values = ['telegram_worker_id' => $workerId];
+    $workerColumnType = strtolower(column_type($pdo, 'job_posts', 'worker_id'));
+    $legacyLimit = strpos($workerColumnType, 'unsigned') !== false ? 4294967295 : 2147483647;
+    $workerIdFitsLegacyColumn = $workerId <= $legacyLimit;
+    $values['worker_id'] = strpos($workerColumnType, 'bigint') !== false || $workerIdFitsLegacyColumn ? $workerId : null;
+    return $values;
+}
+
+function job_belongs_to_worker(PDO $pdo, array $job, int $workerId): bool
+{
+    if ($workerId <= 0) {
+        return false;
+    }
+    if (job_worker_telegram_id($job) === $workerId) {
+        return true;
+    }
+    $stmt = $pdo->prepare("SELECT telegram_user_id FROM job_claims
+        WHERE job_id = ? AND outcome = 'claimed' ORDER BY id DESC LIMIT 1");
+    $stmt->execute([(int)($job['id'] ?? 0)]);
+    if ((int)$stmt->fetchColumn() !== $workerId) {
+        return false;
+    }
+    update_compat($pdo, 'job_posts', job_assignment_values($pdo, $workerId), 'id = ?', [(int)$job['id']]);
+    return true;
+}
+
 function job_display_status(array $job): string
 {
     $raw = (string)($job['status'] ?? '');
@@ -1096,7 +1705,7 @@ function job_display_status(array $job): string
     if (in_array($raw, ['cancelled', 'spam'], true)) {
         return $raw;
     }
-    if (!empty($job['worker_id'])) {
+    if (job_worker_telegram_id($job) > 0) {
         return 'assigned';
     }
     return 'pending';
@@ -1108,6 +1717,8 @@ function insert_repair_job(PDO $pdo, array $job): int
     $customerName = clean_string($job['customer_name'] ?? 'Khach', 150);
     $customerPhone = digits_only($job['customer_phone'] ?? '');
     $address = clean_string($job['address'] ?? '', 1000);
+    $mapLat = isset($job['map_lat']) && is_numeric($job['map_lat']) ? (float)$job['map_lat'] : null;
+    $mapLng = isset($job['map_lng']) && is_numeric($job['map_lng']) ? (float)$job['map_lng'] : null;
     $description = clean_string($job['description'] ?? '', 3000);
     $finalTotal = (int)($job['final_total'] ?? 0);
     $customerTotal = (int)($job['customer_total'] ?? $finalTotal);
@@ -1122,6 +1733,8 @@ function insert_repair_job(PDO $pdo, array $job): int
         'customer_phone' => $customerPhone,
         'service_type' => $serviceType,
         'address' => $address,
+        'map_lat' => $mapLat,
+        'map_lng' => $mapLng,
         'description' => $fullDescription,
         'quantity' => max(1, (int)($job['quantity'] ?? 1)),
         'customer_total' => $customerTotal,
@@ -1154,6 +1767,7 @@ function insert_job_pricing(PDO $pdo, int $jobId, array $pricing)
         'final_customer_price' => $pricing['final_customer_price'],
         'platform_fee' => $pricing['platform_fee'],
         'tech_net_income' => $pricing['tech_net_income'],
+        'paid_amount' => 0,
         'payment_status' => 'unpaid',
     ], ['created_at' => 'NOW()']);
 }
@@ -1171,9 +1785,12 @@ function send_worker_job_to_group(PDO $pdo, int $jobId): bool
     }
 
     $publicDescription = mask_phone_like_text((string)($job['description'] ?? ''));
+    $coordinates = worker_map_coordinates($job);
+    $mapsUrl = worker_google_maps_url($job);
     $text = "<b>CA GOI THO #{$jobId}</b>\n"
         . "Dich vu: " . esc_html($job['service_type'] ?? '') . "\n"
         . "Dia chi: " . esc_html($job['address'] ?? $job['location'] ?? '') . "\n"
+        . ($coordinates !== [] ? "Toa do da xac nhan: <code>" . esc_html($coordinates['text']) . "</code>\n" : "Toa do: chua duoc khach xac nhan tren ban do\n")
         . "Mo ta: " . esc_html($publicDescription) . "\n"
         . "SDT an toan: " . esc_html(mask_phone((string)($job['customer_phone'] ?? ''))) . "\n"
         . "Gia khach: <b>" . fmt_money((int)($job['final_total'] ?? $pricing['final_customer_price'] ?? 0)) . "</b>\n"
@@ -1189,6 +1806,9 @@ function send_worker_job_to_group(PDO $pdo, int $jobId): bool
             ],
         ],
     ];
+    if ($mapsUrl !== '') {
+        $keyboard['inline_keyboard'][] = [['text' => 'Mo Google Maps den nha khach', 'url' => $mapsUrl]];
+    }
     $resp = tg_send('worker', $chatId, $text, $keyboard);
     $messageId = (int)($resp['result']['message_id'] ?? 0);
     if (!empty($resp['ok']) && $messageId > 0) {
@@ -1200,10 +1820,11 @@ function send_worker_job_to_group(PDO $pdo, int $jobId): bool
 
 function claim_job(PDO $pdo, int $jobId, int $workerId, string $workerName, string $username = ''): array
 {
-    upsert_worker($pdo, $workerId, $workerName, $username);
-    $profile = get_worker_profile($pdo, $workerId);
+    upsert_worker($pdo, $workerId, $workerName, $username, 'worker');
+    $profile = enforce_worker_payment_lock($pdo, $workerId);
     if (worker_is_blocked($profile)) {
-        return ['ok' => false, 'message' => 'Tai khoan tho dang bi khoa nhan ca. Lien he admin.'];
+        $debt = worker_fee_debt($pdo, $workerId);
+        return ['ok' => false, 'message' => $debt > 0 ? 'Tai khoan dang bi khoa nhan ca. No phi nen tang: ' . fmt_money($debt) . '.' : 'Tai khoan tho dang bi khoa nhan ca. Lien he admin.'];
     }
 
     $pdo->beginTransaction();
@@ -1225,8 +1846,7 @@ function claim_job(PDO $pdo, int $jobId, int $workerId, string $workerName, stri
             return ['ok' => false, 'message' => 'Ca nay da co tho nhan hoac da dong.'];
         }
 
-        update_compat($pdo, 'job_posts', [
-            'worker_id' => $workerId,
+        update_compat($pdo, 'job_posts', job_assignment_values($pdo, $workerId) + [
             'status' => job_status($pdo, 'assigned'),
         ], 'id = ?', [$jobId], ['assigned_at' => 'NOW()', 'updated_at' => 'NOW()']);
 
@@ -1249,26 +1869,34 @@ function claim_job(PDO $pdo, int $jobId, int $workerId, string $workerName, stri
 
     $job = get_job_row($pdo, $jobId) ?: [];
     $pricing = get_job_pricing($pdo, $jobId);
+    $coordinates = worker_map_coordinates($job);
+    $mapsUrl = worker_google_maps_url($job);
     $dm = "<b>BAN DA NHAN CA #{$jobId}</b>\n"
         . "Khach: " . esc_html($job['customer_name'] ?? '') . "\n"
         . "SDT day du: <b>" . esc_html($job['customer_phone'] ?? '') . "</b>\n"
         . "Dia chi: " . esc_html($job['address'] ?? $job['location'] ?? '') . "\n"
+        . ($coordinates !== [] ? "Toa do da xac nhan: <code>" . esc_html($coordinates['text']) . "</code>\n" : '')
         . "Mo ta: " . esc_html($job['description'] ?? '') . "\n"
         . "Tien tho muc tieu: " . fmt_money((int)($pricing['tech_net_income'] ?? 0)) . "\n\n"
         . "Lam xong: REPLY vao tin nhan nay voi chu XONG.\n"
         . "Neu huy ca: REPLY voi chu HUY.";
-    $resp = tg_send('worker', (string)$workerId, $dm, [
+    $dmKeyboard = [
         'inline_keyboard' => [
             [
                 ['text' => 'Da xong', 'callback_data' => "done_job_{$jobId}"],
                 ['text' => 'Huy ca', 'callback_data' => "cancel_job_{$jobId}"],
             ],
         ],
-    ]);
+    ];
+    if ($mapsUrl !== '') {
+        $dmKeyboard['inline_keyboard'][] = [['text' => 'Mo Google Maps den nha khach', 'url' => $mapsUrl]];
+    }
+    $resp = tg_send('worker', (string)$workerId, $dm, $dmKeyboard);
     $messageId = (int)($resp['result']['message_id'] ?? 0);
     if (empty($resp['ok']) || $messageId <= 0) {
         update_compat($pdo, 'job_posts', [
             'worker_id' => null,
+            'telegram_worker_id' => null,
             'status' => job_status($pdo, 'pending'),
             'cancel_reason' => 'DM to worker failed; worker may need /start.',
         ], 'id = ?', [$jobId], ['updated_at' => 'NOW()']);
@@ -1286,11 +1914,12 @@ function claim_job(PDO $pdo, int $jobId, int $workerId, string $workerName, stri
 function cancel_worker_job(PDO $pdo, int $jobId, int $workerId, string $workerName, string $reason): array
 {
     $job = get_job_row($pdo, $jobId);
-    if (!$job || (int)($job['worker_id'] ?? 0) !== $workerId) {
+    if (!$job || !job_belongs_to_worker($pdo, $job, $workerId)) {
         return ['ok' => false, 'message' => 'Ca khong thuoc tho nay.'];
     }
     update_compat($pdo, 'job_posts', [
         'worker_id' => null,
+        'telegram_worker_id' => null,
         'status' => job_status($pdo, 'pending'),
         'cancel_reason' => $reason,
     ], 'id = ?', [$jobId], ['cancelled_at' => 'NOW()', 'updated_at' => 'NOW()']);
@@ -1317,32 +1946,48 @@ function cancel_worker_job(PDO $pdo, int $jobId, int $workerId, string $workerNa
 
 function complete_worker_job(PDO $pdo, int $jobId, int $workerId, string $workerName): array
 {
-    $job = get_job_row($pdo, $jobId);
-    if (!$job || (int)($job['worker_id'] ?? 0) !== $workerId) {
-        return ['ok' => false, 'message' => 'Ca khong thuoc tho nay.'];
+    $pdo->beginTransaction();
+    try {
+        $job = get_job_row($pdo, $jobId, true);
+        if (!$job || !job_belongs_to_worker($pdo, $job, $workerId)) {
+            $pdo->rollBack();
+            return ['ok' => false, 'message' => 'Ca khong thuoc tho nay.'];
+        }
+        if (job_display_status($job) === 'completed') {
+            $pdo->commit();
+            return ['ok' => true, 'message' => "Ca #{$jobId} da duoc ghi nhan hoan thanh truoc do."];
+        }
+        update_compat($pdo, 'job_posts', [
+            'status' => job_status($pdo, 'completed'),
+        ], 'id = ?', [$jobId], ['completed_at' => 'NOW()', 'updated_at' => 'NOW()']);
+
+        $pricing = get_job_pricing($pdo, $jobId);
+        update_compat($pdo, 'job_pricing', ['payment_status' => 'unpaid'], 'job_id = ?', [$jobId]);
+        insert_compat($pdo, 'finances', [
+            'type' => 'platform_fee_receivable',
+            'amount' => (int)($pricing['platform_fee'] ?? 0),
+            'source_type' => 'job',
+            'source_id' => $jobId,
+            'note' => "Platform fee debt from worker {$workerId}",
+        ], ['created_at' => 'NOW()']);
+
+        $pdo->prepare('UPDATE worker_profiles SET jobs_completed = jobs_completed + 1, updated_at = NOW() WHERE telegram_user_id = ?')
+            ->execute([$workerId]);
+        $pdo->commit();
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $e;
     }
-    update_compat($pdo, 'job_posts', [
-        'status' => job_status($pdo, 'completed'),
-    ], 'id = ?', [$jobId], ['completed_at' => 'NOW()', 'updated_at' => 'NOW()']);
 
-    $pricing = get_job_pricing($pdo, $jobId);
-    update_compat($pdo, 'job_pricing', ['payment_status' => 'unpaid'], 'job_id = ?', [$jobId]);
-    insert_compat($pdo, 'finances', [
-        'type' => 'platform_fee_receivable',
-        'amount' => (int)($pricing['platform_fee'] ?? 0),
-        'source_type' => 'job',
-        'source_id' => $jobId,
-        'note' => "Platform fee debt from worker {$workerId}",
-    ], ['created_at' => 'NOW()']);
-
-    $pdo->prepare('UPDATE worker_profiles SET jobs_completed = jobs_completed + 1, updated_at = NOW() WHERE telegram_user_id = ?')
-        ->execute([$workerId]);
-
+    $cumulativeDebt = worker_fee_debt($pdo, $workerId);
     $groupChat = telegram_chat('worker');
     if ($groupChat !== '') {
-        tg_send('worker', $groupChat, "Ca #{$jobId} da hoan thanh boi {$workerName}. Phi nen tang: " . fmt_money((int)($pricing['platform_fee'] ?? 0)));
+        tg_send('worker', $groupChat, "Ca #{$jobId} da hoan thanh boi {$workerName}. Phi ca nay: " . fmt_money((int)($pricing['platform_fee'] ?? 0)) . ". Tong no phi den hien tai: " . fmt_money($cumulativeDebt));
     }
-    return ['ok' => true, 'message' => "Da danh dau ca #{$jobId} hoan thanh."];
+    send_worker_debt_notice($pdo, $workerId, "Phi nen tang cong don sau ca #{$jobId}");
+    return ['ok' => true, 'message' => "Da danh dau ca #{$jobId} hoan thanh. Tong no phi nen tang: " . fmt_money($cumulativeDebt) . '.'];
 }
 
 function text_is_cancel(string $text): bool
@@ -1675,6 +2320,9 @@ function handle_worker_webhook(PDO $pdo, array $update): array
         $name = worker_name($from);
         $username = (string)($from['username'] ?? '');
         $callbackId = (string)($cb['id'] ?? '');
+        if ($workerId > 0) {
+            upsert_worker($pdo, $workerId, $name, $username, 'worker');
+        }
         if (preg_match('/^claim_job_(\d+)$/', $data, $m)) {
             $r = claim_job($pdo, (int)$m[1], $workerId, $name, $username);
             tg_answer_callback('worker', $callbackId, $r['message'], !$r['ok']);
@@ -1695,6 +2343,15 @@ function handle_worker_webhook(PDO $pdo, array $update): array
             tg_answer_callback('worker', $callbackId, $r['message'], !$r['ok']);
             return $r;
         }
+        if (preg_match('/^paid_notice_(\d+)$/', $data, $m)) {
+            if ((int)$m[1] !== $workerId) {
+                $r = ['ok' => false, 'message' => 'Nut thanh toan nay khong thuoc tai khoan cua ban.'];
+            } else {
+                $r = record_worker_payment_notice($pdo, $workerId);
+            }
+            tg_answer_callback('worker', $callbackId, $r['message'], !$r['ok']);
+            return $r;
+        }
         return ['ok' => true, 'message' => 'callback ignored'];
     }
 
@@ -1712,11 +2369,20 @@ function handle_worker_webhook(PDO $pdo, array $update): array
     $text = clean_string($msg['text'] ?? $msg['caption'] ?? '', 1000);
 
     if ($workerId > 0) {
-        upsert_worker($pdo, $workerId, $name, $username);
+        upsert_worker($pdo, $workerId, $name, $username, 'worker');
+    }
+
+    if (dth_starts_with(strtolower($text), '/idtelegram')) {
+        $result = register_worker_from_admin_command($pdo, $workerId, $text, 'worker');
+        tg_send('worker', (string)$workerId, $result['message']);
+        return $result;
     }
 
     if (dth_starts_with($text, '/start')) {
-        tg_send('worker', (string)$workerId, "Bot Anh Thien 1 da ket noi. Reply vao tin ca trong nhom de nhan viec. Khi bot DM, reply XONG de ket thuc ca.");
+        $message = is_admin_telegram_id($workerId)
+            ? "Bot Anh Thien 1 da nhan dien admin {$workerId}. Lenh dang ky tho: /idtelegram | TELEGRAM_ID | SO_DIEN_THOAI | TEN_THO"
+            : "Bot Anh Thien 1 da ket noi. Reply vao tin ca trong nhom de nhan viec. Khi bot DM, reply XONG de ket thuc ca.";
+        tg_send('worker', (string)$workerId, $message);
         return ['ok' => true, 'message' => 'started'];
     }
 
@@ -1757,6 +2423,7 @@ function handle_sales_webhook(PDO $pdo, array $update): array
         $cb = $update['callback_query'];
         $data = (string)($cb['data'] ?? '');
         $from = (array)($cb['from'] ?? []);
+        $senderId = (int)($from['id'] ?? 0);
         $name = worker_name($from);
         $callbackId = (string)($cb['id'] ?? '');
         if (preg_match('/^confirm_order_(\d+)$/', $data, $m)) {
@@ -1766,6 +2433,19 @@ function handle_sales_webhook(PDO $pdo, array $update): array
         }
         if (preg_match('/^reject_order_(\d+)$/', $data, $m)) {
             $r = confirm_order($pdo, (int)$m[1], $name, false);
+            tg_answer_callback('sales', $callbackId, $r['message'], !$r['ok']);
+            return $r;
+        }
+        if (preg_match('/^confirm_worker_pay_(\d+)$/', $data, $m)) {
+            if (!is_admin_telegram_id($senderId)) {
+                $r = ['ok' => false, 'message' => 'Chi admin duoc xac nhan thanh toan.'];
+            } else {
+                $workerId = (int)$m[1];
+                $debt = worker_fee_debt($pdo, $workerId);
+                $r = $debt > 0
+                    ? settle_worker_payment($pdo, $workerId, $debt, 'telegram_admin', 'ADMIN-' . date('YmdHis'), (string)$senderId)
+                    : ['ok' => true, 'message' => 'Tho khong con no phi nen tang.'];
+            }
             tg_answer_callback('sales', $callbackId, $r['message'], !$r['ok']);
             return $r;
         }
@@ -1780,7 +2460,29 @@ function handle_sales_webhook(PDO $pdo, array $update): array
     $replyMessageId = (int)($msg['reply_to_message']['message_id'] ?? 0);
     $text = clean_string($msg['text'] ?? $msg['caption'] ?? '', 1000);
     $from = (array)($msg['from'] ?? []);
+    $senderId = (int)($from['id'] ?? 0);
     $name = worker_name($from);
+    $username = (string)($from['username'] ?? '');
+    $knownProfile = $senderId > 0 ? get_worker_profile($pdo, $senderId) : [];
+    if ($senderId > 0 && (is_admin_telegram_id($senderId) || $knownProfile !== [])) {
+        upsert_worker($pdo, $senderId, $name, $username, 'sales');
+    }
+    if (dth_starts_with(strtolower($text), '/idtelegram')) {
+        $result = register_worker_from_admin_command($pdo, $senderId, $text, 'sales');
+        tg_send('sales', (string)$senderId, $result['message']);
+        return $result;
+    }
+    if (dth_starts_with($text, '/start')) {
+        if (is_admin_telegram_id($senderId)) {
+            $message = "Bot Anh Thien 2 da nhan dien admin {$senderId}. Lenh dang ky tho: /idtelegram | TELEGRAM_ID | SO_DIEN_THOAI | TEN_THO";
+        } elseif ($knownProfile !== []) {
+            $message = "Bot Anh Thien 2 da nhan dien tho {$senderId}. Ho so cua ban se duoc tong hop tren Dashboard.";
+        } else {
+            $message = 'Bot Anh Thien 2 da ket noi. Admin can dang ky Telegram ID cua ban truoc khi tong hop vao Dashboard.';
+        }
+        tg_send('sales', (string)$senderId, $message);
+        return ['ok' => true, 'message' => 'started'];
+    }
     if ($chatId === '' || $replyMessageId <= 0) {
         return ['ok' => true, 'message' => 'not a reply'];
     }
@@ -1810,20 +2512,233 @@ function handle_telegram_webhook()
     json_out(['ok' => true, 'result' => $result]);
 }
 
+function verify_cron_secret()
+{
+    $expected = app_env('CRON_SECRET', '');
+    $actual = (string)($_GET['secret'] ?? $_SERVER['HTTP_X_CRON_SECRET'] ?? '');
+    if ($expected === '' || !hash_equals($expected, $actual)) {
+        json_out(['status' => 'error', 'message' => 'Invalid cron secret.'], 403);
+    }
+}
+
+function verify_sepay_webhook()
+{
+    $expected = app_env('SEPAY_API_KEY', '');
+    $authorization = trim((string)($_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? ''));
+    if ($expected === '' || (!hash_equals('Apikey ' . $expected, $authorization) && !hash_equals('Bearer ' . $expected, $authorization))) {
+        json_out(['success' => false, 'message' => 'Invalid SePay authorization.'], 401);
+    }
+}
+
+function momo_ipn_signature(array $payload): string
+{
+    $raw = 'accessKey=' . app_env('MOMO_ACCESS_KEY', '');
+    foreach (['amount', 'extraData', 'message', 'orderId', 'orderInfo', 'orderType', 'partnerCode', 'payType', 'requestId', 'responseTime', 'resultCode', 'transId'] as $key) {
+        $raw .= '&' . $key . '=' . (string)($payload[$key] ?? '');
+    }
+    return hash_hmac('sha256', $raw, app_env('MOMO_SECRET_KEY', ''));
+}
+
+function handle_momo_worker_payment()
+{
+    if (!momo_payment_configured()) {
+        json_out(['status' => 'error', 'message' => 'MoMo merchant chua duoc cau hinh.'], 503);
+    }
+    $workerId = (int)digits_only($_GET['worker_id'] ?? '');
+    $token = clean_string($_GET['token'] ?? '', 200);
+    if ($workerId <= 0 || $token === '' || !hash_equals(momo_worker_payment_signature($workerId), $token)) {
+        json_out(['status' => 'error', 'message' => 'Lien ket thanh toan MoMo khong hop le.'], 403);
+    }
+
+    $pdo = pdo();
+    $amount = worker_fee_debt($pdo, $workerId);
+    if ($amount <= 0) {
+        json_out(['status' => 'success', 'message' => 'Tho khong con no phi nen tang.']);
+    }
+
+    $partnerCode = trim(app_env('MOMO_PARTNER_CODE', ''));
+    $accessKey = trim(app_env('MOMO_ACCESS_KEY', ''));
+    $secretKey = app_env('MOMO_SECRET_KEY', '');
+    $requestType = trim(app_env('MOMO_REQUEST_TYPE', 'captureWallet')) ?: 'captureWallet';
+    $endpoint = trim(app_env('MOMO_CREATE_ENDPOINT', 'https://payment.momo.vn/v2/gateway/api/create'));
+    $orderId = worker_payment_code($workerId) . '-' . date('YmdHis') . '-' . random_int(100, 999);
+    $requestId = $orderId;
+    $orderInfo = 'Phi nen tang ' . worker_payment_code($workerId);
+    $redirectUrl = trim(app_env('MOMO_REDIRECT_URL', app_public_url() . '/?payment=momo'));
+    $ipnUrl = app_public_url() . '/api_master.php?action=momo_ipn';
+    $extraData = base64_encode(json_encode(['worker_id' => $workerId], JSON_UNESCAPED_SLASHES) ?: '{}');
+    $rawSignature = "accessKey={$accessKey}&amount={$amount}&extraData={$extraData}&ipnUrl={$ipnUrl}&orderId={$orderId}"
+        . "&orderInfo={$orderInfo}&partnerCode={$partnerCode}&redirectUrl={$redirectUrl}&requestId={$requestId}&requestType={$requestType}";
+    $payload = [
+        'partnerCode' => $partnerCode,
+        'requestType' => $requestType,
+        'ipnUrl' => $ipnUrl,
+        'redirectUrl' => $redirectUrl,
+        'orderId' => $orderId,
+        'amount' => $amount,
+        'orderInfo' => $orderInfo,
+        'requestId' => $requestId,
+        'extraData' => $extraData,
+        'lang' => 'vi',
+        'autoCapture' => true,
+        'signature' => hash_hmac('sha256', $rawSignature, $secretKey),
+    ];
+
+    $ch = curl_init($endpoint);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_SLASHES),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT => 35,
+    ]);
+    $raw = curl_exec($ch);
+    $http = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    $response = json_decode((string)$raw, true);
+    $payUrl = is_array($response) ? (string)($response['payUrl'] ?? '') : '';
+    $payHost = strtolower((string)parse_url($payUrl, PHP_URL_HOST));
+    if ($http !== 200 || (int)($response['resultCode'] ?? -1) !== 0 || !filter_var($payUrl, FILTER_VALIDATE_URL)
+        || !preg_match('/(^|\.)momo\.vn$/i', $payHost)) {
+        error_log('[momo_create] HTTP=' . $http . ' ' . ($error !== '' ? $error : substr((string)$raw, 0, 500)));
+        json_out(['status' => 'error', 'message' => 'Khong tao duoc lien ket MoMo luc nay.'], 502);
+    }
+
+    insert_compat($pdo, 'worker_payments', [
+        'worker_id' => $workerId,
+        'amount' => $amount,
+        'applied_amount' => 0,
+        'method' => 'momo',
+        'reference_code' => $orderId,
+        'status' => 'pending',
+        'note' => 'MoMo payment link created; waiting for verified IPN.',
+    ], ['created_at' => 'NOW()']);
+
+    header('Location: ' . $payUrl, true, 302);
+    exit;
+}
+
+function handle_momo_ipn()
+{
+    if (!momo_payment_configured()) {
+        json_out(['status' => 'error', 'message' => 'MoMo merchant chua duoc cau hinh.'], 503);
+    }
+    $payload = request_data();
+    $partnerCode = (string)($payload['partnerCode'] ?? '');
+    $signature = strtolower((string)($payload['signature'] ?? ''));
+    if ($partnerCode !== app_env('MOMO_PARTNER_CODE', '') || $signature === ''
+        || !hash_equals(momo_ipn_signature($payload), $signature)) {
+        json_out(['status' => 'error', 'message' => 'MoMo IPN signature khong hop le.'], 401);
+    }
+    $orderId = clean_string($payload['orderId'] ?? '', 150);
+    $pdo = pdo();
+    if ((int)($payload['resultCode'] ?? -1) !== 0) {
+        $message = clean_string($payload['message'] ?? 'MoMo payment failed.', 500);
+        $pdo->prepare("UPDATE worker_payments SET status = 'failed', note = ?, confirmed_at = NOW()
+            WHERE reference_code = ? AND method = 'momo' AND status = 'pending'")
+            ->execute([$message, $orderId]);
+        http_response_code(204);
+        exit;
+    }
+
+    if (!preg_match('/^DTHP(\d{5,20})-/', $orderId, $match)) {
+        json_out(['status' => 'error', 'message' => 'Khong tim thay ma tho trong giao dich MoMo.'], 400);
+    }
+    $workerId = (int)$match[1];
+    $amount = money_int($payload['amount'] ?? 0);
+    $pending = $pdo->prepare("SELECT * FROM worker_payments WHERE worker_id = ? AND reference_code = ? AND method = 'momo' ORDER BY id DESC LIMIT 1");
+    $pending->execute([$workerId, $orderId]);
+    $payment = $pending->fetch();
+    if (!$payment || (int)$payment['amount'] !== $amount) {
+        json_out(['status' => 'error', 'message' => 'Giao dich MoMo khong khop yeu cau dang cho.'], 409);
+    }
+
+    $transId = clean_string($payload['transId'] ?? '', 120);
+    if ($transId === '') {
+        json_out(['status' => 'error', 'message' => 'MoMo IPN thieu ma giao dich.'], 400);
+    }
+    settle_worker_payment($pdo, $workerId, $amount, 'momo', $orderId, 'momo_ipn', 'MOMO-' . $transId);
+    http_response_code(204);
+    exit;
+}
+
+function handle_sepay_webhook()
+{
+    verify_sepay_webhook();
+    $pdo = pdo();
+    $payload = request_data();
+    $transferType = strtolower(clean_string($payload['transferType'] ?? $payload['transfer_type'] ?? '', 30));
+    if ($transferType !== '' && !in_array($transferType, ['in', 'credit', 'incoming'], true)) {
+        json_out(['success' => true, 'message' => 'Outgoing transaction ignored.']);
+    }
+    $content = clean_string($payload['content'] ?? $payload['description'] ?? $payload['transaction_content'] ?? '', 1000);
+    if (!preg_match('/DTHP\s*(\d{5,20})/i', $content, $match)) {
+        json_out(['success' => true, 'message' => 'Payment code not found; transaction ignored.']);
+    }
+    $workerId = (int)$match[1];
+    $amount = money_int($payload['transferAmount'] ?? $payload['transfer_amount'] ?? $payload['amount'] ?? 0);
+    $transactionId = clean_string($payload['id'] ?? $payload['transaction_id'] ?? $payload['referenceCode'] ?? '', 120);
+    $reference = clean_string($payload['referenceCode'] ?? $payload['reference_code'] ?? worker_payment_code($workerId), 150);
+    $externalId = $transactionId !== '' ? 'SEPAY-' . $transactionId : 'SEPAY-' . hash('sha256', $content . '|' . $amount . '|' . ($payload['transactionDate'] ?? ''));
+    $result = settle_worker_payment($pdo, $workerId, $amount, 'sepay', $reference, 'sepay_webhook', $externalId);
+    json_out(['success' => true, 'result' => $result]);
+}
+
+function send_daily_business_report(PDO $pdo): array
+{
+    $stats = admin_stats($pdo);
+    $paidToday = 0;
+    if (table_exists($pdo, 'worker_payments')) {
+        $paidToday = (int)$pdo->query("SELECT COALESCE(SUM(applied_amount),0) FROM worker_payments WHERE status = 'confirmed' AND DATE(confirmed_at) = CURDATE()")->fetchColumn();
+    }
+    $text = "<b>BAO CAO NGAY " . date('d/m/Y') . "</b>\n"
+        . "Don hang: " . (int)$stats['today_orders'] . "\n"
+        . "Doanh thu don hang: " . fmt_money((int)$stats['today_revenue']) . "\n"
+        . "Ca goi tho hom nay: " . (int)$stats['today_jobs'] . "\n"
+        . "Tong tho: " . (int)($stats['total_workers'] ?? 0) . "\n"
+        . "Phi nen tang da thu hom nay: " . fmt_money($paidToday) . "\n"
+        . "Tong no phi nen tang: " . fmt_money((int)$stats['unpaid_total']);
+    $chatId = telegram_chat('sales');
+    $response = $chatId !== '' ? tg_send('sales', $chatId, $text) : ['ok' => false];
+    return ['sent' => !empty($response['ok']), 'stats' => $stats, 'paid_today' => $paidToday];
+}
+
 function create_job_action(array $input): array
 {
     $pdo = pdo();
-    $phone = digits_only($input['phone'] ?? $input['sdt'] ?? $input['customer_phone'] ?? '');
-    $address = clean_string($input['address'] ?? $input['dia_chi'] ?? '', 1000);
-    $description = clean_string($input['issue_description'] ?? $input['mo_ta'] ?? $input['description'] ?? '', 3000);
-    $serviceType = clean_string($input['service_type'] ?? $input['loai_tho'] ?? 'Dich vu dien lanh', 150);
-    $customerName = clean_string($input['customer_name'] ?? $input['name'] ?? 'Khach', 150);
+    $phone = digits_only((string)($input['phone'] ?? $input['sdt'] ?? $input['customer_phone'] ?? ''));
+    $address = clean_string((string)($input['address'] ?? $input['dia_chi'] ?? ''), 1000);
+    $mapLocation = clean_string((string)($input['map_location'] ?? ''), 80);
+    $mapLat = isset($input['map_lat']) && is_numeric($input['map_lat']) ? (float)$input['map_lat'] : null;
+    $mapLng = isset($input['map_lng']) && is_numeric($input['map_lng']) ? (float)$input['map_lng'] : null;
+    if (($mapLat === null || $mapLng === null) && preg_match('/^(-?\d{1,3}(?:\.\d+)?),(-?\d{1,3}(?:\.\d+)?)$/', $mapLocation, $coords)) {
+        $mapLat = (float)$coords[1];
+        $mapLng = (float)$coords[2];
+    }
+    if ($mapLat !== null && $mapLng !== null && (abs($mapLat) > 90 || abs($mapLng) > 180)) {
+        $mapLat = null;
+        $mapLng = null;
+    }
+    if ($mapLocation !== '' && preg_match('/^-?\d{1,3}(?:\.\d+)?,-?\d{1,3}(?:\.\d+)?$/', $mapLocation) && strpos($address, $mapLocation) === false) {
+        $address = clean_string($address . ' | Tọa độ: ' . $mapLocation, 1000);
+    }
+    $description = clean_string((string)($input['issue_description'] ?? $input['mo_ta'] ?? $input['description'] ?? ''), 3000);
+    $serviceType = clean_string((string)($input['service_type'] ?? $input['loai_tho'] ?? 'Dich vu dien lanh'), 150);
+    $customerName = clean_string((string)($input['customer_name'] ?? $input['name'] ?? 'Khach'), 150);
     $quantity = max(1, (int)($input['quantity'] ?? $input['qty'] ?? 1));
     $techBase = money_int($input['tech_target_base'] ?? $input['tech_base'] ?? 0);
     $estimated = money_int($input['estimated_price'] ?? $input['customer_price'] ?? $input['final_total'] ?? 0);
 
     if (strlen($phone) < 8 || $address === '' || $description === '') {
         json_out(['status' => 'error', 'message' => 'Thieu phone, dia chi hoac mo ta su co.'], 400);
+    }
+    if ($mapLat === null || $mapLng === null) {
+        json_out(['status' => 'error', 'message' => 'Vui long bam chon va xac nhan toa do tren ban do truoc khi gui yeu cau.'], 400);
     }
 
     $identifiers = active_identifiers($input, $phone);
@@ -1835,6 +2750,8 @@ function create_job_action(array $input): array
         'customer_phone' => $phone,
         'service_type' => $serviceType,
         'address' => $address,
+        'map_lat' => $mapLat,
+        'map_lng' => $mapLng,
         'description' => $description,
         'quantity' => $quantity,
         'customer_total' => $pricing['gross_customer_price'],
@@ -2117,23 +3034,135 @@ function admin_jobs(PDO $pdo): array
     $rows = [];
     foreach ($stmt->fetchAll() as $row) {
         $pricing = get_job_pricing($pdo, (int)$row['id']);
+        $coordinates = worker_map_coordinates($row);
         $rows[] = [
             'id' => (int)$row['id'],
             'customer_name' => (string)($row['customer_name'] ?? ''),
             'customer_phone' => (string)($row['customer_phone'] ?? ''),
             'service_type' => (string)($row['service_type'] ?? $row['title'] ?? ''),
             'address' => (string)($row['address'] ?? $row['location'] ?? ''),
+            'map_location' => (string)($coordinates['text'] ?? ''),
+            'maps_url' => worker_google_maps_url($row),
             'description' => (string)($row['description'] ?? ''),
             'final_total' => money_int($row['final_total'] ?? $row['customer_total'] ?? $row['salary_max'] ?? 0),
             'platform_fee' => money_int($pricing['platform_fee'] ?? 0),
             'tech_net_income' => money_int($pricing['tech_net_income'] ?? 0),
-            'worker_id' => $row['worker_id'] ?? null,
+            'worker_id' => job_worker_telegram_id($row) ?: null,
             'status' => job_display_status($row),
             'spam_count' => (int)($row['spam_count'] ?? 0),
             'created_at' => (string)($row['created_at'] ?? ''),
+            'completed_at' => (string)($row['completed_at'] ?? ''),
         ];
     }
     return $rows;
+}
+
+function admin_worker_rows(PDO $pdo): array
+{
+    if (!table_exists($pdo, 'worker_profiles')) {
+        return [];
+    }
+    $stmt = $pdo->query("SELECT wp.telegram_user_id AS worker_id, wp.telegram_name, wp.telegram_username, wp.phone, wp.identity_code,
+        wp.worker_type, wp.role, wp.is_admin, wp.cancel_count, wp.is_receive_blocked, wp.payment_blocked, wp.block_reason,
+        wp.jobs_claimed, wp.jobs_completed, wp.total_paid_fee, wp.last_payment_amount, wp.last_payment_at, wp.last_fee_notice_at,
+        wp.last_seen_bot, wp.last_seen_at, wp.created_at,
+        COALESCE((SELECT COUNT(*) FROM job_posts j WHERE COALESCE(j.telegram_worker_id, j.worker_id) = wp.telegram_user_id), 0) AS job_count,
+        COALESCE((SELECT SUM(jp.tech_net_income) FROM job_pricing jp JOIN job_posts j ON j.id = jp.job_id WHERE COALESCE(j.telegram_worker_id, j.worker_id) = wp.telegram_user_id AND j.completed_at IS NOT NULL), 0) AS total_earned,
+        COALESCE((SELECT SUM(GREATEST(jp.platform_fee - COALESCE(jp.paid_amount, 0), 0)) FROM job_pricing jp JOIN job_posts j ON j.id = jp.job_id WHERE COALESCE(j.telegram_worker_id, j.worker_id) = wp.telegram_user_id AND j.completed_at IS NOT NULL), 0) AS unpaid_fee,
+        COALESCE((SELECT SUM(p.applied_amount) FROM worker_payments p WHERE p.worker_id = wp.telegram_user_id AND p.status = 'confirmed'), 0) AS confirmed_paid_fee,
+        COALESCE((SELECT COUNT(*) FROM worker_payments p WHERE p.worker_id = wp.telegram_user_id AND p.status = 'pending'), 0) AS pending_payment_count
+        FROM worker_profiles wp
+        ORDER BY wp.is_admin DESC, unpaid_fee DESC, wp.updated_at DESC, wp.created_at DESC LIMIT 500");
+    return $stmt->fetchAll();
+}
+
+function admin_worker_payments(PDO $pdo, int $limit = 200): array
+{
+    if (!table_exists($pdo, 'worker_payments')) {
+        return [];
+    }
+    $limit = max(1, min(500, $limit));
+    $stmt = $pdo->query("SELECT p.*, wp.telegram_name, wp.phone
+        FROM worker_payments p LEFT JOIN worker_profiles wp ON wp.telegram_user_id = p.worker_id
+        ORDER BY p.id DESC LIMIT {$limit}");
+    return $stmt->fetchAll();
+}
+
+function xml_cell($value, string $type = 'String'): string
+{
+    $escaped = htmlspecialchars((string)$value, ENT_XML1 | ENT_COMPAT, 'UTF-8');
+    return '<Cell><Data ss:Type="' . $type . '">' . $escaped . '</Data></Cell>';
+}
+
+function output_daily_settlement_excel(PDO $pdo)
+{
+    $stats = admin_stats($pdo);
+    $workers = admin_worker_rows($pdo);
+    $payments = admin_worker_payments($pdo, 500);
+    $today = date('Y-m-d');
+    $todayPayments = array_values(array_filter($payments, static function (array $payment) use ($today): bool {
+        return dth_starts_with((string)($payment['confirmed_at'] ?? ''), $today);
+    }));
+    $todayJobs = array_values(array_filter(admin_jobs($pdo), static function (array $job) use ($today): bool {
+        return $job['status'] === 'completed' && dth_starts_with((string)$job['completed_at'], $today);
+    }));
+
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    header('Content-Type: application/vnd.ms-excel; charset=utf-8');
+    header('Content-Disposition: attachment; filename="ket-toan-ngay-' . $today . '.xls"');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+
+    echo '<?xml version="1.0" encoding="UTF-8"?>';
+    echo '<?mso-application progid="Excel.Sheet"?>';
+    echo '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">';
+    echo '<Worksheet ss:Name="Ket toan ngay"><Table>';
+    echo '<Row>' . xml_cell('KET TOAN NGAY ' . date('d/m/Y')) . '</Row>';
+    foreach ([
+        ['Don hang hom nay', (int)$stats['today_orders']],
+        ['Doanh thu don hang hom nay', (int)$stats['today_revenue']],
+        ['Ca goi tho hom nay', (int)$stats['today_jobs']],
+        ['Tong so tho', (int)($stats['total_workers'] ?? 0)],
+        ['Phi nen tang da thu hom nay', array_sum(array_map(static function (array $p): int { return (int)($p['applied_amount'] ?? 0); }, $todayPayments))],
+        ['Tong no phi nen tang hien tai', (int)$stats['unpaid_total']],
+    ] as $item) {
+        echo '<Row>' . xml_cell($item[0]) . xml_cell($item[1], 'Number') . '</Row>';
+    }
+
+    echo '<Row></Row><Row>' . xml_cell('TONG HOP THO VA CONG NO') . '</Row>';
+    echo '<Row>' . xml_cell('Telegram ID') . xml_cell('Ten tho') . xml_cell('So dien thoai') . xml_cell('Loai') . xml_cell('So ca xong') . xml_cell('Thu nhap') . xml_cell('Da dong phi') . xml_cell('Con no phi') . xml_cell('Trang thai') . '</Row>';
+    foreach ($workers as $worker) {
+        if ((int)($worker['is_admin'] ?? 0) === 1) {
+            continue;
+        }
+        echo '<Row>'
+            . xml_cell($worker['worker_id'])
+            . xml_cell($worker['telegram_name'])
+            . xml_cell($worker['phone'])
+            . xml_cell($worker['worker_type'])
+            . xml_cell((int)$worker['jobs_completed'], 'Number')
+            . xml_cell((int)$worker['total_earned'], 'Number')
+            . xml_cell((int)$worker['confirmed_paid_fee'], 'Number')
+            . xml_cell((int)$worker['unpaid_fee'], 'Number')
+            . xml_cell(((int)$worker['is_receive_blocked'] === 1 || (int)$worker['payment_blocked'] === 1) ? 'Khoa' : 'Hoat dong')
+            . '</Row>';
+    }
+
+    echo '<Row></Row><Row>' . xml_cell('CA HOAN THANH HOM NAY') . '</Row>';
+    echo '<Row>' . xml_cell('Ma ca') . xml_cell('Dich vu') . xml_cell('Tho') . xml_cell('Gia khach') . xml_cell('Phi nen tang') . xml_cell('Dia chi') . '</Row>';
+    foreach ($todayJobs as $job) {
+        echo '<Row>'
+            . xml_cell('#' . $job['id'])
+            . xml_cell($job['service_type'])
+            . xml_cell($job['worker_id'])
+            . xml_cell((int)$job['final_total'], 'Number')
+            . xml_cell((int)$job['platform_fee'], 'Number')
+            . xml_cell($job['address'])
+            . '</Row>';
+    }
+    echo '</Table></Worksheet></Workbook>';
+    exit;
 }
 
 function admin_stats(PDO $pdo): array
@@ -2151,7 +3180,9 @@ function admin_stats(PDO $pdo): array
     $unpaidTotal = 0;
     $unpaidCount = 0;
     if (table_exists($pdo, 'job_pricing') && table_exists($pdo, 'job_posts')) {
-        $stmt = $pdo->query("SELECT COUNT(*) c, COALESCE(SUM(platform_fee),0) s FROM job_pricing WHERE payment_status = 'unpaid'");
+        $stmt = $pdo->query("SELECT COUNT(*) c, COALESCE(SUM(GREATEST(jp.platform_fee - COALESCE(jp.paid_amount, 0), 0)),0) s
+            FROM job_pricing jp JOIN job_posts j ON j.id = jp.job_id
+            WHERE j.completed_at IS NOT NULL AND jp.platform_fee > COALESCE(jp.paid_amount, 0)");
         $r = $stmt->fetch() ?: ['c' => 0, 's' => 0];
         $unpaidCount = (int)$r['c'];
         $unpaidTotal = (int)$r['s'];
@@ -2165,7 +3196,20 @@ function admin_stats(PDO $pdo): array
         $productCount += (int)$pdo->query('SELECT COUNT(*) FROM marketplace_products')->fetchColumn();
     }
     $banCount = table_exists($pdo, 'banned_devices') ? (int)$pdo->query("SELECT COUNT(*) FROM banned_devices WHERE expires_at IS NULL OR expires_at > NOW()")->fetchColumn() : 0;
-    $activeWorkers = table_exists($pdo, 'worker_profiles') ? (int)$pdo->query("SELECT COUNT(*) FROM worker_profiles WHERE is_receive_blocked = 0")->fetchColumn() : 0;
+    $activeWorkers = 0;
+    $totalWorkers = 0;
+    $blockedWorkers = 0;
+    if (table_exists($pdo, 'worker_profiles')) {
+        $totalWorkers = (int)$pdo->query("SELECT COUNT(*) FROM worker_profiles WHERE is_admin = 0 AND role = 'worker'")->fetchColumn();
+        $activeWorkers = (int)$pdo->query("SELECT COUNT(*) FROM worker_profiles WHERE is_admin = 0 AND role = 'worker' AND is_receive_blocked = 0 AND payment_blocked = 0")->fetchColumn();
+        $blockedWorkers = (int)$pdo->query("SELECT COUNT(*) FROM worker_profiles WHERE is_admin = 0 AND role = 'worker' AND (is_receive_blocked = 1 OR payment_blocked = 1)")->fetchColumn();
+    }
+    $feesPaidToday = table_exists($pdo, 'worker_payments')
+        ? (int)$pdo->query("SELECT COALESCE(SUM(applied_amount),0) FROM worker_payments WHERE status = 'confirmed' AND DATE(confirmed_at) = CURDATE()")->fetchColumn()
+        : 0;
+    $pendingPayments = table_exists($pdo, 'worker_payments')
+        ? (int)$pdo->query("SELECT COUNT(*) FROM worker_payments WHERE status = 'pending'")->fetchColumn()
+        : 0;
 
     return [
         'total_orders' => count($orders),
@@ -2183,10 +3227,84 @@ function admin_stats(PDO $pdo): array
         'total_products' => $productCount,
         'total_sims' => 0,
         'active_workers' => $activeWorkers,
+        'total_workers' => $totalWorkers,
+        'blocked_workers' => $blockedWorkers,
         'unpaid_count' => $unpaidCount,
         'unpaid_total' => $unpaidTotal,
+        'fees_paid_today' => $feesPaidToday,
+        'pending_worker_payments' => $pendingPayments,
         'banned_devices' => $banCount,
     ];
+}
+
+function gemini_fallback_reply(string $message, array $input = []): string
+{
+    $publicPrice = clean_string($input['public_price'] ?? '', 120);
+    $service = clean_string($input['selected_service'] ?? $input['service_type'] ?? '', 150);
+    $line = $service !== '' ? "Dịch vụ đang chọn: {$service}." : 'Bạn có thể chọn dịch vụ trong bảng giá trước.';
+    $price = $publicPrice !== '' ? " Giá tham khảo: {$publicPrice}." : '';
+    return "{$line}{$price} Giá đã gồm VAT; vật tư/linh kiện phát sinh sẽ được báo riêng trước khi làm. Để chốt nhanh, vui lòng gửi form Gọi Thợ hoặc gọi 0979.553.289.";
+}
+
+function gemini_quote_reply(array $input): string
+{
+    $message = clean_string($input['message'] ?? '', 1000);
+    if ($message === '') {
+        return gemini_fallback_reply($message, $input);
+    }
+
+    $key = app_env('GEMINI_API_KEY', '');
+    if ($key === '' || !function_exists('curl_init')) {
+        return gemini_fallback_reply($message, $input);
+    }
+
+    $model = trim(app_env('GEMINI_MODEL', 'gemini-1.5-flash'));
+    $model = preg_replace('/^models\//', '', $model) ?: 'gemini-1.5-flash';
+    $serviceType = clean_string($input['service_type'] ?? '', 150);
+    $selected = clean_string($input['selected_service'] ?? '', 150);
+    $publicPrice = clean_string($input['public_price'] ?? '', 120);
+    $address = clean_string($input['address'] ?? '', 500);
+    $prompt = "Bạn là trợ lí báo giá của Điện Tử Hiếu. Trả lời tiếng Việt, ngắn gọn, thực tế, không hứa giảm giá ngoài bảng. "
+        . "Nhấn mạnh giá công khai đã gồm VAT, vật tư/linh kiện phát sinh báo riêng trước khi làm. "
+        . "Bảng tham khảo: vệ sinh máy lạnh 165.000 VND; lắp máy lạnh 1HP/1.5HP 440.000 VND; lắp máy lạnh 2HP/3HP 550.000 VND; sửa chữa điện lạnh, treo tivi, lắp máy lọc nước, lắp máy giặt, kiểm tra/sửa điện thoại 220.000 VND. "
+        . "Nhóm: {$serviceType}. Dịch vụ chọn: {$selected}. Giá đang hiển thị: {$publicPrice}. Địa chỉ: {$address}. Câu hỏi khách: {$message}";
+
+    $payload = [
+        'contents' => [[
+            'role' => 'user',
+            'parts' => [['text' => $prompt]],
+        ]],
+        'generationConfig' => [
+            'temperature' => 0.25,
+            'maxOutputTokens' => 360,
+        ],
+    ];
+
+    $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($model) . ':generateContent?key=' . rawurlencode($key);
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 8,
+        CURLOPT_TIMEOUT => 18,
+    ]);
+    $raw = curl_exec($ch);
+    $err = curl_error($ch);
+    $http = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $decoded = json_decode((string)$raw, true);
+    $reply = '';
+    if (is_array($decoded)) {
+        $reply = (string)($decoded['candidates'][0]['content']['parts'][0]['text'] ?? '');
+    }
+    if ($http !== 200 || $reply === '') {
+        error_log('[gemini_chat] HTTP=' . $http . ' ' . ($err !== '' ? $err : substr((string)$raw, 0, 300)));
+        return gemini_fallback_reply($message, $input);
+    }
+    return clean_string($reply, 1400);
 }
 
 function require_admin_for_action(string $action)
@@ -2219,9 +3337,52 @@ if ($action === 'telegram_webhook') {
     }
 }
 
+if ($action === 'sepay_webhook') {
+    try {
+        handle_sepay_webhook();
+    } catch (Throwable $e) {
+        api_exception_out($e);
+    }
+}
+
+if ($action === 'momo_worker_payment') {
+    try {
+        handle_momo_worker_payment();
+    } catch (Throwable $e) {
+        api_exception_out($e);
+    }
+}
+
+if ($action === 'momo_ipn') {
+    try {
+        handle_momo_ipn();
+    } catch (Throwable $e) {
+        api_exception_out($e);
+    }
+}
+
+if (in_array($action, ['cron_worker_fee_notice', 'cron_worker_fee_lock', 'cron_baocao_ngay'], true)) {
+    try {
+        verify_cron_secret();
+        $pdo = pdo();
+        if ($action === 'cron_worker_fee_notice') {
+            json_out(['status' => 'success', 'result' => notify_all_worker_debts($pdo, 'Nhac phi nen tang thu 2')]);
+        }
+        if ($action === 'cron_worker_fee_lock') {
+            json_out(['status' => 'success', 'result' => lock_all_workers_with_debt($pdo)]);
+        }
+        json_out(['status' => 'success', 'result' => send_daily_business_report($pdo)]);
+    } catch (Throwable $e) {
+        api_exception_out($e);
+    }
+}
+
 try {
     require_admin_for_action($action);
     $input = request_data();
+    if ($action === 'gemini_chat') {
+        json_out(['status' => 'success', 'reply' => gemini_quote_reply($input)]);
+    }
     $pdo = pdo();
 
     switch ($action) {
@@ -2269,13 +3430,6 @@ try {
         ], ['created_at' => 'NOW()']);
         json_out(['status' => 'success', 'message' => 'Da luu prize.']);
 
-    case 'gemini_chat':
-        $msg = clean_string($input['message'] ?? '', 1000);
-        $reply = $msg === ''
-            ? 'Dien Tu Hieu san sang ho tro. Vui long nhap noi dung can tu van.'
-            : 'Cam on ban. De xu ly nhanh, vui long goi 0979.553.289 hoac dat yeu cau tren form Goi tho.';
-        json_out(['status' => 'success', 'reply' => $reply]);
-
     case 'generate_qr':
         $count = max(1, min(500, (int)($input['count'] ?? 1)));
         $codes = [];
@@ -2289,7 +3443,10 @@ try {
                 'code' => $code,
                 'type' => clean_string($input['type'] ?? 'discount', 30),
                 'value' => money_int($input['value'] ?? 0),
+                'discount_amount' => money_int($input['value'] ?? 0),
+                'quantity_left' => 1,
                 'description' => clean_string($input['description'] ?? '', 500),
+                'is_used' => 0,
             ], ['created_at' => 'NOW()']);
             $codes[] = $code;
         }
@@ -2324,6 +3481,60 @@ try {
 
     case 'admin_stats':
         json_out(['status' => 'success', 'stats' => admin_stats($pdo)]);
+
+    case 'admin_daily_settlement_excel':
+        output_daily_settlement_excel($pdo);
+
+    case 'admin_notify_worker_fees':
+        $result = notify_all_worker_debts($pdo, 'Admin nhac phi nen tang');
+        json_out(['status' => 'success', 'message' => "Da gui nhac phi cho {$result['sent']} tho; loi {$result['failed']}.", 'result' => $result]);
+
+    case 'admin_notify_worker_fee':
+        $workerId = (int)($input['worker_id'] ?? 0);
+        if ($workerId <= 0) {
+            json_out(['status' => 'error', 'message' => 'Worker ID khong hop le.'], 400);
+        }
+        $result = send_worker_debt_notice($pdo, $workerId, 'Admin nhac phi nen tang');
+        json_out(['status' => $result['ok'] ? 'success' : 'error'] + $result);
+
+    case 'admin_enforce_worker_fee_lock':
+        $result = lock_all_workers_with_debt($pdo);
+        json_out(['status' => 'success', 'message' => "Da khoa {$result['locked']} tho con no.", 'result' => $result]);
+
+    case 'admin_users':
+        $stmt = $pdo->query("SELECT * FROM users ORDER BY id DESC");
+        json_out(['status' => 'success', 'data' => $stmt->fetchAll()]);
+
+    case 'admin_save_user':
+        $id = (int)($input['id'] ?? 0);
+        $role = clean_string($input['role'] ?? 'buyer', 30);
+        $fullname = clean_string($input['fullname'] ?? '', 150);
+        $phone = digits_only((string)($input['phone'] ?? ''));
+        $isActive = (int)($input['is_active'] ?? 1);
+        $memberRank = clean_string($input['member_rank'] ?? 'Thành viên', 50);
+        $totalSpent = (int)($input['total_spent'] ?? 0);
+
+        if ($fullname === '' || $phone === '') {
+            json_out(['status' => 'error', 'message' => 'Tên và Số điện thoại không được để trống.'], 400);
+        }
+
+        if ($id > 0) {
+            $stmt = $pdo->prepare("UPDATE users SET role = ?, fullname = ?, phone = ?, is_active = ?, member_rank = ?, total_spent = ?, updated_at = NOW() WHERE id = ?");
+            $stmt->execute([$role, $fullname, $phone, $isActive, $memberRank, $totalSpent, $id]);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO users (role, fullname, phone, is_active, member_rank, total_spent, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+            $stmt->execute([$role, $fullname, $phone, $isActive, $memberRank, $totalSpent]);
+            $id = (int)$pdo->lastInsertId();
+        }
+        json_out(['status' => 'success', 'message' => 'Đã lưu khách hàng.', 'id' => $id]);
+
+    case 'admin_delete_user':
+        $id = (int)($input['id'] ?? 0);
+        if ($id <= 0) {
+            json_out(['status' => 'error', 'message' => 'ID không hợp lệ.'], 400);
+        }
+        $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$id]);
+        json_out(['status' => 'success', 'message' => 'Đã xóa khách hàng.']);
 
     case 'admin_orders':
         json_out(['status' => 'success', 'data' => admin_orders($pdo)]);
@@ -2410,6 +3621,8 @@ try {
             'customer_phone' => clean_string($input['phone'] ?? '0979553289', 30),
             'service_type' => clean_string($input['service_type'] ?? 'Dien lanh - Test', 150),
             'address' => clean_string($input['address'] ?? 'Ap Binh Thanh 1, Lap Vo', 500),
+            'map_lat' => isset($input['map_lat']) ? (float)$input['map_lat'] : 10.357422,
+            'map_lng' => isset($input['map_lng']) ? (float)$input['map_lng'] : 105.522124,
             'description' => clean_string($input['description'] ?? 'Ca test webhook/dispatcher.', 1000),
             'quantity' => 1,
             'customer_total' => $pricing['gross_customer_price'],
@@ -2427,25 +3640,39 @@ try {
         ]);
 
     case 'admin_workers':
-        $stmt = $pdo->query("SELECT wp.telegram_user_id AS worker_id, wp.telegram_name, wp.cancel_count, wp.is_receive_blocked, wp.payment_blocked,
-            wp.block_reason, wp.jobs_claimed, wp.jobs_completed,
-            COALESCE((SELECT COUNT(*) FROM job_posts j WHERE j.worker_id = wp.telegram_user_id), 0) AS job_count,
-            COALESCE((SELECT SUM(jp.tech_net_income) FROM job_pricing jp JOIN job_posts j ON j.id = jp.job_id WHERE j.worker_id = wp.telegram_user_id), 0) AS total_earned,
-            COALESCE((SELECT SUM(jp.platform_fee) FROM job_pricing jp JOIN job_posts j ON j.id = jp.job_id WHERE j.worker_id = wp.telegram_user_id AND jp.payment_status = 'unpaid'), 0) AS unpaid_fee
-            FROM worker_profiles wp ORDER BY wp.updated_at DESC, wp.created_at DESC LIMIT 300");
-        json_out(['status' => 'success', 'data' => $stmt->fetchAll()]);
+        json_out(['status' => 'success', 'data' => admin_worker_rows($pdo)]);
+
+    case 'admin_worker_payments':
+        json_out(['status' => 'success', 'data' => admin_worker_payments($pdo)]);
+
+    case 'admin_register_worker':
+        $workerId = (int)digits_only($input['worker_id'] ?? '');
+        $phone = digits_only($input['phone'] ?? '');
+        $name = clean_string($input['name'] ?? "Ho kinh doanh {$workerId}", 150);
+        if ($workerId <= 0 || strlen($phone) < 8 || $workerId === admin_telegram_id()) {
+            json_out(['status' => 'error', 'message' => 'Telegram ID hoac so dien thoai khong hop le.'], 400);
+        }
+        $pdo->prepare("INSERT INTO worker_profiles (telegram_user_id, telegram_name, phone, identity_code, worker_type, role, is_admin, registered_by, created_at, updated_at)
+            VALUES (?, ?, ?, ?, 'ho_kinh_doanh', 'worker', 0, ?, NOW(), NOW())
+            ON DUPLICATE KEY UPDATE telegram_name = VALUES(telegram_name), phone = VALUES(phone), identity_code = VALUES(identity_code),
+                worker_type = 'ho_kinh_doanh', role = 'worker', is_admin = 0, registered_by = VALUES(registered_by), updated_at = NOW()")
+            ->execute([$workerId, $name, $phone, (string)$workerId, admin_telegram_id()]);
+        json_out(['status' => 'success', 'message' => 'Da dang ky/cap nhat tho.']);
 
     case 'admin_mark_worker_paid':
         $workerId = (int)($input['worker_id'] ?? 0);
         if ($workerId <= 0) {
             json_out(['status' => 'error', 'message' => 'Worker ID khong hop le.'], 400);
         }
-        $stmt = $pdo->prepare("UPDATE job_pricing jp JOIN job_posts j ON j.id = jp.job_id SET jp.payment_status = 'paid' WHERE j.worker_id = ? AND jp.payment_status = 'unpaid'");
-        $stmt->execute([$workerId]);
-        $pdo->prepare("UPDATE worker_profiles SET payment_blocked = 0, is_receive_blocked = 0, block_reason = NULL, blocked_until = NULL, updated_at = NOW() WHERE telegram_user_id = ?")
-            ->execute([$workerId]);
-        tg_send('worker', (string)$workerId, 'Admin da ghi nhan thanh toan phi. Ban co the nhan ca lai.');
-        json_out(['status' => 'success', 'message' => 'Da ghi nhan thanh toan.', 'updated' => $stmt->rowCount()]);
+        $debt = worker_fee_debt($pdo, $workerId);
+        if ($debt <= 0) {
+            json_out(['status' => 'success', 'message' => 'Tho khong con no phi nen tang.', 'remaining' => 0]);
+        }
+        $amount = money_int($input['amount'] ?? $debt);
+        $method = clean_string($input['method'] ?? 'admin_manual', 40);
+        $reference = clean_string($input['reference'] ?? ('ADMIN-' . date('YmdHis')), 150);
+        $result = settle_worker_payment($pdo, $workerId, $amount, $method, $reference, 'admin_dashboard');
+        json_out(['status' => $result['ok'] ? 'success' : 'error'] + $result);
 
     case 'admin_unban_worker':
         $workerId = (int)($input['worker_id'] ?? 0);

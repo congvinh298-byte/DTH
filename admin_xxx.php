@@ -411,6 +411,12 @@ $csrf = dth_admin_csrf();
         tr:last-child td{border-bottom:0}
         .thumb{width:46px;height:46px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;display:block}
         .qr-mini{width:70px;height:70px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px;display:block}
+        .qr-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+        .copy-mini{padding:6px 8px;font-size:12px}
+        .qr-copy-text{margin-top:7px;font-size:12px}
+        .created-codes{display:grid;gap:8px;margin-top:10px}
+        .code-card{display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px;align-items:center;border:1px solid var(--line);border-radius:8px;background:#fff;padding:8px}
+        .code-card b{display:block;margin-bottom:5px;word-break:break-all}
         .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid transparent}
         .badge.ok{background:#ecfdf3;color:#047857;border-color:#bbf7d0}.badge.used{background:#fef2f2;color:#b91c1c;border-color:#fecaca}.badge.warn{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
         .price-mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:12px}.price-mini .card b{display:block;margin-bottom:6px}
@@ -424,6 +430,10 @@ $csrf = dth_admin_csrf();
         .muted{color:var(--muted)}
         .msg{margin:10px 0;padding:10px 12px;border-radius:6px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;display:none}
         .print-box{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px;max-width:620px}
+        .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:16px 0 10px}.section-head h2{margin:0;font-size:18px}
+        .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px;background:#fff}.table-wrap table{border:0;min-width:980px}
+        .worker-name{font-weight:800}.worker-meta{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+        .money-due{font-weight:800;color:#b91c1c}.money-paid{font-weight:800;color:#047857}
         @media print{body>*:not(.print-only){display:none!important}.print-only{display:block!important}.print-box{border:0;max-width:none}}
     </style>
 </head>
@@ -442,6 +452,7 @@ $csrf = dth_admin_csrf();
         <button data-page="products">Kho san pham</button>
         <button data-page="codes">Promo/QR</button>
         <button data-page="workers">Tho va Unban</button>
+        <button data-page="users">Khach hang</button>
         <button data-page="invoices">In hoa don</button>
     </nav>
 
@@ -450,7 +461,17 @@ $csrf = dth_admin_csrf();
     <?php if ($promoMessage !== ''): ?><div class="msg" style="display:block"><?= h($promoMessage) ?></div><?php endif; ?>
 
     <section id="page-dash" class="active">
+        <div class="row-actions" style="margin-bottom:14px">
+            <button class="btn primary" onclick="downloadSettlement()">Ket toan ngay - Tai Excel</button>
+            <button class="btn warn" onclick="notifyWorkerFees()">Nhac phi toan bo tho</button>
+            <button class="btn danger" onclick="enforceWorkerFeeLock()">Khoa tho con no qua han</button>
+            <button class="btn" onclick="loadDashboard()">Tai lai dashboard</button>
+        </div>
         <div class="grid stats" id="stats"></div>
+        <div class="section-head"><h2>Tong hop tho va cong no</h2><span class="muted">Du lieu dong bo tu ca goi tho, Telegram va thanh toan</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Tho</th><th>SDT / Ma dinh danh</th><th>Ca xong</th><th>Thu nhap</th><th>Da dong phi</th><th>No hien tai</th><th>Thanh toan</th><th>Trang thai</th><th>Lenh</th></tr></thead><tbody id="dashboardWorkersBody"></tbody></table></div>
+        <div class="section-head"><h2>Thanh toan phi gan day</h2><span class="muted">SePay, admin va thong bao cho doi soat</span></div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Tho</th><th>So tien</th><th>Da phan bo</th><th>Phuong thuc</th><th>Ma tham chieu</th><th>Trang thai</th><th>Thoi gian</th></tr></thead><tbody id="paymentsBody"></tbody></table></div>
     </section>
 
     <section id="page-orders">
@@ -469,7 +490,7 @@ $csrf = dth_admin_csrf();
             <div class="card"><b>Lap may lanh 2HP / 3HP</b><span>Cong 500.000 VND, may am tran lien he hang.</span></div>
             <div class="card"><b>Sua chua / tivi / loc nuoc</b><span>Cong tho 200.000 VND + linh kien/phu kien cong khai.</span></div>
         </div>
-        <table><thead><tr><th>ID</th><th>Khach</th><th>Phone</th><th>Dich vu</th><th>Dia chi</th><th>Gia khach</th><th>Tho</th><th>TT</th><th>Ngay</th></tr></thead><tbody id="jobsBody"></tbody></table>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Khach</th><th>Phone</th><th>Dich vu</th><th>Dia chi / Ban do</th><th>Gia khach</th><th>Tho</th><th>TT</th><th>Ngay</th></tr></thead><tbody id="jobsBody"></tbody></table></div>
     </section>
 
     <section id="page-products">
@@ -536,7 +557,14 @@ $csrf = dth_admin_csrf();
                             <tr>
                                 <td><?= h($promo['id'] ?? '') ?></td>
                                 <td><img class="qr-mini" src="<?= h(dth_admin_qr_src($promo['code'] ?? '')) ?>" alt="QR <?= h($promo['code'] ?? '') ?>"></td>
-                                <td><b><?= h($promo['code'] ?? '') ?></b></td>
+                                <td>
+                                    <b><?= h($promo['code'] ?? '') ?></b>
+                                    <div class="qr-actions">
+                                        <button class="btn copy-mini" type="button" data-copy="<?= h($promo['code'] ?? '') ?>">Copy code</button>
+                                        <button class="btn copy-mini" type="button" data-copy="<?= h(dth_admin_qr_src($promo['code'] ?? '')) ?>">Copy QR link</button>
+                                    </div>
+                                    <input class="qr-copy-text" readonly value="<?= h(dth_admin_qr_src($promo['code'] ?? '')) ?>" onclick="this.select()">
+                                </td>
                                 <td>
                                     <form method="post" class="row-actions">
                                         <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
@@ -579,6 +607,14 @@ $csrf = dth_admin_csrf();
     <section id="page-workers">
         <div class="cols">
             <div class="card">
+                <h2>Dang ky / cap nhat tho</h2>
+                <label>Telegram user ID</label><input id="worker_register_id" type="number" placeholder="8729878070">
+                <label>So dien thoai</label><input id="worker_register_phone" inputmode="numeric" placeholder="09xxxxxxxx">
+                <label>Ten tho / ho kinh doanh</label><input id="worker_register_name" placeholder="Ten tho">
+                <button class="btn primary" onclick="registerWorker()">Luu ho so tho</button>
+                <p class="muted">Tren Telegram admin co the gui: /idtelegram | TELEGRAM_ID | SO_DIEN_THOAI | TEN_THO</p>
+            </div>
+            <div class="card">
                 <h2>Unban tho</h2>
                 <label>Telegram user ID</label><input id="worker_unban_id" type="number">
                 <button class="btn success" onclick="unbanWorker()">Mo khoa tho</button>
@@ -590,9 +626,32 @@ $csrf = dth_admin_csrf();
             </div>
         </div>
         <h2>Danh sach tho</h2>
-        <table><thead><tr><th>ID</th><th>Ten</th><th>So ca</th><th>Tong tien</th><th>No phi</th><th>Block</th><th>Lenh</th></tr></thead><tbody id="workersBody"></tbody></table>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Ten / Username</th><th>SDT</th><th>Loai</th><th>So ca</th><th>Tong tien</th><th>Da dong</th><th>No phi</th><th>Block</th><th>Lenh</th></tr></thead><tbody id="workersBody"></tbody></table></div>
         <h2>Device/IP bi khoa</h2>
         <table><thead><tr><th>ID</th><th>Identifier</th><th>Loai</th><th>Ly do</th><th>Spam</th><th>Ngay</th><th>Lenh</th></tr></thead><tbody id="bansBody"></tbody></table>
+    </section>
+
+    <section id="page-users">
+        <div class="row-actions" style="margin-bottom:14px; justify-content:space-between;">
+            <div><h2 style="margin:0;">Quan ly Khach hang</h2><span class="muted">Thong tin thanh vien va tich diem</span></div>
+            <button class="btn success" onclick="openUserModal()">+ Them Khach hang</button>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Khach hang</th>
+                        <th>Lien he</th>
+                        <th>Hang & Tong tien</th>
+                        <th>QR Thanh vien</th>
+                        <th>Status</th>
+                        <th>Lenh</th>
+                    </tr>
+                </thead>
+                <tbody id="usersBody"></tbody>
+            </table>
+        </div>
     </section>
 
     <section id="page-invoices">
@@ -608,6 +667,28 @@ const CSRF = <?= json_encode($csrf) ?>;
 function fmt(n){ return new Intl.NumberFormat('vi-VN').format(Number(n || 0)) + ' VND'; }
 function esc(s){ return String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
 function msg(text){ const el=document.getElementById('globalMsg'); el.textContent=text; el.style.display='block'; setTimeout(()=>el.style.display='none',3500); }
+function copyText(text){
+    const value = String(text || '');
+    if (!value) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(value).then(()=>msg('Da copy')).catch(()=>fallbackCopy(value));
+    } else {
+        fallbackCopy(value);
+    }
+}
+function fallbackCopy(text){
+    const area=document.createElement('textarea');
+    area.value=text;
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand('copy');
+    area.remove();
+    msg('Da copy');
+}
+document.addEventListener('click', event => {
+    const button = event.target.closest('[data-copy]');
+    if (button) copyText(button.dataset.copy);
+});
 function api(action, data={}, method='GET'){
     const url = API + '?action=' + encodeURIComponent(action) + (method === 'GET' ? '&' + new URLSearchParams(data).toString() : '');
     const opt = {method, credentials:'same-origin', headers:{}};
@@ -631,12 +712,13 @@ document.querySelectorAll('nav button').forEach(btn => {
 });
 
 function loadPage(page){
-    if (page === 'dash') loadStats();
+    if (page === 'dash') loadDashboard();
     if (page === 'orders') loadOrders();
     if (page === 'jobs') loadJobs();
     if (page === 'products') loadProducts();
     if (page === 'codes') { loadVouchers(); loadCoupons(); }
     if (page === 'workers') { loadWorkers(); loadBans(); }
+    if (page === 'users') loadUsers();
     if (page === 'invoices') loadInvoices();
 }
 
@@ -646,19 +728,164 @@ function loadStats(){
         const items=[
             ['Don hang',s.total_orders],['Doanh thu',fmt(s.total_revenue)],['Don hom nay',s.today_orders],
             ['Thu hom nay',fmt(s.today_revenue)],['Ca goi tho',s.total_jobs],['Ca cho tho',s.pending_jobs],
-            ['Ca xong',s.completed_jobs],['San pham',s.total_products],['Tho active',s.active_workers],
-            ['No phi nen tang',fmt(s.unpaid_total)],['Device ban',s.banned_devices]
+            ['Ca xong',s.completed_jobs],['San pham',s.total_products],['Tong tho',s.total_workers],
+            ['Tho active',s.active_workers],['Tho bi khoa',s.blocked_workers],['No phi nen tang',fmt(s.unpaid_total)],
+            ['Phi da thu hom nay',fmt(s.fees_paid_today)],['Cho doi soat',s.pending_worker_payments],['Device ban',s.banned_devices]
         ];
         document.getElementById('stats').innerHTML=items.map(i=>`<div class="card"><div class="stat-label">${esc(i[0])}</div><div class="stat-value">${esc(i[1]??0)}</div></div>`).join('');
     }).catch(e=>msg(e.message));
 }
+
+function workerStatus(w){
+    if (Number(w.is_admin||0) === 1) return statusBadge('warn','Admin');
+    if (Number(w.is_receive_blocked||0) === 1 || Number(w.payment_blocked||0) === 1) return statusBadge('used','Dang khoa');
+    const debt = Number(w.unpaid_fee || 0);
+    if (debt > 0) {
+        const day = new Date().getDay(); // 0 is Sun, 1 is Mon, 2 is Tue
+        if (day === 1) return statusBadge('warn', 'No phi'); // Thứ 2: Màu cau (Orange/Warning)
+        return statusBadge('used', 'No phi'); // Thứ 3 - CN: Màu đỏ (Danger/Blocked)
+    }
+    return statusBadge('ok','Hoat dong'); // Màu xanh (OK)
+}
+function workerActionButtons(w){
+    if (Number(w.is_admin||0) === 1) return '';
+    return `<button class="btn warn" onclick="notifyWorkerFee(${Number(w.worker_id)})">Nhac phi</button> <button class="btn success" onclick="unbanWorkerId(${Number(w.worker_id)})">Mo khoa</button> <button class="btn" onclick="markPaid(${Number(w.worker_id)})">Xac nhan da TT</button>`;
+}
+function renderDashboardWorkers(rows){
+    dashboardWorkersBody.innerHTML=(rows||[]).map(w=>`<tr><td><span class="worker-name">${esc(w.telegram_name||'Chua co ten')}</span><span class="worker-meta">ID ${esc(w.worker_id)} ${w.telegram_username?'@'+esc(w.telegram_username):''}</span></td><td>${esc(w.phone||'-')}<span class="worker-meta">${esc(w.identity_code||'-')} / ${esc(w.worker_type||'-')}</span></td><td>${esc(w.jobs_completed||0)}</td><td>${fmt(w.total_earned)}</td><td class="money-paid">${fmt(w.confirmed_paid_fee||w.total_paid_fee)}</td><td class="money-due">${fmt(w.unpaid_fee)}</td><td>${Number(w.pending_payment_count||0)>0?statusBadge('warn',w.pending_payment_count+' cho doi soat'):'-'}</td><td>${workerStatus(w)}<span class="worker-meta">${esc(w.block_reason||'')}</span></td><td><div class="row-actions">${workerActionButtons(w)}</div></td></tr>`).join('') || '<tr><td colspan="9" class="muted">Chua co du lieu tho.</td></tr>';
+}
+function loadDashboardWorkers(){ return api('admin_workers').then(d=>renderDashboardWorkers(d.data||[])); }
+function loadPayments(){ return api('admin_worker_payments').then(d=>{ paymentsBody.innerHTML=(d.data||[]).map(p=>`<tr><td>#${esc(p.id)}</td><td>${esc(p.telegram_name||p.worker_id)}<span class="worker-meta">${esc(p.phone||'')}</span></td><td>${fmt(p.amount)}</td><td class="money-paid">${fmt(p.applied_amount)}</td><td>${esc(p.method)}</td><td>${esc(p.reference_code||p.external_transaction_id||'-')}</td><td>${esc(p.status)}</td><td>${esc(p.confirmed_at||p.created_at||'')}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">Chua co thanh toan.</td></tr>'; }); }
+function loadDashboard(){ loadStats(); loadDashboardWorkers(); loadPayments(); }
+function downloadSettlement(){ window.location.href=API+'?action=admin_daily_settlement_excel'; }
+function notifyWorkerFees(){ if(!confirm('Gui dung so no hien tai va QR thanh toan cho tat ca tho con no?')) return; api('admin_notify_worker_fees',{},'POST').then(d=>{msg(d.message||'Da gui nhac phi');loadDashboard();}); }
+function notifyWorkerFee(id){ api('admin_notify_worker_fee',{worker_id:id},'POST').then(d=>{msg(d.message||'Da gui nhac phi');loadDashboard();}); }
+function enforceWorkerFeeLock(){ if(!confirm('Khoa chuc nang nhan ca cua tat ca tho con no?')) return; api('admin_enforce_worker_fee_lock',{},'POST').then(d=>{msg(d.message||'Da khoa');loadDashboard();}); }
 
 function loadOrders(){
     api('admin_orders').then(d=>{
         document.getElementById('ordersBody').innerHTML=(d.data||[]).map(o=>`<tr><td>#${o.id}</td><td>${esc(o.customer_name)}</td><td>${esc(o.customer_phone)}</td><td>${esc(o.product_name)}</td><td>${fmt(o.total_price)}</td><td>${esc(o.status)}</td><td>${esc(o.created_at)}</td><td><button class="btn" onclick="printInvoice(${o.id})">In</button></td></tr>`).join('');
     });
 }
-function loadInvoices(){ api('admin_orders').then(d=>{ document.getElementById('invoiceBody').innerHTML=(d.data||[]).map(o=>`<tr><td>#${o.id}</td><td>${esc(o.customer_name)}</td><td>${esc(o.customer_phone)}</td><td>${esc(o.product_name)}</td><td>${fmt(o.total_price)}</td><td><button class="btn primary" onclick="printInvoice(${o.id})">In hoa don</button></td></tr>`).join(''); }); }
+function loadInvoices(){
+    api('admin_orders').then(d=>{
+        invoiceBody.innerHTML=(d.data||[]).filter(o=>o.status==='completed').map(o=>`<tr><td>${o.id}</td><td>${esc(o.customer_name)}</td><td>${esc(o.customer_phone)}</td><td>${esc(o.product_name)}</td><td>${fmt(o.total_price)}</td><td><button class="btn" onclick="printInvoice(${o.id})">In hoa don</button></td></tr>`).join('') || '<tr><td colspan="6" class="muted">Khong co don hang completed.</td></tr>';
+    });
+}
+
+let cachedUsers = [];
+function loadUsers(){
+    api('admin_users').then(d=>{
+        cachedUsers = d.data || [];
+        usersBody.innerHTML = cachedUsers.map(u=>`
+        <tr>
+            <td>${u.id}</td>
+            <td>
+                <strong>${esc(u.fullname)}</strong><br>
+                <small class="muted">Role: ${esc(u.role)}</small>
+            </td>
+            <td>${esc(u.phone)}</td>
+            <td>
+                <span style="color:#047857; font-weight:bold;">${esc(u.member_rank)}</span><br>
+                <small class="muted">${fmt(u.total_spent)}</small>
+            </td>
+            <td>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=DIENMAYHIEU-MEMBER-${u.id}" alt="QR" style="border-radius:4px; border:1px solid #ddd;">
+            </td>
+            <td>
+                ${Number(u.is_active) === 1 ? '<span class="status ok" style="display:inline-block; margin:0; padding:4px 8px;">Active</span>' : '<span class="status err" style="display:inline-block; margin:0; padding:4px 8px;">Banned</span>'}
+            </td>
+            <td>
+                <div class="row-actions">
+                    <button class="btn" onclick="editUser(${u.id})">Sua</button>
+                    <button class="btn warn" onclick="toggleUserStatus(${u.id})">${Number(u.is_active) === 1 ? 'Ban' : 'Unban'}</button>
+                    <button class="btn danger" onclick="deleteUser(${u.id})">Xoa</button>
+                </div>
+            </td>
+        </tr>
+        `).join('') || '<tr><td colspan="7" class="muted">Chua co khach hang nao.</td></tr>';
+    });
+}
+
+function openUserModal(user = null) {
+    const modalHtml = `
+    <div id="userModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:20px; border-radius:8px; width:400px; max-width:90%;">
+            <h2>${user ? 'Sua Khach hang' : 'Them Khach hang'}</h2>
+            <form onsubmit="saveUser(event, ${user ? user.id : 0})">
+                <label>Ten</label>
+                <input id="u_fullname" value="${user ? esc(user.fullname) : ''}" required style="margin-bottom:10px; width:100%; padding:8px;">
+                <label>SDT</label>
+                <input id="u_phone" value="${user ? esc(user.phone) : ''}" required style="margin-bottom:10px; width:100%; padding:8px;">
+                <label>Role</label>
+                <select id="u_role" style="margin-bottom:10px; width:100%; padding:8px;">
+                    <option value="buyer" ${user && user.role==='buyer'?'selected':''}>Nguoi mua (buyer)</option>
+                    <option value="admin" ${user && user.role==='admin'?'selected':''}>Admin</option>
+                </select>
+                <label>Hang Thanh vien</label>
+                <input id="u_rank" value="${user ? esc(user.member_rank) : 'Thành viên'}" style="margin-bottom:10px; width:100%; padding:8px;">
+                <label>Tong chi tieu (VND)</label>
+                <input type="number" id="u_spent" value="${user ? user.total_spent : 0}" style="margin-bottom:10px; width:100%; padding:8px;">
+                <input type="hidden" id="u_active" value="${user ? user.is_active : 1}">
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button type="submit" class="btn primary" style="flex:1;">Luu</button>
+                    <button type="button" class="btn" onclick="document.getElementById('userModal').remove()" style="flex:1;">Huy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function editUser(id) {
+    const user = cachedUsers.find(u => Number(u.id) === id);
+    if(user) openUserModal(user);
+}
+
+function toggleUserStatus(id) {
+    const user = cachedUsers.find(u => Number(u.id) === id);
+    if(!user) return;
+    const newData = {
+        action: 'admin_save_user',
+        id: id,
+        fullname: user.fullname,
+        phone: user.phone,
+        role: user.role,
+        member_rank: user.member_rank,
+        total_spent: user.total_spent,
+        is_active: Number(user.is_active) === 1 ? 0 : 1
+    };
+    api(newData.action, newData).then(d=>{
+        msg(d.message);
+        loadUsers();
+    });
+}
+
+function saveUser(e, id) {
+    e.preventDefault();
+    api('admin_save_user', {
+        id: id,
+        fullname: document.getElementById('u_fullname').value,
+        phone: document.getElementById('u_phone').value,
+        role: document.getElementById('u_role').value,
+        member_rank: document.getElementById('u_rank').value,
+        total_spent: document.getElementById('u_spent').value,
+        is_active: document.getElementById('u_active') ? document.getElementById('u_active').value : 1
+    }).then(d=>{
+        msg(d.message);
+        document.getElementById('userModal').remove();
+        loadUsers();
+    });
+}
+
+function deleteUser(id) {
+    if(!confirm('Xoa khach hang nay? Hanh dong khong the phuc hoi.')) return;
+    api('admin_delete_user', {id: id}).then(d=>{
+        msg(d.message);
+        loadUsers();
+    });
+}
 
 function printInvoice(id){
     api('admin_invoice',{order_id:id}).then(d=>{
@@ -670,7 +897,7 @@ function printInvoice(id){
 
 function loadJobs(){
     api('admin_jobs').then(d=>{
-        document.getElementById('jobsBody').innerHTML=(d.data||[]).map(j=>`<tr><td>#${j.id}</td><td>${esc(j.customer_name)}</td><td>${esc(j.customer_phone)}</td><td>${esc(j.service_type)}</td><td>${esc(j.address)}</td><td>${fmt(j.final_total)}</td><td>${esc(j.worker_id||'-')}</td><td>${esc(j.status)}</td><td>${esc(j.created_at)}</td></tr>`).join('');
+        document.getElementById('jobsBody').innerHTML=(d.data||[]).map(j=>`<tr><td>#${j.id}</td><td>${esc(j.customer_name)}</td><td>${esc(j.customer_phone)}</td><td>${esc(j.service_type)}</td><td>${esc(j.address)}${j.maps_url?`<span class="worker-meta">${esc(j.map_location)}</span><a class="btn" href="${esc(j.maps_url)}" target="_blank" rel="noopener">Google Maps</a>`:''}</td><td>${fmt(j.final_total)}</td><td>${esc(j.worker_id||'-')}</td><td>${esc(j.status)}</td><td>${esc(j.created_at)}</td></tr>`).join('');
     });
 }
 function sendTestJob(){ if(!confirm('Gui ca test len nhom tho?')) return; api('admin_test_worker_job',{},'POST').then(d=>{ msg(d.message||'Da gui test'); loadJobs(); loadStats(); }); }
@@ -697,6 +924,18 @@ function importProducts(){
 
 function qrCodeUrl(code){ return 'https://api.qrserver.com/v1/create-qr-code/?size=96x96&margin=6&data=' + encodeURIComponent(String(code || '')); }
 function statusBadge(kind, text){ return `<span class="badge ${kind}">${esc(text)}</span>`; }
+function copyControls(code){
+    const qr = qrCodeUrl(code);
+    return `<div class="qr-actions"><button class="btn copy-mini" type="button" data-copy="${esc(code)}">Copy code</button><button class="btn copy-mini" type="button" data-copy="${esc(qr)}">Copy QR link</button></div><input class="qr-copy-text" readonly value="${esc(qr)}" onclick="this.select()">`;
+}
+function renderCreatedCodes(target, codes){
+    target.classList.remove('muted');
+    target.classList.add('created-codes');
+    target.innerHTML = (codes || []).map(code => {
+        const qr = qrCodeUrl(code);
+        return `<div class="code-card"><img class="qr-mini" src="${esc(qr)}" alt="QR ${esc(code)}"><div><b>${esc(code)}</b>${copyControls(code)}</div></div>`;
+    }).join('') || '<span class="muted">Khong tao duoc ma.</span>';
+}
 function loadVouchers(){
     api('admin_vouchers').then(d=>{
         voucherBody.innerHTML=(d.data||[]).map(v=>{
@@ -704,7 +943,7 @@ function loadVouchers(){
             const max = Number(v.max_uses || v.usage_limit || 0);
             const exhausted = max > 0 && used >= max;
             const badge = used > 0 ? statusBadge('used','Da dung') : (exhausted ? statusBadge('warn','Het luot') : statusBadge('ok','Chua dung'));
-            return `<tr><td><img class="qr-mini" src="${qrCodeUrl(v.code)}" alt="QR ${esc(v.code)}"></td><td><b>${esc(v.code)}</b></td><td>${esc(v.discount_percent||0)}%</td><td>${esc(used)}/${esc(max)}</td><td>${badge}</td><td>${esc(v.expires_at||'')}</td></tr>`;
+            return `<tr><td><img class="qr-mini" src="${qrCodeUrl(v.code)}" alt="QR ${esc(v.code)}"></td><td><b>${esc(v.code)}</b>${copyControls(v.code)}</td><td>${esc(v.discount_percent||0)}%</td><td>${esc(used)}/${esc(max)}</td><td>${badge}</td><td>${esc(v.expires_at||'')}</td></tr>`;
         }).join('');
     });
 }
@@ -713,25 +952,26 @@ function loadCoupons(){
         couponBody.innerHTML=(d.data||[]).map(c=>{
             const used = Number(c.is_used || 0) === 1;
             const badge = used ? statusBadge('used','Da dung') : statusBadge('ok','Chua dung');
-            return `<tr><td>${esc(c.id)}</td><td><img class="qr-mini" src="${qrCodeUrl(c.code)}" alt="QR ${esc(c.code)}"></td><td><b>${esc(c.code)}</b></td><td>${esc(c.type)}</td><td>${esc(c.value || c.discount_amount || 0)}</td><td>${esc(c.description)}</td><td>${badge}</td></tr>`;
+            return `<tr><td>${esc(c.id)}</td><td><img class="qr-mini" src="${qrCodeUrl(c.code)}" alt="QR ${esc(c.code)}"></td><td><b>${esc(c.code)}</b>${copyControls(c.code)}</td><td>${esc(c.type)}</td><td>${esc(c.value || c.discount_amount || 0)}</td><td>${esc(c.description)}</td><td>${badge}</td></tr>`;
         }).join('');
     });
 }
-function generateVoucher(){ api('generate_voucher',{discount_percent:voucher_percent.value,count:voucher_count.value,max_uses:100},'POST').then(d=>{ voucherResult.textContent='Created: '+(d.codes||[]).join(', '); loadVouchers(); }); }
-function generateQR(){ api('generate_qr',{value:qr_value.value,description:qr_desc.value,count:qr_count.value,type:'discount'},'POST').then(d=>{ qrResult.textContent='Created: '+(d.codes||[]).join(', '); loadCoupons(); }); }
+function generateVoucher(){ api('generate_voucher',{discount_percent:voucher_percent.value,count:voucher_count.value,max_uses:100},'POST').then(d=>{ renderCreatedCodes(voucherResult, d.codes||[]); loadVouchers(); }); }
+function generateQR(){ api('generate_qr',{value:qr_value.value,description:qr_desc.value,count:qr_count.value,type:'discount'},'POST').then(d=>{ renderCreatedCodes(qrResult, d.codes||[]); loadCoupons(); }); }
 
-function loadWorkers(){ api('admin_workers').then(d=>{ workersBody.innerHTML=(d.data||[]).map(w=>`<tr><td>${esc(w.worker_id)}</td><td>${esc(w.telegram_name)}</td><td>${esc(w.job_count)}</td><td>${fmt(w.total_earned)}</td><td>${fmt(w.unpaid_fee)}</td><td>${w.is_receive_blocked||w.payment_blocked?'Blocked':'OK'}</td><td><button class="btn success" onclick="unbanWorkerId(${w.worker_id})">Unban</button> <button class="btn" onclick="markPaid(${w.worker_id})">Da TT</button></td></tr>`).join(''); }); }
+function loadWorkers(){ api('admin_workers').then(d=>{ workersBody.innerHTML=(d.data||[]).map(w=>`<tr><td>${esc(w.worker_id)}</td><td><span class="worker-name">${esc(w.telegram_name)}</span><span class="worker-meta">${w.telegram_username?'@'+esc(w.telegram_username):''}</span></td><td>${esc(w.phone||'-')}</td><td>${esc(w.worker_type||w.role||'-')}</td><td>${esc(w.jobs_completed||w.job_count||0)}</td><td>${fmt(w.total_earned)}</td><td class="money-paid">${fmt(w.confirmed_paid_fee||w.total_paid_fee)}</td><td class="money-due">${fmt(w.unpaid_fee)}</td><td>${workerStatus(w)}</td><td><div class="row-actions">${workerActionButtons(w)}</div></td></tr>`).join('') || '<tr><td colspan="10" class="muted">Chua co du lieu tho.</td></tr>'; }); }
 function loadBans(){ api('admin_banned_devices').then(d=>{ bansBody.innerHTML=(d.data||[]).map(b=>`<tr><td>${b.id}</td><td><code>${esc(b.identifier)}</code></td><td>${esc(b.ban_type)}</td><td>${esc(b.reason)}</td><td>${esc(b.spam_count)}</td><td>${esc(b.created_at)}</td><td><button class="btn success" onclick='unbanDeviceValue(${JSON.stringify(b.identifier)})'>Unban</button></td></tr>`).join(''); }); }
 function unbanWorker(){ unbanWorkerId(worker_unban_id.value); }
 function unbanWorkerId(id){ if(!id) return msg('Nhap Telegram user ID'); api('admin_unban_worker',{worker_id:id},'POST').then(d=>{ msg(d.message||'Da mo khoa'); loadWorkers(); }); }
 function unbanDevice(){ unbanDeviceValue(device_unban_id.value); }
 function unbanDeviceValue(id){ if(!id) return msg('Nhap identifier'); api('admin_unban_device',{identifier:id},'POST').then(d=>{ msg(d.message||'Da mo khoa'); loadBans(); }); }
-function markPaid(id){ api('admin_mark_worker_paid',{worker_id:id},'POST').then(d=>{ msg(d.message||'Da ghi nhan'); loadWorkers(); loadStats(); }); }
+function registerWorker(){ api('admin_register_worker',{worker_id:worker_register_id.value,phone:worker_register_phone.value,name:worker_register_name.value},'POST').then(d=>{ msg(d.message||'Da luu'); loadWorkers(); loadDashboard(); }); }
+function markPaid(id){ if(!confirm('Xac nhan da thu toan bo phi nen tang hien tai cua tho nay?')) return; api('admin_mark_worker_paid',{worker_id:id},'POST').then(d=>{ msg(d.message||'Da ghi nhan'); loadWorkers(); loadDashboard(); }); }
 
 if (<?= json_encode($promoMessage !== '') ?>) {
     document.querySelector('nav button[data-page="codes"]').click();
 } else {
-    loadStats();
+    loadDashboard();
 }
 </script>
 </body>

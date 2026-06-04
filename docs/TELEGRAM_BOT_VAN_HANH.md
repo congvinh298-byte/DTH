@@ -6,10 +6,13 @@ Ngày cập nhật: 2026-06-03
 
 - Anh Thiên 1: điều phối gọi thợ điện lạnh.
   - Nhận yêu cầu từ website.
+  - Chỉ nhận ca khi khách đã bấm xác nhận tọa độ trên bản đồ.
   - Báo ca vào nhóm thợ điện lạnh.
   - Cho thợ bấm nhận ca hoặc báo spam.
   - Nhắn riêng số điện thoại đầy đủ cho thợ đã nhận ca.
+  - Hiển thị tọa độ đã xác nhận và nút mở Google Maps đến nhà khách.
   - Ghi nhận xong ca, hủy ca và lý do hủy.
+  - Báo công nợ phí nền tảng cộng dồn, gửi VietQR và nút mở ứng dụng ngân hàng.
   - Báo phí nền tảng cho thợ vào 06:00 thứ 2.
   - Khóa nhận ca từ 00:00 thứ 3 nếu thợ chưa thanh toán phí nền tảng.
 
@@ -119,6 +122,14 @@ Nên đặt `CRON_SECRET` trong `.env`, rồi dùng secret đó trong URL cron.
 59 23 * * * curl -s "https://dienmayhieu.com/api_master.php?action=cron_baocao_ngay&secret=<CRON_SECRET>"
 ```
 
+Cách an toàn hơn trên cPanel là chạy trực tiếp CLI, thay `/duong-dan/DTH` bằng đường dẫn thật:
+
+```cron
+0 6 * * 1 php /duong-dan/DTH/cron/run_scheduled_action.php cron_worker_fee_notice
+0 0 * * 2 php /duong-dan/DTH/cron/run_scheduled_action.php cron_worker_fee_lock
+59 23 * * * php /duong-dan/DTH/cron/run_scheduled_action.php cron_baocao_ngay
+```
+
 ## 8. Mở Khóa Khi Thợ Đã Thanh Toán
 
 Trong admin, vào mục `Thợ`, dòng nào còn `Phí chưa TT` thì bấm `Đã TT`.
@@ -129,7 +140,37 @@ Hệ thống sẽ:
 - Gỡ khóa nhận ca do công nợ.
 - Nhắn riêng cho thợ biết đã được mở lại.
 
-## 9. Lưu Ý Bảo Mật
+Nếu SePay được cấu hình, đặt webhook nhận tiền vào:
+
+```text
+https://dienmayhieu.com/api_master.php?action=sepay_webhook
+```
+
+Chọn xác thực API Key và dùng đúng `SEPAY_API_KEY` trong `.env`. Nội dung chuyển khoản của từng thợ có dạng `DTHP<TELEGRAM_ID>`, hệ thống sẽ tự đối soát và mở khóa.
+
+Nếu tài khoản doanh nghiệp đã được MoMo cấp bộ khóa merchant, điền `MOMO_PARTNER_CODE`, `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY` trong `.env`. Nút MoMo của từng thợ sẽ tự tạo đúng số tiền công nợ. MoMo gửi IPN về:
+
+```text
+https://dienmayhieu.com/api_master.php?action=momo_ipn
+```
+
+Hệ thống kiểm tra chữ ký IPN, đối chiếu mã yêu cầu và số tiền trước khi ghi nhận thanh toán, cập nhật Dashboard và mở khóa nhận ca.
+
+## 9. Đăng Ký Thợ Qua Telegram
+
+Admin Telegram `648065292` có thể gửi lệnh cho Anh Thiên 1 hoặc Anh Thiên 2:
+
+```text
+/idtelegram | TELEGRAM_ID | SO_DIEN_THOAI | TEN_THO
+```
+
+Ví dụ:
+
+```text
+/idtelegram | 8729878070 | 0900000000 | Ho kinh doanh
+```
+
+## 10. Lưu Ý Bảo Mật
 
 - Không đưa token bot vào Git.
 - Không gửi token qua ảnh chụp màn hình hoặc tài liệu.
