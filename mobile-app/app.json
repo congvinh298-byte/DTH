@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Điện Tử Hiếu",
+    "slug": "dien-tu-hieu",
+    "version": "1.0.0",
+    "description": "Hệ sinh thái Điện Tử Hiếu phục vụ mua hàng và gọi thợ trong bán kính 15 km từ Chợ Lấp Vò.",
+    "orientation": "portrait",
+    "icon": "./assets/brand-icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/brand-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.dienmayhieu.app",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/brand-foreground.png"
+      }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Cho phép Điện Tử Hiếu dùng vị trí để gửi thợ đến đúng địa chỉ."
+        }
+      ]
+    ],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

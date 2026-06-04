@@ -456,6 +456,7 @@ $csrf = dth_admin_csrf();
         <button data-page="codes">Promo/QR</button>
         <button data-page="workers">Tho va Unban</button>
         <button data-page="users">Khach hang</button>
+        <button data-page="stores">Cửa hàng</button>
         <button data-page="invoices">In hoa don</button>
         <button data-page="bct">Bao cao BCT</button>
     </nav>
@@ -704,6 +705,29 @@ $csrf = dth_admin_csrf();
         </div>
     </section>
 
+    <section id="page-stores">
+        <div class="row-actions" style="margin-bottom:14px; justify-content:space-between;">
+            <div><h2 style="margin:0;">Quan ly Cua hang (Cho Xa Lap Vo)</h2><span class="muted">Danh sach cua hang doi tac va doanh thu</span></div>
+            <button class="btn warn" onclick="settleStores()">Chot doi soat cuoi thang</button>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ten cua hang</th>
+                        <th>MST / Lien he</th>
+                        <th>Loai / Dia chi</th>
+                        <th>Tong giao dich</th>
+                        <th>Status</th>
+                        <th>Lenh</th>
+                    </tr>
+                </thead>
+                <tbody id="storesBody"></tbody>
+            </table>
+        </div>
+    </section>
+
     <section id="page-invoices">
         <div class="section-head"><div><h2>Tao hoa don ban hang</h2><span class="muted">Gia nhap la gia da gom VAT 10%</span></div><button class="btn" onclick="loadInvoices()">Tai lai so hoa don</button></div>
         <div class="cols">
@@ -861,6 +885,7 @@ function loadPage(page){
     if (page === 'codes') { loadVouchers(); loadCoupons(); }
     if (page === 'workers') { loadWorkers(); loadBans(); }
     if (page === 'users') loadUsers();
+    if (page === 'stores') loadStores();
     if (page === 'invoices') loadInvoices();
     if (page === 'bct') { loadBctReport(); loadInputInvoices(); }
 }
@@ -1186,6 +1211,22 @@ function uploadInputInvoice(event){
         .then(d=>{msg(d.message||'Da luu hoa don');form.reset();form.querySelector('[name="invoice_date"]').value=new Date().toISOString().slice(0,10);updateInputInvoiceTotal();loadInputInvoices();loadBctReport();})
         .catch(e=>msg(e.message))
         .finally(()=>{button.disabled=false;});
+}
+
+function loadStores(){
+    api('admin_get_stores').then(d=>{
+        document.getElementById('storesBody').innerHTML=(d.data||[]).map(s=>`<tr><td>${s.id}</td><td><b>${esc(s.store_name)}</b></td><td>MST: ${esc(s.tax_code)}<br>SDT: ${esc(s.phone)}</td><td>${esc(s.store_type)}<br><small>${esc(s.address)}</small></td><td><b style="color:#dc2626">${fmt(s.total_sales || 0)}</b></td><td>${statusBadge(s.status==='active'?'ok':'warn',s.status||'active')}</td><td><button class="btn" onclick="alert('Dang phat trien: Xem menu')">Xem Menu</button></td></tr>`).join('') || '<tr><td colspan="7">Chua co cua hang nao.</td></tr>';
+    });
+}
+
+function settleStores(){
+    if(!confirm('Xac nhan chot doi soat cuoi thang cho tat ca cua hang?')) return;
+    api('admin_settle_stores').then(d=>{
+        if(d.status==='success'){
+            alert(d.message);
+            loadStores();
+        }
+    });
 }
 
 let cachedUsers = [];

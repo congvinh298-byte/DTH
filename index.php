@@ -409,7 +409,7 @@ $services = array(
     <section class="hero">
         <div class="panel hero-main">
             <h1>Điện Tử Hiếu</h1>
-            <p>LH: 0979.553.289</p>
+            <p>Hệ sinh thái Điện Tử Hiếu phục vụ bà con trong xã Lấp Vò và khu vực bán kính 15 km tính từ Chợ Lấp Vò. LH: 0979.553.289</p>
             <div class="hero-actions"><a class="btn" href="#products">Xem sản phẩm</a><a class="btn dark" href="#goi-tho">Đặt lịch gọi thợ</a></div>
         </div>
     </section>
@@ -541,10 +541,10 @@ $services = array(
             <p>MST: 1402228630</p>
             <p>Địa chỉ: 166, Ấp Bình Thạnh 1, Xã Lấp Vò, Tỉnh Đồng Tháp</p>
             <p>Website: dienmayhieu.com</p>
-            <p>Khu vực phục vụ: Lấp Vò, Đồng Tháp</p>
+            <p>Khu vực phục vụ: bán kính 15 km tính từ Chợ Lấp Vò, Đồng Tháp</p>
         </div>
         <div><h3>Liên hệ</h3><p>Hotline: 0979.553.289</p><p>Mua hàng và gọi thợ kỹ thuật</p></div>
-        <div><h3>Thông pháp lý</h3><p><a href="javascript:void(0)" onclick="openModal('quyche')">Quy chế hoạt động</a></p><p><a href="javascript:void(0)" onclick="openModal('dean')">Đề án hoạt động</a></p><p><a href="javascript:void(0)" onclick="openModal('baomat')">Chính sách bảo mật</a></p></div>
+        <div><h3>Thông tin pháp lý</h3><p><a href="javascript:void(0)" onclick="openModal('quyche')">Quy chế hoạt động</a></p><p><a href="javascript:void(0)" onclick="openModal('dean')">Đề án hoạt động</a></p><p><a href="javascript:void(0)" onclick="openModal('baomat')">Chính sách bảo mật</a></p></div>
         <div>
             <h3>Truy cập nhanh</h3>
             <?php if ($qrWeb !== ''): ?><img src="<?= h($qrWeb) ?>" alt="QR truy cập" style="max-width: 120px; border-radius: 8px; background: white; padding: 5px; margin-top: 5px;"><?php endif; ?>

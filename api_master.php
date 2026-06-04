@@ -441,7 +441,8 @@ function ensure_core_schema(PDO $pdo)
         completed_at DATETIME NULL,
         cancelled_at DATETIME NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NULL DEFAULT NULL
+        updated_at DATETIME NULL DEFAULT NULL,
+        review_score INT NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS job_pricing (
@@ -706,6 +707,47 @@ function ensure_core_schema(PDO $pdo)
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_bct_access_created (created_at),
         INDEX idx_bct_access_user (username)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS marketplace_stores (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        phone VARCHAR(30) NOT NULL,
+        tax_code VARCHAR(30) NOT NULL,
+        store_name VARCHAR(150) NOT NULL,
+        address TEXT NULL,
+        lat DECIMAL(10,7) NULL,
+        lng DECIMAL(10,7) NULL,
+        store_type VARCHAR(50) NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'active',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NULL DEFAULT NULL,
+        INDEX idx_store_phone (phone),
+        INDEX idx_store_tax (tax_code)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS marketplace_products (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        store_id INT NOT NULL,
+        name VARCHAR(150) NOT NULL,
+        price INT NOT NULL DEFAULT 0,
+        image_url TEXT NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'active',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_product_store (store_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS marketplace_orders (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        store_id INT NOT NULL,
+        customer_phone VARCHAR(30) NULL,
+        customer_address TEXT NULL,
+        total_amount INT NOT NULL DEFAULT 0,
+        status VARCHAR(30) NOT NULL DEFAULT 'pending',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        completed_at DATETIME NULL DEFAULT NULL,
+        INDEX idx_order_store (store_id),
+        INDEX idx_order_customer (customer_phone),
+        INDEX idx_order_created (created_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     foreach ([
@@ -1115,19 +1157,48 @@ function get_system_user_id(PDO $pdo)
     return insert_compat($pdo, 'users', $values, ['created_at' => 'NOW()']);
 }
 
-function random_booking_discount(): array
+function public_service_catalog(): array
 {
-    $roll = random_int(1, 100);
-    if ($roll <= 1) {
-        return ['roll' => $roll, 'amount' => 10000, 'label' => '-10k'];
+    $services = [
+        ['group' => 'Thợ điện lạnh', 'name' => 'Vệ sinh máy lạnh', 'base' => 150000, 'note' => 'Giá công khai đã gồm VAT.'],
+        ['group' => 'Thợ điện lạnh', 'name' => 'Lắp đặt máy lạnh 1HP / 1.5HP', 'base' => 400000, 'note' => 'Chưa gồm vật tư phát sinh.'],
+        ['group' => 'Thợ điện lạnh', 'name' => 'Lắp đặt máy lạnh 2HP / 3HP', 'base' => 500000, 'note' => 'Chưa gồm vật tư phát sinh.'],
+        ['group' => 'Thợ điện lạnh', 'name' => 'Máy lạnh âm trần', 'base' => 0, 'note' => 'Báo giá sau khi tư vấn.'],
+        ['group' => 'Thợ điện lạnh', 'name' => 'Sửa chữa điện lạnh', 'base' => 200000, 'note' => 'Linh kiện phát sinh được báo riêng.'],
+        ['group' => 'Thợ tivi', 'name' => 'Treo tivi', 'base' => 200000, 'note' => 'Chưa gồm khung treo.'],
+        ['group' => 'Thợ máy lọc nước', 'name' => 'Lắp máy lọc nước', 'base' => 200000, 'note' => 'Phụ kiện phát sinh được báo riêng.'],
+        ['group' => 'Thợ gia dụng', 'name' => 'Lắp máy giặt', 'base' => 200000, 'note' => 'Phụ kiện phát sinh được báo riêng.'],
+        ['group' => 'Thợ điện thoại', 'name' => 'Kiểm tra / sửa điện thoại', 'base' => 200000, 'note' => 'Linh kiện phát sinh được báo riêng.'],
+    ];
+
+    foreach ($services as $index => &$service) {
+        $service['id'] = 'service-' . ($index + 1);
+        $service['tech_base'] = (int)$service['base'];
+        $service['public_price'] = $service['base'] > 0 ? (int)round($service['base'] * 1.10) : 0;
     }
-    if ($roll <= 20) {
-        return ['roll' => $roll, 'amount' => 5000, 'label' => '-5k'];
+    unset($service);
+    return $services;
+}
+
+function service_name_key(string $value): string
+{
+    $ascii = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+    $ascii = $ascii !== false ? $ascii : $value;
+    return trim((string)preg_replace('/[^a-z0-9]+/', ' ', strtolower($ascii)));
+}
+
+function public_service_by_name(string $name): ?array
+{
+    $needle = service_name_key(clean_string($name, 150));
+    if ($needle === '') {
+        return null;
     }
-    if ($roll <= 60) {
-        return ['roll' => $roll, 'amount' => 3000, 'label' => '-3k'];
+    foreach (public_service_catalog() as $service) {
+        if (service_name_key((string)$service['name']) === $needle) {
+            return $service;
+        }
     }
-    return ['roll' => $roll, 'amount' => 2000, 'label' => '-2k'];
+    return null;
 }
 
 function calculate_job_pricing(int $techTargetBase, int $estimatedCustomerPrice, int $quantity = 1): array
@@ -1137,26 +1208,25 @@ function calculate_job_pricing(int $techTargetBase, int $estimatedCustomerPrice,
         $techBaseTotal = $techTargetBase * $quantity;
         $vatAmount = (int)round($techBaseTotal * 0.10);
         $profitAmount = (int)round($techBaseTotal * 0.05);
-        $grossCustomerPrice = $techBaseTotal + $vatAmount + $profitAmount;
+        $grossCustomerPrice = $techBaseTotal + $vatAmount;
     } else {
         $grossCustomerPrice = max(0, $estimatedCustomerPrice);
-        $techBaseTotal = (int)round($grossCustomerPrice / 1.15);
-        $vatAmount = (int)round($techBaseTotal * 0.10);
-        $profitAmount = max(0, $grossCustomerPrice - $techBaseTotal - $vatAmount);
+        $techBaseTotal = (int)round($grossCustomerPrice / 1.10);
+        $vatAmount = max(0, $grossCustomerPrice - $techBaseTotal);
+        $profitAmount = (int)round($techBaseTotal * 0.05);
     }
 
-    $discount = random_booking_discount();
-    $finalCustomerPrice = max(0, $grossCustomerPrice - (int)$discount['amount']);
-    $platformFee = max(0, $finalCustomerPrice - $techBaseTotal);
+    $finalCustomerPrice = $grossCustomerPrice;
+    $platformFee = $profitAmount;
 
     return [
         'tech_target_base' => $techBaseTotal,
         'vat_amount' => $vatAmount,
         'profit_amount' => $profitAmount,
         'gross_customer_price' => $grossCustomerPrice,
-        'discount_amount' => (int)$discount['amount'],
-        'discount_roll' => (int)$discount['roll'],
-        'discount_label' => (string)$discount['label'],
+        'discount_amount' => 0,
+        'discount_roll' => 0,
+        'discount_label' => 'Khong ap dung',
         'final_customer_price' => $finalCustomerPrice,
         'platform_fee' => $platformFee,
         'tech_net_income' => $techBaseTotal,
@@ -3233,6 +3303,24 @@ function send_daily_business_report(PDO $pdo): array
     return ['sent' => !empty($response['ok']), 'stats' => $stats, 'platform_fee_today' => $platformFeeToday, 'paid_today' => $paidToday];
 }
 
+function distance_km(float $lat1, float $lng1, float $lat2, float $lng2): float
+{
+    $earthRadiusKm = 6371;
+    $latDelta = deg2rad($lat2 - $lat1);
+    $lngDelta = deg2rad($lng2 - $lng1);
+    $a = sin($latDelta / 2) ** 2
+        + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($lngDelta / 2) ** 2;
+    $a = min(1, max(0, $a));
+    return $earthRadiusKm * 2 * atan2(sqrt($a), sqrt(1 - $a));
+}
+
+function service_area_distance_km(float $lat, float $lng): float
+{
+    $centerLat = (float)app_env('SERVICE_CENTER_LAT', '10.357422');
+    $centerLng = (float)app_env('SERVICE_CENTER_LNG', '105.522124');
+    return distance_km($centerLat, $centerLng, $lat, $lng);
+}
+
 function create_job_action(array $input): array
 {
     $pdo = pdo();
@@ -3258,12 +3346,26 @@ function create_job_action(array $input): array
     $quantity = max(1, (int)($input['quantity'] ?? $input['qty'] ?? 1));
     $techBase = money_int($input['tech_target_base'] ?? $input['tech_base'] ?? 0);
     $estimated = money_int($input['estimated_price'] ?? $input['customer_price'] ?? $input['final_total'] ?? 0);
+    $selectedService = public_service_by_name((string)($input['selected_service_name'] ?? $input['selected_service'] ?? ''));
+    if ($selectedService !== null) {
+        $techBase = (int)$selectedService['tech_base'];
+        $estimated = (int)$selectedService['public_price'] * $quantity;
+    }
 
     if (strlen($phone) < 8 || $address === '' || $description === '') {
         json_out(['status' => 'error', 'message' => 'Thieu phone, dia chi hoac mo ta su co.'], 400);
     }
     if ($mapLat === null || $mapLng === null) {
         json_out(['status' => 'error', 'message' => 'Vui long bam chon va xac nhan toa do tren ban do truoc khi gui yeu cau.'], 400);
+    }
+    $serviceRadiusKm = max(1, (float)app_env('SERVICE_RADIUS_KM', '15'));
+    $serviceDistanceKm = service_area_distance_km($mapLat, $mapLng);
+    if ($serviceDistanceKm > $serviceRadiusKm) {
+        json_out([
+            'status' => 'error',
+            'message' => 'Vi tri nam ngoai ban kinh phuc vu ' . $serviceRadiusKm . ' km tinh tu Cho Lap Vo.',
+            'distance_km' => round($serviceDistanceKm, 2),
+        ], 400);
     }
 
     $identifiers = active_identifiers($input, $phone);
@@ -3290,9 +3392,10 @@ function create_job_action(array $input): array
     return [
         'status' => 'success',
         'success' => true,
-        'message' => 'Da tao yeu cau goi tho. Random discount ' . $pricing['discount_label'] . '.',
+        'message' => 'Da tao yeu cau goi tho. Gia khach da khop bang gia cong khai va da gom VAT.',
         'job_id' => $jobId,
         'telegram_sent' => $sent,
+        'service_distance_km' => round($serviceDistanceKm, 2),
         'tech_target_base' => $pricing['tech_target_base'],
         'vat_amount' => $pricing['vat_amount'],
         'profit_amount' => $pricing['profit_amount'],
@@ -4348,6 +4451,58 @@ try {
     case 'create_job':
         json_out(create_job_action($input));
 
+    case 'app_services':
+        json_out(['status' => 'success', 'data' => public_service_catalog()]);
+
+    case 'app_book_job':
+        $input['phone'] = $input['phone'] ?? $input['customer_phone'] ?? '';
+        $input['service_type'] = $input['service_type'] ?? $input['service_name'] ?? '';
+        $input['selected_service_name'] = $input['selected_service_name'] ?? $input['service_name'] ?? '';
+        $input['issue_description'] = $input['issue_description'] ?? $input['description'] ?? $input['service_name'] ?? '';
+        $input['estimated_price'] = $input['estimated_price'] ?? $input['price'] ?? 0;
+        json_out(create_job_action($input));
+
+    case 'app_job_status':
+        $booking_id = (int)($input['booking_id'] ?? 0);
+        $job = get_job_row($pdo, $booking_id);
+        if (!$job) {
+            json_out(['status' => 'error', 'message' => 'Khong tim thay don.'], 404);
+        }
+        $statusCode = job_display_status($job);
+        $statusText = [
+            'pending' => 'Chờ thợ nhận ca',
+            'assigned' => 'Thợ đang đến',
+            'completed' => 'Hoàn thành',
+            'cancelled' => 'Đã hủy',
+            'spam' => 'Yêu cầu không hợp lệ',
+        ][$statusCode] ?? 'Đang cập nhật';
+        $worker = null;
+        $workerId = job_worker_telegram_id($job);
+        if ($workerId > 0) {
+            $profile = get_worker_profile($pdo, $workerId);
+            $worker = [
+                'name' => (string)($profile['telegram_name'] ?? "Tho {$workerId}"),
+                'phone' => (string)($profile['phone'] ?? ''),
+            ];
+        }
+        json_out([
+            'status' => 'success',
+            'data' => [
+                'status_code' => $statusCode,
+                'status_text' => $statusText,
+                'amount' => fmt_money((int)($job['final_total'] ?? $job['customer_total'] ?? 0)),
+                'worker' => $worker
+            ]
+        ]);
+
+    case 'app_rate_job':
+        // API để App gửi đánh giá sau khi hoàn thành
+        $booking_id = (int)($input['booking_id'] ?? 0);
+        $rating = (int)($input['rating'] ?? 5);
+        $stmt = $pdo->prepare('UPDATE job_posts SET review_score = ? WHERE id = ?');
+        $stmt->execute([$rating, $booking_id]);
+        json_out(['status' => 'success']);
+
     case 'check_voucher':
         $code = clean_string($input['code'] ?? '', 80);
         if ($code === '') {
@@ -4745,6 +4900,83 @@ try {
             ->execute([$workerId, "Worker {$workerId}"]);
         tg_send('worker', (string)$workerId, 'Admin da mo khoa. Ban co the nhan ca lai.');
         json_out(['status' => 'success', 'message' => 'Da mo khoa tho.']);
+
+    case 'app_services':
+        $services = products_for_store($pdo, []);
+        json_out(['status' => 'success', 'data' => $services]);
+
+    case 'app_store_login':
+        $phone = clean_string($input['phone'] ?? '', 30);
+        $tax_code = clean_string($input['tax_code'] ?? '', 30);
+        if ($phone === '' || $tax_code === '') {
+            json_out(['status' => 'error', 'message' => 'Vui lòng nhập SĐT và Mã Số Thuế.']);
+        }
+        $ch = curl_init('https://api.vietqr.io/v2/business/' . urlencode($tax_code));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $res = curl_exec($ch);
+        curl_close($ch);
+        $bizData = json_decode($res, true);
+        if (!$bizData || ($bizData['code'] ?? '') !== '00') {
+            json_out(['status' => 'error', 'message' => 'Mã Số Thuế không hợp lệ hoặc không tồn tại.']);
+        }
+        $store_name = clean_string($bizData['data']['name'] ?? 'Cửa hàng không tên', 150);
+        $address = clean_string($bizData['data']['address'] ?? '', 255);
+        $stmt = $pdo->prepare('SELECT * FROM marketplace_stores WHERE tax_code = ?');
+        $stmt->execute([$tax_code]);
+        $store = $stmt->fetch();
+        if (!$store) {
+            $lat = 10.3547 + (mt_rand(-50, 50) / 10000);
+            $lng = 105.5298 + (mt_rand(-50, 50) / 10000);
+            insert_compat($pdo, 'marketplace_stores', [
+                'phone' => $phone,
+                'tax_code' => $tax_code,
+                'store_name' => $store_name,
+                'address' => $address,
+                'lat' => $lat,
+                'lng' => $lng,
+                'store_type' => 'Cửa hàng',
+                'status' => 'active'
+            ], ['created_at' => 'NOW()']);
+            $store_id = $pdo->lastInsertId();
+            $store = [
+                'id' => $store_id,
+                'phone' => $phone,
+                'tax_code' => $tax_code,
+                'store_name' => $store_name,
+                'address' => $address
+            ];
+        } else {
+            $pdo->prepare('UPDATE marketplace_stores SET phone = ? WHERE id = ?')->execute([$phone, $store['id']]);
+        }
+        json_out(['status' => 'success', 'data' => $store]);
+
+    case 'app_get_map_pins':
+        $stmt = $pdo->query("SELECT id, store_name, lat, lng, store_type, address FROM marketplace_stores WHERE status = 'active'");
+        $stores = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        json_out(['status' => 'success', 'data' => $stores]);
+
+    case 'app_store_menu':
+        $store_id = (int)($input['store_id'] ?? 0);
+        $stmt = $pdo->prepare("SELECT * FROM marketplace_products WHERE store_id = ? AND status = 'active'");
+        $stmt->execute([$store_id]);
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        json_out(['status' => 'success', 'data' => $products]);
+
+    case 'app_store_checkout':
+        $store_id = (int)($input['store_id'] ?? 0);
+        $customer_phone = clean_string($input['customer_phone'] ?? '', 30);
+        $customer_address = clean_string($input['customer_address'] ?? '', 255);
+        $total_amount = (int)($input['total_amount'] ?? 0);
+        insert_compat($pdo, 'marketplace_orders', [
+            'store_id' => $store_id,
+            'customer_phone' => $customer_phone,
+            'customer_address' => $customer_address,
+            'total_amount' => $total_amount,
+            'status' => 'pending'
+        ], ['created_at' => 'NOW()']);
+        $order_id = $pdo->lastInsertId();
+        telegram_notify_worker("CO DON HANG CHO XA LAP VO!\nCua hang ID: $store_id\nSDT Khach: $customer_phone\nDia chi: $customer_address\nTong: " . number_format($total_amount) . " d");
+        json_out(['status' => 'success', 'order_id' => $order_id]);
 
     case 'admin_unban_device':
         $identifier = clean_string($input['identifier'] ?? '', 255);
