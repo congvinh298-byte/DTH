@@ -8,12 +8,13 @@ export const COMPANY = {
   website: 'dienmayhieu.com',
   websiteUrl: 'https://dienmayhieu.com',
   approvalStatus: 'Website đang chờ duyệt',
+  serviceArea: 'Bán kính 15 km tính từ Chợ Lấp Vò',
   mission:
-    'Hệ sinh thái Điện Tử Hiếu được tạo ra để phục vụ bà con trong xã Lấp Vò và khu vực bán kính 15 km tính từ Chợ Lấp Vò.',
+    'Hệ sinh thái Điện Tử Hiếu được tạo ra để phục vụ bà con trong xã Lấp Vò và khu vực lân cận, gồm mua hàng, tìm cửa hàng địa phương, gọi thợ và các dịch vụ tiện ích.',
 };
 
 export const LEGAL_LINKS = [
   { label: 'Quy chế hoạt động', url: 'https://dienmayhieu.com/#quy-che' },
-  { label: 'Đề án hoạt động', url: 'https://dienmayhieu.com/#quy-che' },
-  { label: 'Chính sách bảo mật', url: 'https://dienmayhieu.com/#quy-che' },
+  { label: 'Đề án hoạt động', url: 'https://dienmayhieu.com/#de-an-hoat-dong' },
+  { label: 'Chính sách bảo mật', url: 'https://dienmayhieu.com/#chinh-sach-bao-mat' },
 ];

@@ -20,8 +20,8 @@ import StateNotice from '../../shared/widgets/StateNotice';
 
 export default function OrderScreen({ route, navigation, session }) {
   const product = route.params?.product;
-  const [customerName, setCustomerName] = useState(session.name || '');
-  const [phone, setPhone] = useState(session.phone || '');
+  const [customerName, setCustomerName] = useState(session?.name || '');
+  const [phone, setPhone] = useState(session?.phone || '');
   const [address, setAddress] = useState('');
   const [voucher, setVoucher] = useState('');
   const [note, setNote] = useState('');
@@ -65,8 +65,8 @@ export default function OrderScreen({ route, navigation, session }) {
 
       Alert.alert(
         'Đặt hàng thành công',
-        `Mã đơn: ${result.order_code}\nTổng tiền: ${formatMoney(result.total_price)}`,
-        [{ text: 'Về kho sản phẩm', onPress: () => navigation.navigate('Store') }],
+        `Mã đơn: ${result.order_code || result.id || '-'}\nTổng tiền: ${formatMoney(result.total_price || product.price)}`,
+        [{ text: 'Về khu mua hàng', onPress: () => navigation.navigate('Store') }],
       );
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, requestError?.message || 'Không tạo được đơn hàng.'));

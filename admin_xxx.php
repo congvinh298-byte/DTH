@@ -1215,8 +1215,39 @@ function uploadInputInvoice(event){
 
 function loadStores(){
     api('admin_get_stores').then(d=>{
-        document.getElementById('storesBody').innerHTML=(d.data||[]).map(s=>`<tr><td>${s.id}</td><td><b>${esc(s.store_name)}</b></td><td>MST: ${esc(s.tax_code)}<br>SDT: ${esc(s.phone)}</td><td>${esc(s.store_type)}<br><small>${esc(s.address)}</small></td><td><b style="color:#dc2626">${fmt(s.total_sales || 0)}</b></td><td>${statusBadge(s.status==='active'?'ok':'warn',s.status||'active')}</td><td><button class="btn" onclick="alert('Dang phat trien: Xem menu')">Xem Menu</button></td></tr>`).join('') || '<tr><td colspan="7">Chua co cua hang nao.</td></tr>';
+        if(d.status!=='success') throw new Error(d.message||'Khong tai duoc cua hang');
+        document.getElementById('storesBody').innerHTML=(d.data||[]).map(s=>{
+            const isActive=s.status==='active';
+            const hasKey=!!s.login_key;
+            const qr=isActive&&hasKey&&s.qr_image_url?`<div style="display:flex;align-items:center;gap:8px;"><img src="${esc(s.qr_image_url)}" alt="QR" style="width:86px;height:86px;border:1px solid #dfe3e8;border-radius:6px;background:#fff;"><div><button class="btn success" data-key="${esc(s.login_key||'')}" onclick="copyStoreKeyFromButton(this)">Copy key</button><span class="worker-meta"><code>${esc(s.login_key||'')}</code></span></div></div>`:'';
+            const reportQr=s.report_qr_image_url?`<div style="margin-top:6px;display:flex;align-items:center;gap:7px;"><img src="${esc(s.report_qr_image_url)}" alt="QR doi soat" style="width:74px;height:74px;border:1px solid #dfe3e8;border-radius:6px;background:#fff;"><div><a class="btn" href="${esc(s.report_url||'#')}" target="_blank">Xem doi soat</a><br><a class="btn" href="${esc(s.report_qr_image_url)}" target="_blank" download>Tai QR</a></div></div>`:'';
+            const actions=isActive&&hasKey
+                ? `${qr}<button class="btn" onclick="alert('Dang phat trien: Xem Menu')">Xem Menu</button>`
+                : `<button class="btn success" onclick="approveStore(${Number(s.id)})">Duyet & cap QR</button>`;
+            return `<tr><td><b>#${s.id}</b>${reportQr}</td><td><b>${esc(s.store_name)}</b><span class="worker-meta">Chu: ${esc(s.owner_name||'-')}<br>Dong bo: ${esc(s.last_login_at||s.created_at||'-')}</span></td><td>MST: ${esc(s.tax_code)}<br>SDT: ${esc(s.phone)}</td><td>${esc(s.store_type)}<br><small>${esc(s.address)}</small></td><td><b style="color:#dc2626">${fmt(s.total_sales || 0)}</b><span class="worker-meta">${esc(s.order_count||0)} don, cho xu ly ${esc(s.pending_orders||0)}</span></td><td>${statusBadge(isActive?'ok':'warn',isActive?'active':'pending')}</td><td>${actions}</td></tr>`;
+        }).join('') || '<tr><td colspan="7">Chua co cua hang nao.</td></tr>';
+    }).catch(e=>{
+        document.getElementById('storesBody').innerHTML=`<tr><td colspan="7" class="muted">Loi tai cua hang: ${esc(e.message)}</td></tr>`;
     });
+}
+function copyStoreKey(value){
+    const text=String(value||'');
+    if(!text){ msg('Chua co key cua hang'); return; }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(()=>msg('Da copy key dang nhap cua hang')).catch(()=>prompt('Copy key cua hang:',text));
+    }else{
+        prompt('Copy key cua hang:',text);
+    }
+}
+function copyStoreKeyFromButton(button){ copyStoreKey(button.dataset.key||''); }
+function approveStore(id){
+    if(!confirm('Duyet cua hang nay va cap QR/key dang nhap?')) return;
+    api('admin_approve_store',{id},'POST').then(d=>{
+        if(d.status!=='success') throw new Error(d.message||'Khong duyet duoc cua hang');
+        const s=d.data||{};
+        alert((d.message||'Da duyet') + '\nKey: ' + (s.login_key||''));
+        loadStores();
+    }).catch(e=>msg(e.message));
 }
 
 function settleStores(){
@@ -1225,8 +1256,10 @@ function settleStores(){
         if(d.status==='success'){
             alert(d.message);
             loadStores();
+        }else{
+            throw new Error(d.message||'Khong chot duoc doi soat cua hang');
         }
-    });
+    }).catch(e=>msg(e.message));
 }
 
 let cachedUsers = [];
@@ -1246,7 +1279,7 @@ function loadUsers(){
                 <small class="muted">${fmt(u.total_spent)} - ${esc(u.loyalty_points||0)} diem</small>
             </td>
             <td>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=DIENMAYHIEU-MEMBER-${u.id}" alt="QR" style="border-radius:4px; border:1px solid #ddd;">
+                ${u.qr_image_url ? `<img src="${esc(u.qr_image_url)}" alt="QR" style="width:80px;height:80px;border-radius:4px; border:1px solid #ddd;"><br><small class="muted"><code>${esc(u.login_key||'')}</code></small>` : '<span class="muted">Chua co QR</span>'}
             </td>
             <td>
                 ${Number(u.is_active) === 1 ? '<span class="status ok" style="display:inline-block; margin:0; padding:4px 8px;">Active</span>' : '<span class="status err" style="display:inline-block; margin:0; padding:4px 8px;">Banned</span>'}

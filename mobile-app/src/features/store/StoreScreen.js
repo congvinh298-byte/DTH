@@ -60,10 +60,11 @@ export default function StoreScreen({ navigation }) {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text style={styles.heading}>Kho sản phẩm</Text>
+            <Text style={styles.heading}>Khu mua hàng</Text>
+            <Text style={styles.caption}>Khách hàng tìm sản phẩm, SIM, đồ ăn hoặc hàng của cửa hàng địa phương.</Text>
             <TextInput
               onChangeText={setQuery}
-              placeholder="Tìm sản phẩm hoặc SIM"
+              placeholder="Tìm sản phẩm, SIM, món ăn hoặc cửa hàng"
               style={commonStyles.input}
               value={query}
             />
@@ -129,13 +130,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   header: {
-    gap: 12,
+    gap: 10,
     marginBottom: 8,
   },
   heading: {
     color: colors.text,
     fontSize: 24,
-    fontWeight: '800',
+    fontWeight: '900',
+  },
+  caption: {
+    color: colors.muted,
+    fontSize: 14,
+    lineHeight: 20,
   },
   productRow: {
     minHeight: 96,

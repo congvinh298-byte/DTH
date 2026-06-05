@@ -713,12 +713,22 @@ function ensure_core_schema(PDO $pdo)
         id INT AUTO_INCREMENT PRIMARY KEY,
         phone VARCHAR(30) NOT NULL,
         tax_code VARCHAR(30) NOT NULL,
+        owner_name VARCHAR(150) NULL,
+        email VARCHAR(190) NULL,
         store_name VARCHAR(150) NOT NULL,
         address TEXT NULL,
         lat DECIMAL(10,7) NULL,
         lng DECIMAL(10,7) NULL,
         store_type VARCHAR(50) NULL,
-        status VARCHAR(30) NOT NULL DEFAULT 'active',
+        note TEXT NULL,
+        login_key VARCHAR(128) NULL,
+        approved_at DATETIME NULL,
+        approved_by VARCHAR(150) NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'pending',
+        rating_score DECIMAL(3,1) NOT NULL DEFAULT 5.0,
+        rating_count INT NOT NULL DEFAULT 0,
+        report_token VARCHAR(64) NULL,
+        last_login_at DATETIME NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NULL DEFAULT NULL,
         INDEX idx_store_phone (phone),
@@ -758,10 +768,12 @@ function ensure_core_schema(PDO $pdo)
             'password_hash' => 'VARCHAR(255) NULL',
             'telegram_chat_id' => 'VARCHAR(60) NULL',
             'telegram_username' => 'VARCHAR(150) NULL',
+            'login_key' => 'VARCHAR(128) NULL',
             'is_active' => 'TINYINT(1) NOT NULL DEFAULT 1',
             'member_rank' => "VARCHAR(50) NOT NULL DEFAULT 'Thành viên'",
             'total_spent' => 'INT NOT NULL DEFAULT 0',
             'loyalty_points' => 'INT NOT NULL DEFAULT 0',
+            'last_login_at' => 'DATETIME NULL',
             'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
             'updated_at' => 'DATETIME NULL DEFAULT NULL',
         ],
@@ -985,6 +997,25 @@ function ensure_core_schema(PDO $pdo)
             'success' => 'TINYINT(1) NOT NULL DEFAULT 0',
             'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
         ],
+        'marketplace_stores' => [
+            'phone' => 'VARCHAR(30) NOT NULL',
+            'tax_code' => 'VARCHAR(30) NOT NULL',
+            'owner_name' => 'VARCHAR(150) NULL',
+            'email' => 'VARCHAR(190) NULL',
+            'store_name' => 'VARCHAR(150) NOT NULL',
+            'address' => 'TEXT NULL',
+            'lat' => 'DECIMAL(10,7) NULL',
+            'lng' => 'DECIMAL(10,7) NULL',
+            'store_type' => 'VARCHAR(50) NULL',
+            'note' => 'TEXT NULL',
+            'login_key' => 'VARCHAR(128) NULL',
+            'approved_at' => 'DATETIME NULL',
+            'approved_by' => 'VARCHAR(150) NULL',
+            'status' => "VARCHAR(30) NOT NULL DEFAULT 'active'",
+            'last_login_at' => 'DATETIME NULL',
+            'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
+            'updated_at' => 'DATETIME NULL DEFAULT NULL',
+        ],
     ] as $table => $columns) {
         foreach ($columns as $column => $definition) {
             add_column_if_missing($pdo, $table, $column, $definition);
@@ -994,6 +1025,7 @@ function ensure_core_schema(PDO $pdo)
     add_index_if_missing($pdo, 'products', 'idx_products_category', '(category)');
     add_index_if_missing($pdo, 'products', 'idx_products_price', '(price)');
     add_index_if_missing($pdo, 'users', 'idx_users_phone', '(phone)');
+    add_index_if_missing($pdo, 'users', 'idx_users_login_key', '(login_key)');
     add_index_if_missing($pdo, 'orders', 'idx_orders_customer_phone', '(customer_phone)');
     add_index_if_missing($pdo, 'orders', 'idx_orders_status', '(status)');
     add_index_if_missing($pdo, 'job_posts', 'idx_job_posts_customer_phone', '(customer_phone)');
@@ -1012,6 +1044,10 @@ function ensure_core_schema(PDO $pdo)
     add_index_if_missing($pdo, 'input_invoices', 'idx_input_invoice_status', '(status)');
     add_index_if_missing($pdo, 'bct_report_access_log', 'idx_bct_access_created', '(created_at)');
     add_index_if_missing($pdo, 'bct_report_access_log', 'idx_bct_access_user', '(username)');
+    add_index_if_missing($pdo, 'marketplace_stores', 'idx_store_phone', '(phone)');
+    add_index_if_missing($pdo, 'marketplace_stores', 'idx_store_tax', '(tax_code)');
+    add_index_if_missing($pdo, 'marketplace_stores', 'idx_store_status', '(status)');
+    add_index_if_missing($pdo, 'marketplace_stores', 'idx_store_login_key', '(login_key)');
 
     $pdo->exec("UPDATE job_pricing SET paid_amount = platform_fee, paid_at = COALESCE(paid_at, created_at)
         WHERE payment_status = 'paid' AND paid_amount = 0");
@@ -2486,11 +2522,48 @@ function loyalty_member_rank(int $points): string
     return 'Thanh vien';
 }
 
+function qr_image_url_for_payload(string $payload, int $size = 180): string
+{
+    if ($payload === '') {
+        return '';
+    }
+    $safeSize = max(120, min(360, $size));
+    return "https://api.qrserver.com/v1/create-qr-code/?size={$safeSize}x{$safeSize}&data=" . rawurlencode($payload);
+}
+
+function customer_qr_payload(string $loginKey): string
+{
+    return 'DTH-CUSTOMER:' . $loginKey;
+}
+
+function customer_normalize_login_key(string $value): string
+{
+    $value = trim($value);
+    if (stripos($value, 'DTH-CUSTOMER:') === 0) {
+        $value = substr($value, strlen('DTH-CUSTOMER:'));
+    }
+    return strtoupper(clean_string($value, 128));
+}
+
+function customer_generate_login_key(PDO $pdo): string
+{
+    do {
+        $key = 'DTHC-' . strtoupper(bin2hex(random_bytes(8)));
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE login_key = ? LIMIT 1');
+        $stmt->execute([$key]);
+    } while ($stmt->fetch());
+    return $key;
+}
+
 function retail_customer_row(array $row): array
 {
     foreach (['id', 'is_active', 'total_spent', 'loyalty_points'] as $field) {
         $row[$field] = (int)($row[$field] ?? 0);
     }
+    $loginKey = (string)($row['login_key'] ?? '');
+    $row['login_key'] = $loginKey;
+    $row['qr_payload'] = $loginKey !== '' ? customer_qr_payload($loginKey) : '';
+    $row['qr_image_url'] = $loginKey !== '' ? qr_image_url_for_payload(customer_qr_payload($loginKey), 160) : '';
     return $row;
 }
 
@@ -2520,19 +2593,24 @@ function reward_retail_customer(PDO $pdo, string $fullname, string $phone, int $
     if ($customer) {
         $newTotalSpent = (int)$customer['total_spent'] + $saleAmount;
         $newPoints = (int)$customer['loyalty_points'] + $earned;
-        update_compat($pdo, 'users', [
+        $updates = [
             'fullname' => $fullname,
             'is_active' => 1,
             'member_rank' => loyalty_member_rank($newPoints),
             'total_spent' => $newTotalSpent,
             'loyalty_points' => $newPoints,
-        ], 'id = ?', [(int)$customer['id']], ['updated_at' => 'NOW()']);
+        ];
+        if ((string)($customer['login_key'] ?? '') === '') {
+            $updates['login_key'] = customer_generate_login_key($pdo);
+        }
+        update_compat($pdo, 'users', $updates, 'id = ?', [(int)$customer['id']], ['updated_at' => 'NOW()']);
         $customer = retail_customer_by_phone($pdo, $phone, false) ?: $customer;
     } else {
         $customerId = insert_compat($pdo, 'users', [
             'role' => 'buyer',
             'fullname' => $fullname,
             'phone' => $phone,
+            'login_key' => customer_generate_login_key($pdo),
             'is_active' => 1,
             'member_rank' => loyalty_member_rank($earned),
             'total_spent' => $saleAmount,
@@ -2551,6 +2629,93 @@ function reward_retail_customer(PDO $pdo, string $fullname, string $phone, int $
     $customer = retail_customer_row($customer);
     $customer['points_earned'] = $earned;
     return $customer;
+}
+
+function app_customer_register_action(PDO $pdo, array $input): array
+{
+    $phone = digits_only((string)($input['phone'] ?? $input['customer_phone'] ?? ''));
+    $fullname = clean_string($input['name'] ?? $input['fullname'] ?? $input['customer_name'] ?? '', 150);
+    if (strlen($phone) < 8) {
+        json_out(['status' => 'error', 'message' => 'Vui long nhap so dien thoai khach hang hop le.'], 400);
+    }
+    if ($fullname === '') {
+        $fullname = 'Khach ' . substr($phone, -4);
+    }
+
+    $existing = retail_customer_by_phone($pdo, $phone, false);
+    if ($existing) {
+        if ((string)($existing['login_key'] ?? '') === '') {
+            update_compat($pdo, 'users', [
+                'fullname' => $fullname,
+                'login_key' => customer_generate_login_key($pdo),
+                'is_active' => 1,
+            ], 'id = ?', [(int)$existing['id']], ['updated_at' => 'NOW()']);
+            $existing = retail_customer_by_phone($pdo, $phone, false) ?: $existing;
+            return [
+                'status' => 'success',
+                'message' => 'So dien thoai nay da co tren he thong. Da cap QR dang nhap rieng cho khach hang.',
+                'data' => $existing,
+            ];
+        }
+        json_out([
+            'status' => 'error',
+            'message' => 'So dien thoai nay da co tai khoan. Vui long dang nhap bang QR da cap.',
+            'data' => $existing,
+        ], 409);
+    }
+
+    $customerId = insert_compat($pdo, 'users', [
+        'role' => 'buyer',
+        'fullname' => $fullname,
+        'phone' => $phone,
+        'login_key' => customer_generate_login_key($pdo),
+        'is_active' => 1,
+        'member_rank' => loyalty_member_rank(0),
+        'total_spent' => 0,
+        'loyalty_points' => 0,
+    ], [
+        'created_at' => 'NOW()',
+        'updated_at' => 'NOW()',
+    ]);
+
+    $stmt = $pdo->prepare('SELECT * FROM users WHERE id = ? LIMIT 1');
+    $stmt->execute([$customerId]);
+    return [
+        'status' => 'success',
+        'message' => 'Da cap QR dang nhap rieng cho khach hang. Hay giu QR nay de dang nhap ve sau.',
+        'data' => retail_customer_row($stmt->fetch() ?: []),
+    ];
+}
+
+function app_customer_login_qr_action(PDO $pdo, array $input): array
+{
+    $loginKey = customer_normalize_login_key((string)($input['login_key'] ?? $input['qr_data'] ?? $input['key'] ?? ''));
+    if ($loginKey === '') {
+        json_out(['status' => 'error', 'message' => 'Vui long quet QR hoac nhap key khach hang.'], 400);
+    }
+
+    $stmt = $pdo->prepare('SELECT * FROM users WHERE login_key = ? LIMIT 1');
+    $stmt->execute([$loginKey]);
+    $customer = $stmt->fetch();
+    if (!$customer) {
+        json_out(['status' => 'error', 'message' => 'QR/key khach hang khong hop le.'], 404);
+    }
+    if ((int)($customer['is_active'] ?? 0) !== 1) {
+        json_out(['status' => 'error', 'message' => 'Tai khoan khach hang dang bi tam dung.'], 403);
+    }
+
+    update_compat($pdo, 'users', [], 'id = ?', [(int)$customer['id']], [
+        'last_login_at' => 'NOW()',
+        'updated_at' => 'NOW()',
+    ]);
+
+    $stmt = $pdo->prepare('SELECT * FROM users WHERE id = ? LIMIT 1');
+    $stmt->execute([(int)$customer['id']]);
+    return [
+        'status' => 'success',
+        'message' => 'Dang nhap khach hang thanh cong.',
+        'data' => retail_customer_row($stmt->fetch() ?: []),
+    ];
 }
 
 function decrement_retail_stock(PDO $pdo, array $input, int $quantity)
@@ -3630,6 +3795,458 @@ function products_for_store(PDO $pdo, array $input): array
     return $items;
 }
 
+function marketplace_default_coordinates(string $seed = ''): array
+{
+    $centerLat = (float)app_env('SERVICE_CENTER_LAT', '10.357422');
+    $centerLng = (float)app_env('SERVICE_CENTER_LNG', '105.522124');
+    $hash = crc32($seed !== '' ? $seed : 'lap-vo-market');
+    $latOffset = (((int)($hash % 7000)) - 3500) / 1000000;
+    $lngOffset = (((int)(($hash >> 8) % 7000)) - 3500) / 1000000;
+
+    return [
+        'lat' => round($centerLat + $latOffset, 7),
+        'lng' => round($centerLng + $lngOffset, 7),
+    ];
+}
+
+function marketplace_business_lookup(string $taxCode): array
+{
+    $taxCode = digits_only($taxCode);
+    if ($taxCode === '' || !function_exists('curl_init')) {
+        return [];
+    }
+
+    $ch = curl_init('https://api.vietqr.io/v2/business/' . rawurlencode($taxCode));
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_TIMEOUT => 8,
+    ]);
+    $raw = curl_exec($ch);
+    curl_close($ch);
+    $data = json_decode((string)$raw, true);
+    if (!is_array($data) || (string)($data['code'] ?? '') !== '00' || !is_array($data['data'] ?? null)) {
+        return [];
+    }
+
+    return [
+        'name' => clean_string($data['data']['name'] ?? '', 150),
+        'address' => clean_string($data['data']['address'] ?? '', 500),
+    ];
+}
+
+function marketplace_generate_login_key(PDO $pdo): string
+{
+    do {
+        $key = 'DTHS-' . strtoupper(bin2hex(random_bytes(12)));
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM marketplace_stores WHERE login_key = ?');
+        $stmt->execute([$key]);
+    } while ((int)$stmt->fetchColumn() > 0);
+
+    return $key;
+}
+
+function marketplace_qr_payload(string $loginKey): string
+{
+    return 'DTH-STORE:' . trim($loginKey);
+}
+
+function marketplace_qr_image_url(string $loginKey, int $size = 180): string
+{
+    if ($loginKey === '') {
+        return '';
+    }
+    return qr_image_url_for_payload(marketplace_qr_payload($loginKey), $size);
+}
+
+function marketplace_normalize_login_key(string $value): string
+{
+    $value = trim($value);
+    if (stripos($value, 'DTH-STORE:') === 0) {
+        $value = substr($value, strlen('DTH-STORE:'));
+    }
+    return strtoupper(clean_string($value, 128));
+}
+
+function marketplace_store_report_token(array $store): string
+{
+    $secret = app_env('APP_SECRET', app_env('ADMIN_PASS_HASH', 'dien-tu-hieu-store-report'));
+    $payload = 'store_report|' . (int)($store['id'] ?? 0) . '|' . (string)($store['tax_code'] ?? '') . '|' . (string)($store['created_at'] ?? '');
+    return hash_hmac('sha256', $payload, $secret);
+}
+
+function marketplace_store_report_url(array $store): string
+{
+    $id = (int)($store['id'] ?? 0);
+    if ($id <= 0) {
+        return '';
+    }
+    return app_public_url() . '/api_master.php?action=store_public_report&id=' . $id . '&token=' . marketplace_store_report_token($store);
+}
+
+function marketplace_store_report_qr_url(array $store, int $size = 160): string
+{
+    $url = marketplace_store_report_url($store);
+    return $url !== '' ? qr_image_url_for_payload($url, $size) : '';
+}
+
+function marketplace_store_row(array $row): array
+{
+    $loginKey = (string)($row['login_key'] ?? '');
+    $reportUrl = marketplace_store_report_url($row);
+    return [
+        'id' => (int)($row['id'] ?? 0),
+        'phone' => (string)($row['phone'] ?? ''),
+        'tax_code' => (string)($row['tax_code'] ?? ''),
+        'owner_name' => (string)($row['owner_name'] ?? ''),
+        'email' => (string)($row['email'] ?? ''),
+        'store_name' => (string)($row['store_name'] ?? ''),
+        'address' => (string)($row['address'] ?? ''),
+        'lat' => isset($row['lat']) ? (float)$row['lat'] : null,
+        'lng' => isset($row['lng']) ? (float)$row['lng'] : null,
+        'store_type' => (string)($row['store_type'] ?? 'Cua hang'),
+        'status' => (string)($row['status'] ?? 'active'),
+        'login_key' => $loginKey,
+        'qr_payload' => $loginKey !== '' ? marketplace_qr_payload($loginKey) : '',
+        'qr_image_url' => marketplace_qr_image_url($loginKey, 160),
+        'report_url' => $reportUrl,
+        'report_qr_image_url' => $reportUrl !== '' ? qr_image_url_for_payload($reportUrl, 150) : '',
+        'approved_at' => (string)($row['approved_at'] ?? ''),
+        'approved_by' => (string)($row['approved_by'] ?? ''),
+        'order_count' => (int)($row['order_count'] ?? 0),
+        'pending_orders' => (int)($row['pending_orders'] ?? 0),
+        'total_sales' => money_int($row['total_sales'] ?? 0),
+        'created_at' => (string)($row['created_at'] ?? ''),
+        'last_login_at' => (string)($row['last_login_at'] ?? ''),
+    ];
+}
+
+function app_store_register_action(PDO $pdo, array $input): array
+{
+    $phone = digits_only((string)($input['phone'] ?? $input['contact_phone'] ?? ''));
+    $taxCode = strtoupper(clean_string($input['tax_code'] ?? $input['mst'] ?? '', 30));
+    $ownerName = clean_string($input['owner_name'] ?? $input['contact_name'] ?? '', 150);
+    $email = clean_string($input['email'] ?? '', 190);
+    $storeName = clean_string($input['store_name'] ?? $input['shop_name'] ?? $input['name'] ?? '', 150);
+    $storeType = clean_string($input['store_type'] ?? $input['category'] ?? 'Cua hang', 50);
+    $address = clean_string($input['address'] ?? '', 500);
+    $note = clean_string($input['note'] ?? '', 1000);
+
+    if (strlen($phone) < 8) {
+        json_out(['status' => 'error', 'message' => 'Vui long nhap so dien thoai cua chu cua hang.'], 400);
+    }
+    if (strlen(digits_only($taxCode)) < 8) {
+        json_out(['status' => 'error', 'message' => 'Vui long nhap ma so thue de gui don dang ky cho giam doc.'], 400);
+    }
+
+    $business = marketplace_business_lookup($taxCode);
+    if ($storeName === '' && !empty($business['name'])) {
+        $storeName = $business['name'];
+    }
+    if ($address === '' && !empty($business['address'])) {
+        $address = $business['address'];
+    }
+    if ($storeName === '') {
+        json_out(['status' => 'error', 'message' => 'Vui long nhap ten cua hang de dong bo len van phong.'], 400);
+    }
+    if ($storeType === '') {
+        $storeType = 'Cua hang';
+    }
+
+    $storageTaxCode = $taxCode;
+    $lat = isset($input['lat']) && is_numeric($input['lat']) ? (float)$input['lat'] : null;
+    $lng = isset($input['lng']) && is_numeric($input['lng']) ? (float)$input['lng'] : null;
+    if (($lat === null || $lng === null) && isset($input['latitude'], $input['longitude']) && is_numeric($input['latitude']) && is_numeric($input['longitude'])) {
+        $lat = (float)$input['latitude'];
+        $lng = (float)$input['longitude'];
+    }
+    if ($lat !== null && $lng !== null && (abs($lat) > 90 || abs($lng) > 180)) {
+        $lat = null;
+        $lng = null;
+    }
+    if ($lat !== null && $lng !== null) {
+        $radius = max(1, (float)app_env('SERVICE_RADIUS_KM', '15'));
+        $distance = service_area_distance_km($lat, $lng);
+        if ($distance > $radius) {
+            json_out([
+                'status' => 'error',
+                'message' => 'Cua hang nam ngoai ban kinh 15 km tinh tu Cho Lap Vo.',
+                'distance_km' => round($distance, 2),
+            ], 400);
+        }
+    } else {
+        $defaultCoordinates = marketplace_default_coordinates($storageTaxCode . '|' . $phone);
+        $lat = $defaultCoordinates['lat'];
+        $lng = $defaultCoordinates['lng'];
+    }
+
+    $values = [
+        'phone' => $phone,
+        'tax_code' => $storageTaxCode,
+        'owner_name' => $ownerName,
+        'email' => $email,
+        'store_name' => $storeName,
+        'address' => $address,
+        'lat' => $lat,
+        'lng' => $lng,
+        'store_type' => $storeType,
+        'note' => $note,
+        'status' => 'pending',
+    ];
+
+    $stmt = $pdo->prepare('SELECT id, status, login_key FROM marketplace_stores WHERE tax_code = ? ORDER BY id DESC LIMIT 1');
+    $stmt->execute([$storageTaxCode]);
+    $existing = $stmt->fetch();
+    $storeId = (int)($existing['id'] ?? 0);
+    if ($storeId > 0) {
+        if ((string)($existing['status'] ?? '') === 'active' && (string)($existing['login_key'] ?? '') !== '') {
+            $stmt = $pdo->prepare('SELECT * FROM marketplace_stores WHERE id = ? LIMIT 1');
+            $stmt->execute([$storeId]);
+            return [
+                'status' => 'success',
+                'approval_status' => 'active',
+                'message' => 'Cua hang da duoc duyet. Vui long dang nhap bang QR/key giam doc da cap.',
+                'data' => marketplace_store_row($stmt->fetch() ?: []),
+            ];
+        }
+        update_compat($pdo, 'marketplace_stores', $values, 'id = ?', [$storeId], [
+            'updated_at' => 'NOW()',
+        ]);
+    } else {
+        $storeId = insert_compat($pdo, 'marketplace_stores', $values, [
+            'created_at' => 'NOW()',
+            'updated_at' => 'NOW()',
+        ]);
+    }
+
+    $stmt = $pdo->prepare('SELECT * FROM marketplace_stores WHERE id = ? LIMIT 1');
+    $stmt->execute([$storeId]);
+    return [
+        'status' => 'success',
+        'approval_status' => 'pending',
+        'message' => 'Da gui don dang ky cua hang len Van phong giam doc. Cho giam doc duyet va cap QR dang nhap.',
+        'data' => marketplace_store_row($stmt->fetch() ?: []),
+    ];
+}
+
+function app_store_login_qr_action(PDO $pdo, array $input): array
+{
+    $loginKey = marketplace_normalize_login_key((string)($input['login_key'] ?? $input['qr_data'] ?? $input['key'] ?? ''));
+    if ($loginKey === '') {
+        json_out(['status' => 'error', 'message' => 'Vui long quet QR hoac nhap key dang nhap cua cua hang.'], 400);
+    }
+
+    $stmt = $pdo->prepare("SELECT * FROM marketplace_stores WHERE login_key = ? LIMIT 1");
+    $stmt->execute([$loginKey]);
+    $store = $stmt->fetch();
+    if (!$store) {
+        json_out(['status' => 'error', 'message' => 'QR/key cua hang khong hop le.'], 404);
+    }
+    if ((string)($store['status'] ?? '') !== 'active') {
+        json_out(['status' => 'error', 'message' => 'Cua hang chua duoc duyet hoac dang bi tam dung.'], 403);
+    }
+
+    update_compat($pdo, 'marketplace_stores', [], 'id = ?', [(int)$store['id']], [
+        'last_login_at' => 'NOW()',
+        'updated_at' => 'NOW()',
+    ]);
+
+    $stmt = $pdo->prepare('SELECT * FROM marketplace_stores WHERE id = ? LIMIT 1');
+    $stmt->execute([(int)$store['id']]);
+    return [
+        'status' => 'success',
+        'message' => 'Dang nhap cua hang thanh cong.',
+        'data' => marketplace_store_row($stmt->fetch() ?: []),
+    ];
+}
+
+function admin_store_rows(PDO $pdo): array
+{
+    if (!table_exists($pdo, 'marketplace_stores')) {
+        return [];
+    }
+
+    $sql = "SELECT s.*,
+            COUNT(o.id) AS order_count,
+            SUM(CASE WHEN o.status = 'pending' THEN 1 ELSE 0 END) AS pending_orders,
+            COALESCE(SUM(CASE WHEN o.status IN ('pending','completed','confirmed','paid') THEN o.total_amount ELSE 0 END), 0) AS total_sales
+        FROM marketplace_stores s
+        LEFT JOIN marketplace_orders o ON o.store_id = s.id
+        GROUP BY s.id
+        ORDER BY s.id DESC";
+    $stmt = $pdo->query($sql);
+
+    return array_map('marketplace_store_row', $stmt->fetchAll());
+}
+
+function admin_settle_stores_action(PDO $pdo): array
+{
+    $stores = admin_store_rows($pdo);
+    $totalSales = 0;
+    foreach ($stores as $store) {
+        $totalSales += (int)$store['total_sales'];
+    }
+
+    return [
+        'status' => 'success',
+        'message' => 'Da chot doi soat cua hang: ' . count($stores) . ' cua hang, tong giao dich ' . fmt_money($totalSales) . '.',
+        'store_count' => count($stores),
+        'total_sales' => $totalSales,
+        'data' => $stores,
+    ];
+}
+
+function admin_approve_store_action(PDO $pdo, array $input): array
+{
+    $storeId = (int)($input['id'] ?? $input['store_id'] ?? 0);
+    if ($storeId <= 0) {
+        json_out(['status' => 'error', 'message' => 'ID cua hang khong hop le.'], 400);
+    }
+
+    $stmt = $pdo->prepare('SELECT * FROM marketplace_stores WHERE id = ? LIMIT 1');
+    $stmt->execute([$storeId]);
+    $store = $stmt->fetch();
+    if (!$store) {
+        json_out(['status' => 'error', 'message' => 'Khong tim thay cua hang.'], 404);
+    }
+
+    $loginKey = (string)($store['login_key'] ?? '');
+    if ($loginKey === '') {
+        $loginKey = marketplace_generate_login_key($pdo);
+    }
+
+    update_compat($pdo, 'marketplace_stores', [
+        'status' => 'active',
+        'login_key' => $loginKey,
+        'approved_by' => 'admin',
+    ], 'id = ?', [$storeId], [
+        'approved_at' => 'NOW()',
+        'updated_at' => 'NOW()',
+    ]);
+
+    $stmt = $pdo->prepare('SELECT * FROM marketplace_stores WHERE id = ? LIMIT 1');
+    $stmt->execute([$storeId]);
+    $row = marketplace_store_row($stmt->fetch() ?: []);
+
+    return [
+        'status' => 'success',
+        'message' => 'Da duyet cua hang va cap QR/key dang nhap.',
+        'data' => $row,
+    ];
+}
+
+function store_public_report_action(PDO $pdo, array $input): void
+{
+    $storeId = (int)($input['id'] ?? $_GET['id'] ?? 0);
+    $token = clean_string($input['token'] ?? $_GET['token'] ?? '', 128);
+
+    $sendError = static function (int $status, string $message): void {
+        http_response_code($status);
+        header('Content-Type: text/html; charset=utf-8');
+        echo '<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>QR doi soat</title></head><body style="font-family:Arial,sans-serif;padding:24px"><h1>Khong mo duoc bao cao</h1><p>' . esc_html($message) . '</p></body></html>';
+        exit;
+    };
+
+    if ($storeId <= 0 || $token === '') {
+        $sendError(400, 'Thieu ID cua hang hoac token QR.');
+    }
+
+    $stmt = $pdo->prepare('SELECT * FROM marketplace_stores WHERE id = ? LIMIT 1');
+    $stmt->execute([$storeId]);
+    $store = $stmt->fetch();
+    if (!$store) {
+        $sendError(404, 'Khong tim thay cua hang.');
+    }
+    if (!hash_equals(marketplace_store_report_token($store), $token)) {
+        $sendError(403, 'Token QR doi soat khong hop le.');
+    }
+
+    $monthStart = new DateTimeImmutable('first day of last month 00:00:00');
+    $monthEnd = new DateTimeImmutable('first day of this month 00:00:00');
+    $stmt = $pdo->prepare('SELECT * FROM marketplace_orders WHERE store_id = ? AND created_at >= ? AND created_at < ? ORDER BY created_at DESC, id DESC');
+    $stmt->execute([
+        $storeId,
+        $monthStart->format('Y-m-d H:i:s'),
+        $monthEnd->format('Y-m-d H:i:s'),
+    ]);
+    $orders = $stmt->fetchAll();
+    $total = 0;
+    foreach ($orders as $order) {
+        $total += money_int($order['total_amount'] ?? 0);
+    }
+
+    $storeRow = marketplace_store_row($store);
+    $period = $monthStart->format('d/m/Y') . ' - ' . $monthEnd->modify('-1 second')->format('d/m/Y');
+
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Doi soat ' . esc_html($storeRow['store_name']) . '</title><style>
+        body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#0f172a}
+        .wrap{max-width:980px;margin:0 auto;padding:20px}
+        .card{background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:18px;margin-bottom:14px}
+        h1{font-size:24px;margin:0 0 8px} h2{font-size:18px;margin:0 0 10px}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+        .label{color:#64748b;font-size:13px}.value{font-weight:800;margin-top:3px}
+        table{width:100%;border-collapse:collapse;background:#fff} th,td{border-bottom:1px solid #e5e7eb;text-align:left;padding:9px;font-size:14px} th{background:#f1f5f9}
+        .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.btn{display:inline-block;border:1px solid #d1d5db;border-radius:6px;padding:9px 12px;background:#fff;color:#111827;text-decoration:none;font-weight:700}.primary{background:#dc2626;border-color:#dc2626;color:#fff}
+        @media print{body{background:#fff}.actions{display:none}.wrap{padding:0}.card{border:0}}
+    </style></head><body><main class="wrap">';
+    echo '<section class="card"><h1>Thong tin doi soat cua hang</h1><div class="grid">';
+    echo '<div><div class="label">Ten co so</div><div class="value">' . esc_html($storeRow['store_name']) . '</div></div>';
+    echo '<div><div class="label">Ma so thue</div><div class="value">' . esc_html($storeRow['tax_code']) . '</div></div>';
+    echo '<div><div class="label">So dien thoai</div><div class="value">' . esc_html($storeRow['phone']) . '</div></div>';
+    echo '<div><div class="label">Chu co so</div><div class="value">' . esc_html($storeRow['owner_name'] ?: '-') . '</div></div>';
+    echo '<div><div class="label">Loai cua hang</div><div class="value">' . esc_html($storeRow['store_type']) . '</div></div>';
+    echo '<div><div class="label">Trang thai</div><div class="value">' . esc_html($storeRow['status']) . '</div></div>';
+    echo '</div><p><b>Dia chi:</b> ' . esc_html($storeRow['address']) . '</p>';
+    echo '<div class="actions"><a class="btn primary" href="' . esc_html($storeRow['report_qr_image_url']) . '" target="_blank" download>Tải hinh QR doi soat</a><button class="btn" onclick="window.print()">In bao cao</button></div></section>';
+    echo '<section class="card"><h2>Doanh thu thang truoc</h2><div class="grid">';
+    echo '<div><div class="label">Ky bao cao</div><div class="value">' . esc_html($period) . '</div></div>';
+    echo '<div><div class="label">So don</div><div class="value">' . count($orders) . '</div></div>';
+    echo '<div><div class="label">Tong doanh thu</div><div class="value">' . esc_html(fmt_money($total)) . '</div></div>';
+    echo '</div></section><section class="card"><h2>Chi tiet giao dich</h2><table><thead><tr><th>ID</th><th>Ngay</th><th>Khach</th><th>Dia chi</th><th>Trang thai</th><th>Tien</th></tr></thead><tbody>';
+    if (!$orders) {
+        echo '<tr><td colspan="6">Thang truoc chua co giao dich.</td></tr>';
+    }
+    foreach ($orders as $order) {
+        echo '<tr>';
+        echo '<td>#' . (int)($order['id'] ?? 0) . '</td>';
+        echo '<td>' . esc_html((string)($order['created_at'] ?? '')) . '</td>';
+        echo '<td>' . esc_html((string)($order['customer_name'] ?? $order['customer_phone'] ?? '-')) . '</td>';
+        echo '<td>' . esc_html((string)($order['customer_address'] ?? '-')) . '</td>';
+        echo '<td>' . esc_html((string)($order['status'] ?? '-')) . '</td>';
+        echo '<td><b>' . esc_html(fmt_money(money_int($order['total_amount'] ?? 0))) . '</b></td>';
+        echo '</tr>';
+    }
+    echo '</tbody></table></section></main></body></html>';
+    exit;
+}
+
+function app_store_counts(PDO $pdo): array
+{
+    if (!table_exists($pdo, 'marketplace_stores')) {
+        return [
+            'active_total' => 0,
+            'pending_total' => 0,
+            'types' => [],
+        ];
+    }
+
+    $activeTotal = (int)$pdo->query("SELECT COUNT(*) FROM marketplace_stores WHERE status = 'active'")->fetchColumn();
+    $pendingTotal = (int)$pdo->query("SELECT COUNT(*) FROM marketplace_stores WHERE status = 'pending'")->fetchColumn();
+    $stmt = $pdo->query("SELECT store_type, COUNT(*) AS count FROM marketplace_stores WHERE status = 'active' GROUP BY store_type");
+    $types = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $type = (string)($row['store_type'] ?? 'Cua hang');
+        $types[$type] = (int)($row['count'] ?? 0);
+    }
+
+    return [
+        'active_total' => $activeTotal,
+        'pending_total' => $pendingTotal,
+        'types' => $types,
+    ];
+}
+
 function admin_orders(PDO $pdo): array
 {
     if (!table_exists($pdo, 'orders')) {
@@ -4481,8 +5098,11 @@ try {
         if ($workerId > 0) {
             $profile = get_worker_profile($pdo, $workerId);
             $worker = [
+                'id' => $workerId,
                 'name' => (string)($profile['telegram_name'] ?? "Tho {$workerId}"),
                 'phone' => (string)($profile['phone'] ?? ''),
+                'rating_score' => (float)($profile['rating_score'] ?? 5.0),
+                'rating_count' => (int)($profile['rating_count'] ?? 0),
             ];
         }
         json_out([
@@ -4608,6 +5228,13 @@ try {
 
     case 'admin_users':
         $stmt = $pdo->query("SELECT * FROM users ORDER BY id DESC");
+        $rows = $stmt->fetchAll();
+        foreach ($rows as $row) {
+            if ((string)($row['login_key'] ?? '') === '') {
+                update_compat($pdo, 'users', ['login_key' => customer_generate_login_key($pdo)], 'id = ?', [(int)$row['id']], ['updated_at' => 'NOW()']);
+            }
+        }
+        $stmt = $pdo->query("SELECT * FROM users ORDER BY id DESC");
         json_out(['status' => 'success', 'data' => array_map('retail_customer_row', $stmt->fetchAll())]);
 
     case 'admin_customer_lookup':
@@ -4632,8 +5259,8 @@ try {
             $stmt = $pdo->prepare("UPDATE users SET role = ?, fullname = ?, phone = ?, is_active = ?, member_rank = ?, total_spent = ?, loyalty_points = ?, updated_at = NOW() WHERE id = ?");
             $stmt->execute([$role, $fullname, $phone, $isActive, $memberRank, $totalSpent, $loyaltyPoints, $id]);
         } else {
-            $stmt = $pdo->prepare("INSERT INTO users (role, fullname, phone, is_active, member_rank, total_spent, loyalty_points, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
-            $stmt->execute([$role, $fullname, $phone, $isActive, $memberRank, $totalSpent, $loyaltyPoints]);
+            $stmt = $pdo->prepare("INSERT INTO users (role, fullname, phone, login_key, is_active, member_rank, total_spent, loyalty_points, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+            $stmt->execute([$role, $fullname, $phone, customer_generate_login_key($pdo), $isActive, $memberRank, $totalSpent, $loyaltyPoints]);
             $id = (int)$pdo->lastInsertId();
         }
         json_out(['status' => 'success', 'message' => 'Đã lưu khách hàng.', 'id' => $id]);
@@ -4826,6 +5453,18 @@ try {
         }
         json_out(['status' => 'success', 'message' => "Da import {$count} san pham."]);
 
+    case 'admin_get_stores':
+        json_out(['status' => 'success', 'data' => admin_store_rows($pdo)]);
+
+    case 'admin_settle_stores':
+        json_out(admin_settle_stores_action($pdo));
+
+    case 'admin_approve_store':
+        json_out(admin_approve_store_action($pdo, $input));
+
+    case 'store_public_report':
+        store_public_report_action($pdo, $input);
+
     case 'admin_jobs':
         json_out(['status' => 'success', 'data' => admin_jobs($pdo)]);
 
@@ -4901,11 +5540,32 @@ try {
         tg_send('worker', (string)$workerId, 'Admin da mo khoa. Ban co the nhan ca lai.');
         json_out(['status' => 'success', 'message' => 'Da mo khoa tho.']);
 
-    case 'app_services':
+    case 'app_store_counts':
+        json_out(['status' => 'success', 'data' => app_store_counts($pdo)]);
+
+    case 'app_store_register':
+        json_out(app_store_register_action($pdo, $input));
+
+    case 'app_store_login_qr':
+        json_out(app_store_login_qr_action($pdo, $input));
+
+    case 'app_store_login':
+        if (isset($input['login_key']) || isset($input['qr_data']) || isset($input['key'])) {
+            json_out(app_store_login_qr_action($pdo, $input));
+        }
+        json_out(app_store_register_action($pdo, $input));
+
+    case 'app_customer_register':
+        json_out(app_customer_register_action($pdo, $input));
+
+    case 'app_customer_login_qr':
+        json_out(app_customer_login_qr_action($pdo, $input));
+
+    case 'app_services_legacy_products_disabled':
         $services = products_for_store($pdo, []);
         json_out(['status' => 'success', 'data' => $services]);
 
-    case 'app_store_login':
+    case 'app_store_login_legacy_disabled':
         $phone = clean_string($input['phone'] ?? '', 30);
         $tax_code = clean_string($input['tax_code'] ?? '', 30);
         if ($phone === '' || $tax_code === '') {
@@ -4935,7 +5595,8 @@ try {
                 'lat' => $lat,
                 'lng' => $lng,
                 'store_type' => 'Cửa hàng',
-                'status' => 'active'
+                'status' => 'pending',
+                'report_token' => bin2hex(random_bytes(16))
             ], ['created_at' => 'NOW()']);
             $store_id = $pdo->lastInsertId();
             $store = [
@@ -4977,6 +5638,25 @@ try {
         $order_id = $pdo->lastInsertId();
         telegram_notify_worker("CO DON HANG CHO XA LAP VO!\nCua hang ID: $store_id\nSDT Khach: $customer_phone\nDia chi: $customer_address\nTong: " . number_format($total_amount) . " d");
         json_out(['status' => 'success', 'order_id' => $order_id]);
+
+    case 'admin_approve_store':
+        $store_id = (int)($input['store_id'] ?? 0);
+        $pdo->prepare("UPDATE marketplace_stores SET status = 'active' WHERE id = ?")->execute([$store_id]);
+        json_out(['status' => 'success', 'message' => 'Đã duyệt cửa hàng thành công']);
+
+    case 'app_submit_rating':
+        $target_type = $input['target_type'] ?? ''; // 'store' or 'worker'
+        $target_id = (int)($input['target_id'] ?? 0);
+        $stars = (int)($input['stars'] ?? 5);
+        if ($stars < 1) $stars = 1;
+        if ($stars > 5) $stars = 5;
+        
+        if ($target_type === 'store') {
+            $pdo->prepare("UPDATE marketplace_stores SET rating_score = ((rating_score * rating_count) + ?) / (rating_count + 1), rating_count = rating_count + 1 WHERE id = ?")->execute([$stars, $target_id]);
+        } else if ($target_type === 'worker') {
+            $pdo->prepare("UPDATE worker_profiles SET rating_score = ((rating_score * rating_count) + ?) / (rating_count + 1), rating_count = rating_count + 1 WHERE telegram_user_id = ?")->execute([$stars, $target_id]);
+        }
+        json_out(['status' => 'success']);
 
     case 'admin_unban_device':
         $identifier = clean_string($input['identifier'] ?? '', 255);

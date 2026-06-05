@@ -97,9 +97,14 @@ export default function TrackingScreen({ route, navigation }) {
           </Text>
         ) : null}
         {status?.worker ? (
-          <Text style={styles.meta}>
-            Thợ nhận ca: {status.worker.name || 'Đang cập nhật'} {status.worker.phone || ''}
-          </Text>
+          <View>
+            <Text style={styles.meta}>
+              Thợ nhận ca: {status.worker.name || 'Đang cập nhật'} {status.worker.phone || ''}
+            </Text>
+            <Text style={styles.ratingText}>
+              Đánh giá: ⭐ {Number(status.worker.rating_score || 5.0).toFixed(1)} ({status.worker.rating_count || 0} lượt)
+            </Text>
+          </View>
         ) : null}
       </View>
 
@@ -169,4 +174,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  ratingText: {
+    color: '#f59e0b',
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginTop: 4,
+  }
 });

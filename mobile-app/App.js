@@ -9,9 +9,14 @@ import LoginScreen from './src/features/auth/LoginScreen';
 import HomeScreen from './src/features/home/HomeScreen';
 import MapScreen from './src/features/map/MapScreen';
 import StoreLoginScreen from './src/features/store/StoreLoginScreen';
+import StoreListScreen from './src/features/store/StoreListScreen';
+import StoreMenuScreen from './src/features/store/StoreMenuScreen';
 import AssistantScreen from './src/features/assistant/AssistantScreen';
 import StoreScreen from './src/features/store/StoreScreen';
 import OrderScreen from './src/features/store/OrderScreen';
+import BookingScreen from './src/features/booking/BookingScreen';
+import TrackingScreen from './src/features/tracking/TrackingScreen';
+import PaymentScreen from './src/features/payment/PaymentScreen';
 import { clearSession, loadSession } from './src/core/storage/session';
 import { colors } from './src/core/theme';
 
@@ -62,6 +67,8 @@ export default function App() {
                 {(props) => <HomeScreen {...props} session={session} onLogout={logout} />}
               </Stack.Screen>
               <Stack.Screen name="MapScreen" component={MapScreen} options={{ title: 'Bản Đồ Cửa Hàng' }} />
+              <Stack.Screen name="StoreList" component={StoreListScreen} options={{ title: 'Danh Sách Cửa Hàng' }} />
+              <Stack.Screen name="StoreMenu" component={StoreMenuScreen} options={{ title: 'Menu Cửa Hàng' }} />
               <Stack.Screen name="StoreLogin" component={StoreLoginScreen} options={{ title: 'Đăng Ký Cửa Hàng' }} />
               <Stack.Screen name="Booking" options={{ title: 'Thông tin gọi thợ' }}>
                 {(props) => <BookingScreen {...props} session={session} />}
@@ -83,9 +90,12 @@ export default function App() {
               </Stack.Screen>
             </>
           ) : (
-            <Stack.Screen name="Login" options={{ headerShown: false }}>
-              {(props) => <LoginScreen {...props} onAuthenticated={setSession} />}
-            </Stack.Screen>
+            <>
+              <Stack.Screen name="Login" options={{ headerShown: false }}>
+                {(props) => <LoginScreen {...props} onAuthenticated={setSession} />}
+              </Stack.Screen>
+              <Stack.Screen name="StoreLogin" component={StoreLoginScreen} options={{ title: 'Đăng ký cửa hàng' }} />
+            </>
           )}
         </Stack.Navigator>
       </NavigationContainer>

@@ -30,7 +30,7 @@ export function getApiErrorMessage(error, fallback = 'Không thể kết nối m
   }
 
   if (error?.response?.status === 404) {
-    return 'Chức năng này chưa được máy chủ hỗ trợ.';
+    return 'Chức năng này chưa được máy chủ hỗ trợ. Hãy cập nhật api_master.php trên hosting.';
   }
 
   if (error?.code === 'ECONNABORTED') {

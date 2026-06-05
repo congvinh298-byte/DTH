@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, StyleSheet, Text, Pressable, View } from 'react-native';
-import { submitRating } from '../../core/api/services';
+import api from '../../core/api/client';
 import { clearActiveBooking } from '../../core/storage/session';
 import { colors, commonStyles } from '../../core/theme';
 import PrimaryButton from '../../shared/widgets/PrimaryButton';
@@ -10,25 +10,37 @@ export default function PaymentScreen({ route, navigation }) {
   const [rating, setRating] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const finish = async () => {
-    if (rating < 1) {
-      Alert.alert('Chưa đánh giá', 'Vui lòng chọn từ 1 đến 5 sao.');
+  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      // Auto submit 5 stars
+      finish(5, true);
+      return;
+    }
+    const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  const finish = async (forcedRating = null, isAuto = false) => {
+    const finalRating = forcedRating || rating;
+    if (finalRating < 1) {
+      if (!isAuto) Alert.alert('Chưa đánh giá', 'Vui lòng chọn từ 1 đến 5 sao.');
       return;
     }
 
     setLoading(true);
     try {
-      const synced = await submitRating(booking?.id, rating);
+      if (worker?.id) {
+        await api.post('?action=app_submit_rating', { target_type: 'worker', target_id: worker.id, stars: finalRating });
+      }
       await clearActiveBooking();
-      Alert.alert(
-        'Cảm ơn khách hàng',
-        synced
-          ? 'Đánh giá đã được gửi thành công.'
-          : 'Đã hoàn tất. Máy chủ chưa bật đồng bộ đánh giá.',
-      );
+      if (!isAuto) {
+        Alert.alert('Cảm ơn khách hàng', 'Đánh giá đã được gửi thành công.');
+      }
       navigation.popToTop();
     } catch {
-      Alert.alert('Chưa gửi được đánh giá', 'Vui lòng thử lại sau.');
+      if (!isAuto) Alert.alert('Chưa gửi được đánh giá', 'Vui lòng thử lại sau.');
     } finally {
       setLoading(false);
     }
@@ -41,7 +53,7 @@ export default function PaymentScreen({ route, navigation }) {
         <Text style={styles.text}>Mã yêu cầu: #{booking?.id || ''}</Text>
         <Text style={styles.text}>Thợ phụ trách: {worker?.name || 'Đang cập nhật'}</Text>
         <Text style={styles.amount}>Giá khách: {amount || 'Theo báo giá đã xác nhận'}</Text>
-        <Text style={styles.label}>Đánh giá chất lượng phục vụ</Text>
+        <Text style={styles.label}>Đánh giá chất lượng phục vụ (Còn {Math.floor(timeLeft/60)}:{(timeLeft%60).toString().padStart(2,'0')})</Text>
         <View style={styles.stars}>
           {[1, 2, 3, 4, 5].map((star) => (
             <Pressable key={star} onPress={() => setRating(star)}>
@@ -49,7 +61,7 @@ export default function PaymentScreen({ route, navigation }) {
             </Pressable>
           ))}
         </View>
-        <PrimaryButton label="Gửi đánh giá và hoàn tất" loading={loading} onPress={finish} />
+        <PrimaryButton label="Gửi đánh giá và hoàn tất" loading={loading} onPress={() => finish(null, false)} />
       </View>
     </View>
   );

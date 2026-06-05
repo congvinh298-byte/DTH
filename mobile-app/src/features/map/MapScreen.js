@@ -1,95 +1,183 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, StyleSheet, Text, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
-import api from '../../core/api/client';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import MapView, { Circle, Marker } from 'react-native-maps';
+import { getApiErrorMessage } from '../../core/api/client';
+import { loadMapPins } from '../../core/api/store';
+import { COMPANY } from '../../core/data/company';
+import {
+  LAP_VO_MARKET,
+  SERVICE_RADIUS_KM,
+  distanceFromLapVoMarketKm,
+} from '../../core/utils/geo';
+import { colors } from '../../core/theme';
+import StateNotice from '../../shared/widgets/StateNotice';
 
-// Tâm: Chợ Lấp Vò, Đồng Tháp
-const LAP_VO_CENTER = {
-  latitude: 10.3547,
-  longitude: 105.5298,
-  latitudeDelta: 0.1,
-  longitudeDelta: 0.1,
+const INITIAL_REGION = {
+  latitude: LAP_VO_MARKET.latitude,
+  longitude: LAP_VO_MARKET.longitude,
+  latitudeDelta: 0.12,
+  longitudeDelta: 0.12,
 };
 
-// Hàm tính khoảng cách đơn giản (độ)
-const getDistance = (lat1, lon1, lat2, lon2) => {
-  return Math.sqrt(Math.pow(lat1 - lat2, 2) + Math.pow(lon1 - lon2, 2));
-};
-
-export default function MapScreen({ navigation }) {
+export default function MapScreen({ navigation, route }) {
+  const selectedType = route?.params?.storeType || '';
+  const screenTitle = route?.params?.title || 'Chợ Xã Lấp Vò';
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const mapRef = useRef(null);
 
   useEffect(() => {
-    api.get('?action=app_get_map_pins')
-      .then(res => {
-        if (res.data.status === 'success') {
-          setStores(res.data.data);
+    let mounted = true;
+    setLoading(true);
+    loadMapPins()
+      .then((items) => {
+        if (mounted) {
+          setStores(selectedType ? items.filter((item) => item.storeType === selectedType) : items);
         }
       })
-      .catch(err => console.log(err))
-      .finally(() => setLoading(false));
-  }, []);
+      .catch((requestError) => {
+        if (mounted) {
+          setError(getApiErrorMessage(requestError, requestError?.message || 'Không tải được bản đồ cửa hàng.'));
+        }
+      })
+      .finally(() => {
+        if (mounted) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedType]);
 
   const handleRegionChangeComplete = (region) => {
-    // Nếu kéo bản đồ ra xa quá 15km (~0.13 độ) thì nảy về Chợ Lấp Vò
-    const dist = getDistance(region.latitude, region.longitude, LAP_VO_CENTER.latitude, LAP_VO_CENTER.longitude);
-    if (dist > 0.15) {
-      Alert.alert("Ngoài khu vực hỗ trợ", "Chúng tôi hiện chỉ phục vụ quanh khu vực Xã Lấp Vò.");
-      mapRef.current?.animateToRegion(LAP_VO_CENTER, 1000);
+    const distance = distanceFromLapVoMarketKm({
+      latitude: region.latitude,
+      longitude: region.longitude,
+    });
+    if (distance > SERVICE_RADIUS_KM + 3) {
+      Alert.alert(
+        'Ngoài khu vực phục vụ',
+        `${COMPANY.brand} đang phục vụ trong ${COMPANY.serviceArea}.`,
+        [{ text: 'Quay lại', onPress: () => mapRef.current?.animateToRegion(INITIAL_REGION, 700) }],
+      );
     }
   };
 
-  const onMarkerPress = (store) => {
+  const openStore = (store) => {
     Alert.alert(
-      store.store_name,
-      `Loại: ${store.store_type}\nĐịa chỉ: ${store.address}`,
+      store.storeName,
+      `${store.storeType}\n${store.address || 'Chưa có địa chỉ'}\nSĐT: ${store.phone || 'Chưa cập nhật'}`,
       [
         { text: 'Đóng', style: 'cancel' },
-        { text: 'Vào cửa hàng', onPress: () => alert('Đang phát triển: Menu mua hàng') }
-      ]
+        { text: 'Xem hàng', onPress: () => navigation.navigate('Store') },
+      ],
     );
   };
 
   return (
     <View style={styles.container}>
-      {loading && (
-        <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color="#dc2626" />
-          <Text>Đang tải bản đồ Chợ Lấp Vò...</Text>
-        </View>
-      )}
-      
       <MapView
         ref={mapRef}
         style={styles.map}
-        initialRegion={LAP_VO_CENTER}
+        initialRegion={INITIAL_REGION}
         onRegionChangeComplete={handleRegionChangeComplete}
       >
-        {stores.map(store => (
+        <Circle
+          center={LAP_VO_MARKET}
+          radius={SERVICE_RADIUS_KM * 1000}
+          strokeColor="rgba(220,38,38,0.55)"
+          fillColor="rgba(220,38,38,0.08)"
+        />
+        <Marker
+          coordinate={LAP_VO_MARKET}
+          title="Chợ Lấp Vò"
+          description="Tâm phạm vi phục vụ 15 km"
+          pinColor="red"
+        />
+        {stores.map((store) => (
           <Marker
             key={store.id}
-            coordinate={{ latitude: parseFloat(store.lat), longitude: parseFloat(store.lng) }}
-            title={store.store_name}
-            description={store.store_type}
-            onCalloutPress={() => onMarkerPress(store)}
-            pinColor={store.store_type === 'Cửa hàng' ? 'blue' : 'red'}
+            coordinate={{ latitude: store.latitude, longitude: store.longitude }}
+            title={store.storeName}
+            description={store.storeType}
+            onCalloutPress={() => openStore(store)}
+            pinColor={store.storeType.includes('Quán') ? 'orange' : 'blue'}
           />
         ))}
       </MapView>
-      
+
       <View style={styles.overlay}>
-        <Text style={styles.overlayText}>Khu vực giới hạn: Bán kính 15km</Text>
+        <Text style={styles.overlayTitle}>{screenTitle}</Text>
+        <Text style={styles.overlayText}>
+          {stores.length ? `${stores.length} cửa hàng đang hoạt động` : 'Trống'}
+        </Text>
       </View>
+
+      {loading ? (
+        <View style={styles.loadingBox}>
+          <ActivityIndicator size="large" color={colors.brand} />
+          <Text style={styles.loadingText}>Đang tải cửa hàng...</Text>
+        </View>
+      ) : null}
+
+      {error ? (
+        <View style={styles.errorBox}>
+          <StateNotice type="error">{error}</StateNotice>
+        </View>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  map: { width: '100%', height: '100%' },
-  loadingBox: { position: 'absolute', top: '40%', alignSelf: 'center', zIndex: 10, backgroundColor: 'rgba(255,255,255,0.9)', padding: 20, borderRadius: 10, alignItems: 'center' },
-  overlay: { position: 'absolute', bottom: 30, alignSelf: 'center', backgroundColor: '#111827', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
-  overlayText: { color: '#fff', fontWeight: 'bold' }
+  container: {
+    flex: 1,
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    top: 14,
+    borderRadius: 8,
+    backgroundColor: 'rgba(17,24,39,0.92)',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  overlayTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  overlayText: {
+    color: '#d1d5db',
+    fontSize: 13,
+    marginTop: 2,
+  },
+  loadingBox: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '45%',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    padding: 16,
+  },
+  loadingText: {
+    color: colors.text,
+    fontWeight: '700',
+  },
+  errorBox: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    bottom: 22,
+  },
 });
