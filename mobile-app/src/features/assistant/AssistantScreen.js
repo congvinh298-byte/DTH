@@ -46,10 +46,20 @@ export default function AssistantScreen({ route }) {
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>Tư vấn dịch vụ và báo giá</Text>
+        <Text style={styles.title}>Trợ lý Anh Thiên Gemma 2</Text>
         <Text style={styles.description}>
           Mô tả thiết bị, tình trạng và nhu cầu để nhận tư vấn trước khi gọi thợ.
         </Text>
+
+        <View style={styles.priceTable}>
+          <Text style={styles.priceHeader}>Bảng giá tham khảo (đã gồm VAT)</Text>
+          <Text style={styles.priceRow}>• Vệ sinh máy lạnh: 165.000 VND</Text>
+          <Text style={styles.priceRow}>• Lắp máy lạnh (1HP - 1.5HP): 440.000 VND</Text>
+          <Text style={styles.priceRow}>• Lắp máy lạnh (2HP - 3HP): 550.000 VND</Text>
+          <Text style={styles.priceRow}>• Sửa điện lạnh, lắp máy giặt: 220.000 VND</Text>
+          <Text style={styles.priceRow}>• Vật tư phát sinh: Báo trước khi làm</Text>
+        </View>
+
         <TextInput
           multiline
           onChangeText={setQuestion}
@@ -106,5 +116,25 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 15,
     lineHeight: 22,
+  },
+  priceTable: {
+    backgroundColor: '#f8fafc',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 4,
+  },
+  priceHeader: {
+    color: colors.brand,
+    fontWeight: '700',
+    fontSize: 15,
+    marginBottom: 6,
+  },
+  priceRow: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 2,
   },
 });

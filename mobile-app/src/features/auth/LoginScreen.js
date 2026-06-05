@@ -11,13 +11,21 @@ import {
   Text,
   TextInput,
   View,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { getApiErrorMessage } from '../../core/api/client';
 import { loginCustomer, registerCustomer } from '../../core/api/customer';
+import { loginStore, registerStore } from '../../core/api/store';
 import { COMPANY, LEGAL_LINKS } from '../../core/data/company';
 import { colors, commonStyles } from '../../core/theme';
-import { isValidPhone, normalizePhone, saveSession } from '../../core/storage/session';
+import { isValidPhone, normalizePhone, saveSession, saveStoreSession } from '../../core/storage/session';
 import PrimaryButton from '../../shared/widgets/PrimaryButton';
 
 export default function LoginScreen({ navigation, onAuthenticated }) {
@@ -30,6 +38,9 @@ export default function LoginScreen({ navigation, onAuthenticated }) {
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [loadingRegister, setLoadingRegister] = useState(false);
   const [error, setError] = useState('');
+  const [registerType, setRegisterType] = useState('none'); // 'none', 'customer', 'store'
+  const [storeTaxCode, setStoreTaxCode] = useState('');
+  const [storeNameInput, setStoreNameInput] = useState('');
 
   const finishCustomerLogin = async (customer) => {
     const nextSession = {
@@ -45,17 +56,28 @@ export default function LoginScreen({ navigation, onAuthenticated }) {
   const loginByQr = async (value = loginKey) => {
     const key = String(value || '').trim();
     if (!key) {
-      setError('Vui lòng quét QR hoặc dán key khách hàng đã được cấp.');
+      setError('Vui lòng quét QR hoặc dán key để đăng nhập.');
       return;
     }
 
     setLoadingLogin(true);
     setError('');
     try {
+      if (key.startsWith('DTH-STORE:') || key.startsWith('STORE:')) {
+        const store = await loginStore({ qr_data: key, login_key: key });
+        await saveStoreSession(store);
+        setLoadingLogin(false);
+        setShowScanner(false);
+        Alert.alert('Thành công', 'Đã đăng nhập cửa hàng', [
+          { text: 'Vào Quản lý', onPress: () => navigation.navigate('StoreProducts') }
+        ]);
+        return;
+      }
+
       const customer = await loginCustomer({ qr_data: key, login_key: key });
       await finishCustomerLogin(customer);
     } catch (requestError) {
-      setError(getApiErrorMessage(requestError, requestError?.message || 'Không đăng nhập được khách hàng.'));
+      setError(getApiErrorMessage(requestError, requestError?.message || 'Không đăng nhập được.'));
     } finally {
       setLoadingLogin(false);
       setShowScanner(false);
@@ -107,6 +129,40 @@ export default function LoginScreen({ navigation, onAuthenticated }) {
     }
   };
 
+  const handleRegisterStore = async () => {
+    const normalizedPhone = normalizePhone(phone);
+    if (!isValidPhone(normalizedPhone)) {
+      setError('Vui lòng nhập số điện thoại hợp lệ từ 8 đến 15 chữ số.');
+      return;
+    }
+    if (!storeNameInput.trim() || !storeTaxCode.trim()) {
+      setError('Vui lòng nhập đầy đủ tên cửa hàng và mã số thuế.');
+      return;
+    }
+
+    setLoadingRegister(true);
+    setError('');
+    setIssuedCustomer(null);
+    try {
+      const result = await registerStore({
+        store_name: storeNameInput.trim(),
+        owner_name: name.trim() || storeNameInput.trim(),
+        phone: normalizedPhone,
+        tax_code: storeTaxCode.trim(),
+      });
+      setIssuedCustomer(result.store);
+      setLoginKey(result.store.qrPayload || result.store.loginKey);
+      Alert.alert(
+        'Đã ghi nhận thông tin',
+        'Cửa hàng đã được tạo. Vui lòng chờ Giám đốc duyệt (Trạng thái: Pending). Sau khi được duyệt, bạn có thể đăng nhập bằng QR đã cấp.'
+      );
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError, requestError?.message || 'Không đăng ký được cửa hàng.'));
+    } finally {
+      setLoadingRegister(false);
+    }
+  };
+
   const issuedPayload = issuedCustomer?.qrPayload || issuedCustomer?.loginKey || '';
 
   return (
@@ -128,10 +184,9 @@ export default function LoginScreen({ navigation, onAuthenticated }) {
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <View style={styles.loginPanel}>
-          <Text style={styles.title}>Đăng nhập khách hàng</Text>
+          <Text style={styles.title}>Quét QR Đăng nhập</Text>
           <Text style={styles.description}>
-            Dùng QR khách hàng đã được cấp để vào mua hàng, kiếm đồ ăn, tìm shop quần áo,
-            gọi thợ và theo dõi yêu cầu trong hệ sinh thái Điện Tử Hiếu.
+            Hệ thống sẽ tự động nhận diện QR Khách hàng hoặc QR Cửa hàng để điều hướng phù hợp.
           </Text>
 
           {showScanner ? (
@@ -151,7 +206,7 @@ export default function LoginScreen({ navigation, onAuthenticated }) {
           <TextInput
             autoCapitalize="characters"
             onChangeText={setLoginKey}
-            placeholder="Hoặc dán key/QR khách hàng"
+            placeholder="Hoặc dán key đăng nhập..."
             style={commonStyles.input}
             value={loginKey}
           />
@@ -159,31 +214,92 @@ export default function LoginScreen({ navigation, onAuthenticated }) {
         </View>
 
         <View style={styles.registerPanel}>
-          <Text style={styles.title}>Đăng ký khách hàng lần đầu</Text>
-          <Text style={styles.description}>
-            Nhập tên và số điện thoại để hệ thống cấp một QR duy nhất. Một số điện thoại chỉ có một tài khoản.
-          </Text>
-          <TextInput
-            onChangeText={setName}
-            placeholder="Tên khách hàng"
-            style={commonStyles.input}
-            value={name}
-          />
-          <TextInput
-            autoComplete="tel"
-            keyboardType="phone-pad"
-            maxLength={15}
-            onChangeText={(value) => setPhone(normalizePhone(value))}
-            placeholder="Số điện thoại khách hàng"
-            returnKeyType="done"
-            style={commonStyles.input}
-            value={phone}
-          />
-          <PrimaryButton label="Cấp QR khách hàng" loading={loadingRegister} onPress={handleRegister} />
+          <Text style={styles.title}>Bạn chưa có tài khoản?</Text>
+          <View style={styles.registerOptions}>
+            <Pressable 
+              style={[styles.registerTab, registerType === 'customer' && styles.registerTabActive]} 
+              onPress={() => {
+                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                setRegisterType(registerType === 'customer' ? 'none' : 'customer');
+              }}>
+              <Text style={[styles.registerTabText, registerType === 'customer' && styles.registerTabTextActive]}>Khách hàng mới</Text>
+            </Pressable>
+            
+            <Pressable 
+              style={[styles.registerTab, registerType === 'store' && styles.registerTabActive]} 
+              onPress={() => {
+                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                setRegisterType(registerType === 'store' ? 'none' : 'store');
+              }}>
+              <Text style={[styles.registerTabText, registerType === 'store' && styles.registerTabTextActive]}>Đăng ký Cửa hàng</Text>
+            </Pressable>
+          </View>
+
+          {registerType === 'customer' && (
+            <View style={{gap: 12, marginTop: 10}}>
+              <Text style={styles.description}>
+                Nhập tên và số điện thoại để hệ thống cấp một QR duy nhất. Một số điện thoại chỉ có một tài khoản.
+              </Text>
+              <TextInput
+                onChangeText={setName}
+                placeholder="Tên khách hàng"
+                style={commonStyles.input}
+                value={name}
+              />
+              <TextInput
+                autoComplete="tel"
+                keyboardType="phone-pad"
+                maxLength={15}
+                onChangeText={(value) => setPhone(normalizePhone(value))}
+                placeholder="Số điện thoại"
+                returnKeyType="done"
+                style={commonStyles.input}
+                value={phone}
+              />
+              <PrimaryButton label="Cấp QR khách hàng" loading={loadingRegister} onPress={handleRegister} />
+            </View>
+          )}
+
+          {registerType === 'store' && (
+            <View style={{gap: 12, marginTop: 10}}>
+              <Text style={styles.description}>
+                Chủ cửa hàng đăng ký quầy riêng. Sau khi giám đốc duyệt, cửa hàng chỉ đăng nhập bằng QR/key đã cấp.
+              </Text>
+              <TextInput
+                onChangeText={setStoreNameInput}
+                placeholder="Tên Cửa hàng *"
+                style={commonStyles.input}
+                value={storeNameInput}
+              />
+              <TextInput
+                onChangeText={setStoreTaxCode}
+                placeholder="Mã số thuế / Số CMND *"
+                style={commonStyles.input}
+                value={storeTaxCode}
+              />
+              <TextInput
+                onChangeText={setName}
+                placeholder="Tên chủ cửa hàng"
+                style={commonStyles.input}
+                value={name}
+              />
+              <TextInput
+                autoComplete="tel"
+                keyboardType="phone-pad"
+                maxLength={15}
+                onChangeText={(value) => setPhone(normalizePhone(value))}
+                placeholder="Số điện thoại liên hệ *"
+                returnKeyType="done"
+                style={commonStyles.input}
+                value={phone}
+              />
+              <PrimaryButton label="Đăng ký Cửa hàng" loading={loadingRegister} onPress={handleRegisterStore} />
+            </View>
+          )}
 
           {issuedCustomer ? (
             <View style={styles.issuedBox}>
-              <Text style={styles.issuedTitle}>QR đăng nhập của {issuedCustomer.name}</Text>
+              <Text style={styles.issuedTitle}>QR đăng nhập của {issuedCustomer.storeName || issuedCustomer.name}</Text>
               {issuedCustomer.qrImageUrl ? (
                 <Image source={{ uri: issuedCustomer.qrImageUrl }} style={styles.customerQr} />
               ) : null}
@@ -195,16 +311,6 @@ export default function LoginScreen({ navigation, onAuthenticated }) {
               />
             </View>
           ) : null}
-        </View>
-
-        <View style={styles.storePanel}>
-          <Text style={styles.title}>Dành cho cửa hàng đối tác</Text>
-          <Text style={styles.description}>
-            Chủ cửa hàng đăng ký quầy riêng. Sau khi giám đốc duyệt, cửa hàng chỉ đăng nhập bằng QR/key đã cấp.
-          </Text>
-          <Pressable style={styles.storeButton} onPress={() => navigation.navigate('StoreLogin')}>
-            <Text style={styles.storeButtonText}>Đăng nhập / đăng ký cửa hàng</Text>
-          </Pressable>
         </View>
 
         <View style={styles.companyPanel}>
@@ -361,20 +467,36 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     textAlign: 'center',
   },
-  storeButton: {
-    minHeight: 48,
+  registerOptions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+    backgroundColor: '#f1f5f9',
+    padding: 4,
+    borderRadius: 8,
+  },
+  registerTab: {
+    flex: 1,
+    minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.brand,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: '#fff7f7',
+    borderRadius: 6,
   },
-  storeButtonText: {
+  registerTabActive: {
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  registerTabText: {
+    color: '#64748b',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  registerTabTextActive: {
     color: colors.brand,
-    fontSize: 15,
     fontWeight: '800',
   },
   companyPanel: {

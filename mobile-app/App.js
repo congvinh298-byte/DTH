@@ -13,6 +13,7 @@ import StoreListScreen from './src/features/store/StoreListScreen';
 import StoreMenuScreen from './src/features/store/StoreMenuScreen';
 import AssistantScreen from './src/features/assistant/AssistantScreen';
 import StoreScreen from './src/features/store/StoreScreen';
+import StoreProductsScreen from './src/features/store/StoreProductsScreen';
 import OrderScreen from './src/features/store/OrderScreen';
 import BookingScreen from './src/features/booking/BookingScreen';
 import TrackingScreen from './src/features/tracking/TrackingScreen';
@@ -85,6 +86,9 @@ export default function App() {
               <Stack.Screen name="Store" options={{ title: 'Mua hàng' }}>
                 {(props) => <StoreScreen {...props} />}
               </Stack.Screen>
+              <Stack.Screen name="StoreProducts" options={{ title: 'Quản lý hàng hóa' }}>
+                {(props) => <StoreProductsScreen {...props} />}
+              </Stack.Screen>
               <Stack.Screen name="Order" options={{ title: 'Xác nhận đặt hàng' }}>
                 {(props) => <OrderScreen {...props} session={session} />}
               </Stack.Screen>
@@ -94,7 +98,9 @@ export default function App() {
               <Stack.Screen name="Login" options={{ headerShown: false }}>
                 {(props) => <LoginScreen {...props} onAuthenticated={setSession} />}
               </Stack.Screen>
-              <Stack.Screen name="StoreLogin" component={StoreLoginScreen} options={{ title: 'Đăng ký cửa hàng' }} />
+              <Stack.Screen name="StoreProducts" options={{ title: 'Quản lý hàng hóa' }}>
+                {(props) => <StoreProductsScreen {...props} />}
+              </Stack.Screen>
             </>
           )}
         </Stack.Navigator>

@@ -4017,6 +4017,19 @@ function app_store_register_action(PDO $pdo, array $input): array
             'created_at' => 'NOW()',
             'updated_at' => 'NOW()',
         ]);
+        
+        $message = "🚨 <b>CÓ CỬA HÀNG ĐĂNG KÝ MỚI</b>\n\n";
+        $message .= "Tên CH: <b>" . htmlspecialchars($storeName) . "</b>\n";
+        $message .= "Chủ CH: " . htmlspecialchars($ownerName) . "\n";
+        $message .= "MST: <b>" . htmlspecialchars($storageTaxCode) . "</b>\n";
+        $message .= "SĐT: <b>" . htmlspecialchars($phone) . "</b>\n";
+        $message .= "Địa chỉ: " . htmlspecialchars($address) . "\n\n";
+        $message .= "<i>Hãy đăng nhập hệ thống admin để xem chi tiết và cấp key đăng nhập.</i>";
+        
+        $chatId = telegram_chat('sales');
+        if ($chatId !== '') {
+            tg_send('sales', $chatId, $message);
+        }
     }
 
     $stmt = $pdo->prepare('SELECT * FROM marketplace_stores WHERE id = ? LIMIT 1');
@@ -4058,6 +4071,228 @@ function app_store_login_qr_action(PDO $pdo, array $input): array
         'message' => 'Dang nhap cua hang thanh cong.',
         'data' => marketplace_store_row($stmt->fetch() ?: []),
     ];
+}
+
+function app_store_get_products_action(PDO $pdo, array $input): array
+{
+    $loginKey = marketplace_normalize_login_key((string)($input['login_key'] ?? ''));
+    if ($loginKey === '') {
+        json_out(['status' => 'error', 'message' => 'Thieu key dang nhap.'], 401);
+    }
+    $stmt = $pdo->prepare("SELECT id, status FROM marketplace_stores WHERE login_key = ? LIMIT 1");
+    $stmt->execute([$loginKey]);
+    $store = $stmt->fetch();
+    if (!$store || (string)$store['status'] !== 'active') {
+        json_out(['status' => 'error', 'message' => 'Cua hang khong hop le hoac bi khoa.'], 403);
+    }
+
+    $storeId = (int)$store['id'];
+    $stmt = $pdo->prepare("SELECT * FROM marketplace_products WHERE store_id = ? AND status != 'hidden' ORDER BY id DESC LIMIT 500");
+    $stmt->execute([$storeId]);
+    $items = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $price = money_int($row['sale_price'] ?? $row['price'] ?? 0);
+        $image = '';
+        $images = json_decode((string)($row['images'] ?? ''), true);
+        if (is_array($images) && isset($images[0])) {
+            $image = (string)$images[0];
+        }
+        $items[] = [
+            'id' => (int)$row['id'],
+            'name' => (string)$row['name'],
+            'price' => $price,
+            'gia_ban_fm' => fmt_money($price),
+            'stock_quantity' => (int)($row['stock'] ?? 0),
+            'image' => $image,
+            'image_url' => $image,
+            'category' => (string)($row['type'] ?? 'Marketplace'),
+            'created_at' => (string)$row['created_at'] ?? '',
+            'src' => 'marketplace',
+            'status' => (string)($row['status'] ?? 'active'),
+        ];
+    }
+    return ['status' => 'success', 'data' => $items];
+}
+
+function app_store_save_product_action(PDO $pdo, array $input): array
+{
+    $loginKey = marketplace_normalize_login_key((string)($input['login_key'] ?? ''));
+    if ($loginKey === '') {
+        json_out(['status' => 'error', 'message' => 'Thieu key dang nhap.'], 401);
+    }
+    $stmt = $pdo->prepare("SELECT id, status FROM marketplace_stores WHERE login_key = ? LIMIT 1");
+    $stmt->execute([$loginKey]);
+    $store = $stmt->fetch();
+    if (!$store || (string)$store['status'] !== 'active') {
+        json_out(['status' => 'error', 'message' => 'Cua hang khong hop le hoac bi khoa.'], 403);
+    }
+
+    $storeId = (int)$store['id'];
+    $productId = (int)($input['id'] ?? 0);
+    $name = clean_string($input['name'] ?? '', 255);
+    $price = money_int($input['price'] ?? 0);
+    $stock = max(0, (int)($input['stock'] ?? 0));
+    $category = clean_string($input['category'] ?? '', 120);
+    $image = clean_string($input['image_url'] ?? '', 700);
+
+    if ($name === '') {
+        json_out(['status' => 'error', 'message' => 'Vui long nhap ten san pham.'], 400);
+    }
+
+    $values = [
+        'store_id' => $storeId,
+        'name' => $name,
+        'price' => $price,
+        'sale_price' => $price,
+        'stock' => $stock,
+        'type' => $category !== '' ? $category : 'other',
+        'status' => 'active',
+    ];
+    if ($image !== '') {
+        $values['images'] = json_encode([$image], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    if ($productId > 0) {
+        $stmt = $pdo->prepare("SELECT id FROM marketplace_products WHERE id = ? AND store_id = ? LIMIT 1");
+        $stmt->execute([$productId, $storeId]);
+        if (!$stmt->fetch()) {
+            json_out(['status' => 'error', 'message' => 'Khong tim thay san pham cua ban.'], 404);
+        }
+        update_compat($pdo, 'marketplace_products', $values, 'id = ?', [$productId], ['updated_at' => 'NOW()']);
+    } else {
+        $productId = insert_compat($pdo, 'marketplace_products', $values, ['created_at' => 'NOW()']);
+    }
+
+    return ['status' => 'success', 'message' => 'Luu san pham thanh cong.'];
+}
+
+function app_store_scan_menu_action(PDO $pdo, array $input): array
+{
+    $loginKey = marketplace_normalize_login_key((string)($input['login_key'] ?? ''));
+    if ($loginKey === '') {
+        json_out(['status' => 'error', 'message' => 'Thieu key dang nhap.'], 401);
+    }
+    $stmt = $pdo->prepare("SELECT id, status FROM marketplace_stores WHERE login_key = ? LIMIT 1");
+    $stmt->execute([$loginKey]);
+    $store = $stmt->fetch();
+    if (!$store || (string)$store['status'] !== 'active') {
+        json_out(['status' => 'error', 'message' => 'Cua hang khong hop le hoac bi khoa.'], 403);
+    }
+    
+    $base64Image = $input['image_base64'] ?? '';
+    if ($base64Image === '') {
+        json_out(['status' => 'error', 'message' => 'Vui long cung cap hinh anh menu.'], 400);
+    }
+    
+    // Strip data URI scheme if present
+    if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $matches)) {
+        $mimeType = "image/" . $matches[1];
+        $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+    } else {
+        $mimeType = "image/jpeg";
+    }
+
+    $apiKey = app_env('GEMINI_API_KEY', '');
+    if ($apiKey === '' || !function_exists('curl_init')) {
+        json_out(['status' => 'error', 'message' => 'He thong chua cau hinh AI Vision.'], 500);
+    }
+
+    $prompt = "Mày là Anh Thiên, một trợ lý thông minh. Hãy đọc bức ảnh chụp menu thực đơn/bảng giá này. Trích xuất TẤT CẢ tên các món (sản phẩm), giá tiền, và phân loại (category) của chúng. KHÔNG được viết chữ gì khác ngoài 1 chuỗi JSON duy nhất định dạng như sau: [{\"name\": \"Cà phê đen\", \"price\": 15000, \"category\": \"Cà phê\"}, ...]";
+
+    $payload = [
+        "contents" => [
+            [
+                "parts" => [
+                    ["text" => $prompt],
+                    [
+                        "inline_data" => [
+                            "mime_type" => $mimeType,
+                            "data" => $base64Image
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ];
+
+    $ch = curl_init("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    if (!$response) {
+        json_out(['status' => 'error', 'message' => 'Loi ket noi den Anh Thien AI.'], 500);
+    }
+
+    $data = json_decode($response, true);
+    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+    if ($text === '') {
+        json_out(['status' => 'error', 'message' => 'Anh Thien khong doc duoc hinh anh nay.'], 400);
+    }
+
+    // Clean markdown code blocks from AI response
+    $text = preg_replace('/```(?:json)?\s*(.*?)\s*```/is', '$1', $text);
+    $items = json_decode(trim($text), true);
+
+    if (!is_array($items) || count($items) === 0) {
+        json_out(['status' => 'error', 'message' => 'Anh Thien khong tim thay san pham nao trong anh.'], 400);
+    }
+
+    $storeId = (int)$store['id'];
+    $addedCount = 0;
+    
+    foreach ($items as $item) {
+        $name = clean_string($item['name'] ?? '', 255);
+        if ($name === '') continue;
+        
+        $priceStr = preg_replace('/\D/', '', (string)($item['price'] ?? '0'));
+        $price = (int)$priceStr;
+        $category = clean_string($item['category'] ?? 'Khác', 120);
+
+        insert_compat($pdo, 'marketplace_products', [
+            'store_id' => $storeId,
+            'name' => $name,
+            'price' => $price,
+            'sale_price' => $price,
+            'stock' => 100, // Default stock as asked
+            'type' => $category,
+            'status' => 'active',
+        ], ['created_at' => 'NOW()']);
+        $addedCount++;
+    }
+
+    return ['status' => 'success', 'message' => "Anh Thien da doc va tu dong them {$addedCount} mon vao cua hang cua ban."];
+}
+
+function app_store_delete_product_action(PDO $pdo, array $input): array
+{
+    $loginKey = marketplace_normalize_login_key((string)($input['login_key'] ?? ''));
+    if ($loginKey === '') {
+        json_out(['status' => 'error', 'message' => 'Thieu key dang nhap.'], 401);
+    }
+    $stmt = $pdo->prepare("SELECT id, status FROM marketplace_stores WHERE login_key = ? LIMIT 1");
+    $stmt->execute([$loginKey]);
+    $store = $stmt->fetch();
+    if (!$store || (string)$store['status'] !== 'active') {
+        json_out(['status' => 'error', 'message' => 'Cua hang khong hop le hoac bi khoa.'], 403);
+    }
+
+    $storeId = (int)$store['id'];
+    $productId = (int)($input['id'] ?? 0);
+
+    $stmt = $pdo->prepare("SELECT id FROM marketplace_products WHERE id = ? AND store_id = ? LIMIT 1");
+    $stmt->execute([$productId, $storeId]);
+    if (!$stmt->fetch()) {
+        json_out(['status' => 'error', 'message' => 'Khong tim thay san pham cua ban.'], 404);
+    }
+    
+    update_compat($pdo, 'marketplace_products', ['status' => 'hidden'], 'id = ?', [$productId], ['updated_at' => 'NOW()']);
+
+    return ['status' => 'success', 'message' => 'Da xoa san pham.'];
 }
 
 function admin_store_rows(PDO $pdo): array
@@ -4919,42 +5154,42 @@ function gemini_quote_reply(array $input): string
         return gemini_fallback_reply($message, $input);
     }
 
-    $key = app_env('GEMINI_API_KEY', '');
-    if ($key === '' || !function_exists('curl_init')) {
+    if (!function_exists('curl_init')) {
         return gemini_fallback_reply($message, $input);
     }
 
-    $model = trim(app_env('GEMINI_MODEL', 'gemini-1.5-flash'));
-    $model = preg_replace('/^models\//', '', $model) ?: 'gemini-1.5-flash';
+    $token = app_env('HF_TOKEN', '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');
+    $model = 'google/gemma-2-9b-it';
     $serviceType = clean_string($input['service_type'] ?? '', 150);
     $selected = clean_string($input['selected_service'] ?? '', 150);
     $publicPrice = clean_string($input['public_price'] ?? '', 120);
     $address = clean_string($input['address'] ?? '', 500);
-    $prompt = "Bạn là trợ lí báo giá của Điện Tử Hiếu. Trả lời tiếng Việt, ngắn gọn, thực tế, không hứa giảm giá ngoài bảng. "
+    $prompt = "Bạn là Anh Thiên 2, trợ lí báo giá của Điện Tử Hiếu. Trả lời tiếng Việt, ngắn gọn, thấu hiểu tâm lý khách hàng, thực tế, không hứa giảm giá ngoài bảng. "
         . "Nhấn mạnh giá công khai đã gồm VAT, vật tư/linh kiện phát sinh báo riêng trước khi làm. "
         . "Bảng tham khảo: vệ sinh máy lạnh 165.000 VND; lắp máy lạnh 1HP/1.5HP 440.000 VND; lắp máy lạnh 2HP/3HP 550.000 VND; sửa chữa điện lạnh, treo tivi, lắp máy lọc nước, lắp máy giặt, kiểm tra/sửa điện thoại 220.000 VND. "
         . "Nhóm: {$serviceType}. Dịch vụ chọn: {$selected}. Giá đang hiển thị: {$publicPrice}. Địa chỉ: {$address}. Câu hỏi khách: {$message}";
 
     $payload = [
-        'contents' => [[
-            'role' => 'user',
-            'parts' => [['text' => $prompt]],
-        ]],
-        'generationConfig' => [
-            'temperature' => 0.25,
-            'maxOutputTokens' => 360,
+        'model' => $model,
+        'messages' => [
+            ['role' => 'user', 'content' => $prompt]
         ],
+        'max_tokens' => 360,
+        'temperature' => 0.4
     ];
 
-    $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($model) . ':generateContent?key=' . rawurlencode($key);
+    $url = 'https://api-inference.huggingface.co/models/' . $model . '/v1/chat/completions';
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_POST => true,
-        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $token
+        ],
         CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_CONNECTTIMEOUT => 8,
-        CURLOPT_TIMEOUT => 18,
+        CURLOPT_TIMEOUT => 25,
     ]);
     $raw = curl_exec($ch);
     $err = curl_error($ch);
@@ -4963,9 +5198,10 @@ function gemini_quote_reply(array $input): string
 
     $decoded = json_decode((string)$raw, true);
     $reply = '';
-    if (is_array($decoded)) {
-        $reply = (string)($decoded['candidates'][0]['content']['parts'][0]['text'] ?? '');
+    if (is_array($decoded) && isset($decoded['choices'][0]['message']['content'])) {
+        $reply = trim((string)$decoded['choices'][0]['message']['content']);
     }
+    
     if ($http !== 200 || $reply === '') {
         error_log('[gemini_chat] HTTP=' . $http . ' ' . ($err !== '' ? $err : substr((string)$raw, 0, 300)));
         return gemini_fallback_reply($message, $input);
@@ -5548,6 +5784,14 @@ try {
 
     case 'app_store_login_qr':
         json_out(app_store_login_qr_action($pdo, $input));
+    case 'app_store_get_products':
+        json_out(app_store_get_products_action($pdo, $input));
+    case 'app_store_save_product':
+        json_out(app_store_save_product_action($pdo, $input));
+    case 'app_store_delete_product':
+        json_out(app_store_delete_product_action($pdo, $input));
+    case 'app_store_scan_menu':
+        json_out(app_store_scan_menu_action($pdo, $input));
 
     case 'app_store_login':
         if (isset($input['login_key']) || isset($input['qr_data']) || isset($input['key'])) {

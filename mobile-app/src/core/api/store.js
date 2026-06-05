@@ -118,3 +118,48 @@ export async function loadMapPins() {
     store.latitude !== null && store.longitude !== null
   ));
 }
+
+export async function loadStoreProducts(loginKey) {
+  const result = await requestApi('app_store_get_products', {
+    method: 'post',
+    data: { login_key: loginKey },
+  });
+  if (result?.status !== 'success' || !Array.isArray(result?.data)) {
+    throw new Error(result?.message || 'Không tải được danh sách hàng hóa.');
+  }
+  return result.data.map(normalizeProduct).filter(Boolean);
+}
+
+export async function saveStoreProduct(loginKey, payload) {
+  const result = await requestApi('app_store_save_product', {
+    method: 'post',
+    data: { login_key: loginKey, ...payload },
+  });
+  if (result?.status !== 'success') {
+    throw new Error(result?.message || 'Không lưu được hàng hóa.');
+  }
+  return result;
+}
+
+export async function deleteStoreProduct(loginKey, productId) {
+  const result = await requestApi('app_store_delete_product', {
+    method: 'post',
+    data: { login_key: loginKey, id: productId },
+  });
+  if (result?.status !== 'success') {
+    throw new Error(result?.message || 'Không xóa được hàng hóa.');
+  }
+  return result;
+}
+
+export async function scanStoreMenu(loginKey, base64Image) {
+  const result = await requestApi('app_store_scan_menu', {
+    method: 'post',
+    data: { login_key: loginKey, image_base64: base64Image },
+  });
+  if (result?.status !== 'success') {
+    throw new Error(result?.message || 'Không quét được menu.');
+  }
+  return result;
+}
+

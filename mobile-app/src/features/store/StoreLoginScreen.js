@@ -50,8 +50,8 @@ export default function StoreLoginScreen({ navigation }) {
     await saveStoreSession(store);
     Alert.alert(
       'Đăng nhập cửa hàng thành công',
-      `${store.storeName} đã mở phiên mua bán.`,
-      [{ text: 'Vào khu mua bán', onPress: () => navigation.navigate('Store') }],
+      `${store.storeName} đã mở phiên quản lý.`,
+      [{ text: 'Khu vực Quản lý', onPress: () => navigation.navigate('StoreProducts') }],
     );
   };
 
