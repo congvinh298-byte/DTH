@@ -1222,13 +1222,54 @@ function loadStores(){
         document.getElementById('storesBody').innerHTML=(d.data||[]).map(s=>{
             const isActive=s.status==='active';
             const hasKey=!!s.login_key;
-            const qr=isActive&&hasKey&&s.qr_image_url?`<div style="margin-bottom:8px;border:1px dashed #10b981;padding:8px;border-radius:6px;"><div style="color:#10b981;font-weight:bold;margin-bottom:4px;font-size:12px;">QR Đăng Nhập App</div><div style="display:flex;align-items:center;gap:8px;"><img src="${esc(s.qr_image_url)}" alt="QR Dang Nhap" style="width:86px;height:86px;border:1px solid #dfe3e8;border-radius:6px;background:#fff;"><div><button class="btn success" data-key="${esc(s.login_key||'')}" onclick="copyStoreKeyFromButton(this)">Copy key</button><br><span class="worker-meta"><code>${esc(s.login_key||'')}</code></span></div></div></div>`:'';
-            const reportQr=s.report_qr_image_url?`<div style="border:1px dashed #3b82f6;padding:8px;border-radius:6px;"><div style="color:#3b82f6;font-weight:bold;margin-bottom:4px;font-size:12px;">QR Báo Cáo / Đơn Hàng</div><div style="display:flex;align-items:center;gap:7px;"><img src="${esc(s.report_qr_image_url)}" alt="QR Doi Soat" style="width:74px;height:74px;border:1px solid #dfe3e8;border-radius:6px;background:#fff;"><div><a class="btn" href="${esc(s.report_url||'#')}" target="_blank">Xem Link</a><br><br><a class="btn" href="${esc(s.report_qr_image_url)}" target="_blank" download>Tải QR</a></div></div></div>`:'';
+            // QR dang nhap (sau khi duyet)
+            const loginQR=isActive&&hasKey&&s.qr_image_url
+                ?`<div style="margin-bottom:10px;background:#f0fdf4;border:2px solid #10b981;padding:10px;border-radius:8px;">
+                    <div style="color:#065f46;font-weight:bold;font-size:12px;margin-bottom:6px;">QR DANG NHAP APP CUA HANG</div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <img src="${esc(s.qr_image_url)}" style="width:90px;height:90px;border-radius:6px;border:1px solid #6ee7b7;">
+                        <div>
+                            <button class="btn success" data-key="${esc(s.login_key||'')}" onclick="copyStoreKeyFromButton(this)">Copy Key</button>
+                            <div style="margin-top:5px;font-size:11px;color:#6b7280;">Gui QR nay cho chu cua hang</div>
+                        </div>
+                    </div>
+                </div>`
+                :'';
+            // QR bao cao doanh thu
+            const reportQR=s.report_qr_image_url
+                ?`<div style="background:#eff6ff;border:2px solid #3b82f6;padding:10px;border-radius:8px;">
+                    <div style="color:#1e40af;font-weight:bold;font-size:12px;margin-bottom:6px;">QR BAO CAO DOANH THU</div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <img src="${esc(s.report_qr_image_url)}" style="width:74px;height:74px;border-radius:6px;border:1px solid #93c5fd;">
+                        <div>
+                            <a class="btn" href="${esc(s.report_url||'#')}" target="_blank">Xem Link</a><br><br>
+                            <a class="btn" href="${esc(s.report_qr_image_url)}" target="_blank" download>Tai QR</a>
+                        </div>
+                    </div>
+                </div>`
+                :'';
+            // Nut phe duyet
             const actions=isActive&&hasKey
-                ? `${qr}${reportQr}`
-                : `<button class="btn success" onclick="approveStore(${Number(s.id)})">Duyệt & Cấp QR Đăng Nhập</button>`;
-            return `<tr><td><b>#${s.id}</b></td><td><b>${esc(s.store_name)}</b><span class="worker-meta">Chủ: ${esc(s.owner_name||'-')}<br>Đồng bộ: ${esc(s.last_login_at||s.created_at||'-')}</span></td><td>MST: ${esc(s.tax_code)}<br>SĐT: ${esc(s.phone)}</td><td>${esc(s.store_type)}<br><small>${esc(s.address)}</small></td><td><b style="color:#dc2626">${fmt(s.total_sales || 0)}</b><span class="worker-meta">${esc(s.order_count||0)} đơn, chờ xử lý ${esc(s.pending_orders||0)}</span></td><td>${statusBadge(isActive?'ok':'warn',isActive?'active':'pending')}</td><td style="min-width:200px">${actions}</td></tr>`;
-        }).join('') || '<tr><td colspan="7">Chua co cua hang nao.</td></tr>';
+                ?`<div style="display:flex;flex-direction:column;gap:8px;">${loginQR}${reportQR}</div>`
+                :`<div style="text-align:center;padding:8px;">
+                    <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:8px;padding:10px;margin-bottom:8px;">
+                        <div style="color:#92400e;font-weight:bold;font-size:13px;">CHO PHE DUYET</div>
+                        <div style="color:#78350f;font-size:11px;margin-top:3px;">Giam doc chua phe duyet cua hang nay</div>
+                    </div>
+                    <button onclick="approveStore(${Number(s.id)},this)" style="background:#16a34a;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:bold;font-size:14px;cursor:pointer;width:100%;">
+                        PHE DUYET CUA HANG
+                    </button>
+                </div>`;
+            return `<tr>
+                <td><b>#${s.id}</b></td>
+                <td><b>${esc(s.store_name)}</b><br><span class="worker-meta">Chu: ${esc(s.owner_name||'-')}<br>DK: ${esc(s.created_at||'-')}</span></td>
+                <td>MST: <b>${esc(s.tax_code)}</b><br>SDT: ${esc(s.phone)}</td>
+                <td>${esc(s.store_type)}<br><small>${esc(s.address)}</small></td>
+                <td><b style="color:#dc2626">${fmt(s.total_sales||0)}</b><br><span class="worker-meta">${esc(s.order_count||0)} don</span></td>
+                <td>${statusBadge(isActive?'ok':'warn',isActive?'active':'pending')}</td>
+                <td style="min-width:220px">${actions}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6b7280;">Chua co cua hang nao dang ky.</td></tr>';
     }).catch(e=>{
         document.getElementById('storesBody').innerHTML=`<tr><td colspan="7" class="muted">Loi tai cua hang: ${esc(e.message)}</td></tr>`;
     });
@@ -1243,14 +1284,17 @@ function copyStoreKey(value){
     }
 }
 function copyStoreKeyFromButton(button){ copyStoreKey(button.dataset.key||''); }
-function approveStore(id){
-    if(!confirm('Duyet cua hang nay va cap QR/key dang nhap?')) return;
+function approveStore(id, btn){
+    if(!confirm('Xac nhan PHE DUYET cua hang nay?\n\nSau khi duyet, cua hang se duoc cap ma QR dang nhap va hoat dong tren nen tang Cho Xa Lap Vo.')) return;
+    if(btn){btn.disabled=true;btn.textContent='Dang xu ly...';}
     api('admin_approve_store',{id},'POST').then(d=>{
-        if(d.status!=='success') throw new Error(d.message||'Khong duyet duoc cua hang');
-        const s=d.data||{};
-        alert((d.message||'Da duyet') + '\nKey: ' + (s.login_key||''));
+        if(d.status!=='success') throw new Error(d.message||'Khong phe duyet duoc');
+        msg('Da phe duyet cua hang thanh cong!');
         loadStores();
-    }).catch(e=>msg(e.message));
+    }).catch(e=>{
+        if(btn){btn.disabled=false;btn.textContent='PHE DUYET CUA HANG';}
+        msg('Loi: ' + e.message);
+    });
 }
 
 function settleStores(){
