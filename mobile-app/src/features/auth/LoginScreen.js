@@ -15,9 +15,7 @@ import {
   UIManager,
 } from 'react-native';
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+
 
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { getApiErrorMessage } from '../../core/api/client';
@@ -181,9 +179,10 @@ export default function LoginScreen({ navigation, onAuthenticated }) {
           <Text style={styles.scope}>{COMPANY.serviceArea}</Text>
         </View>
 
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+  
 
         <View style={styles.loginPanel}>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
           <Text style={styles.title}>Quét QR Đăng nhập</Text>
           <Text style={styles.description}>
             Hệ thống sẽ tự động nhận diện QR Khách hàng hoặc QR Cửa hàng để điều hướng phù hợp.
@@ -214,6 +213,7 @@ export default function LoginScreen({ navigation, onAuthenticated }) {
         </View>
 
         <View style={styles.registerPanel}>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
           <Text style={styles.title}>Bạn chưa có tài khoản?</Text>
           <View style={styles.registerOptions}>
             <Pressable 
