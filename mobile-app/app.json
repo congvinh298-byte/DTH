@@ -3,6 +3,7 @@
     "name": "Điện Tử Hiếu",
     "slug": "dien-tu-hieu",
     "version": "1.0.0",
+    "versionCode": 1,
     "description": "Hệ sinh thái Điện Tử Hiếu phục vụ mua hàng và gọi thợ trong bán kính 15 km từ Chợ Lấp Vò.",
     "orientation": "portrait",
     "icon": "./assets/brand-icon.png",
