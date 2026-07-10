@@ -1,0 +1,120 @@
+RewriteEngine On
+
+RewriteRule ^dang-nhap$ pages/client/Login.php [L]
+RewriteRule ^dang-ky$ pages/client/Register.php [L]
+RewriteRule ^dang-xuat$ pages/client/Logout.php [L]
+RewriteRule ^Nap-Tien$ pages/client/NapTien.php [L]
+RewriteRule ^Profile/Giaodich$ pages/client/LichsuGd.php [L]
+RewriteRule ^Profile/NapThe$ pages/client/HistoryNapthe.php [L]
+
+RewriteRule ^Profile$ pages/client/Profile.php [L]
+RewriteRule ^tao-trang-web$ pages/client/Danhmuctaoweb.php [L]
+RewriteRule ^danh-muc/([0-9-_]+)$ pages/client/Danhsachweb.php?id=$1 [L]
+RewriteRule ^History-tao-web$ pages/client/HistoryTaoweb.php [L]
+
+
+RewriteRule ^His-Sellcode$ pages/client/HistorySellcode.php [L]
+RewriteRule ^WhoisDomain$ pages/client/WhoisDomain.php [L]
+RewriteRule ^whois$ pages/client/WhoisDomain.php [L]
+
+RewriteRule ^quen-mat-khau$ pages/client/QuenMatKhau.php [L]
+RewriteRule ^Reset-Password/([A-Za-z0-9-_]+)$ pages/client/ResetPass.php?token=$1 [L]
+
+RewriteRule ^QuanLy/TrangWeb/([A-Za-z0-9-_]+) pages/client/QuanlyTrangweb.php?id=$1 [L]
+RewriteRule ^QuanLy/TenMien/([A-Za-z0-9-_]+) pages/client/Quanlytenmien.php?id=$1 [L]
+
+RewriteRule ^mua-source-code$ pages/client/Danhmucmuacode.php [L]
+RewriteRule ^danh-muc-code/([A-Za-z0-9-_]+)$ pages/client/Danhsachmuacode.php?id=$1 [L]
+RewriteRule ^Manguonthangnay$ pages/client/Manguonthangnay.php [L]
+RewriteRule ^Manguonupdate$ pages/client/Manguonupdate.php [L]
+
+
+RewriteRule ^mua-code/([A-Za-z0-9-_]+)$ pages/client/Muasource.php?id=$1 [L]
+RewriteRule ^History-mua-code$ pages/client/HistoryMuaCode.php [L]
+RewriteRule ^Mua-mien$ pages/client/Muamien.php [L]
+RewriteRule ^Nap/Vi$ pages/client/Vionline.php [L]
+RewriteRule ^Chuyen-tien$ pages/client/Transfer.php [L]
+RewriteRule ^GioHang$ pages/client/GioHang.php [L]
+RewriteRule ^Thanhtoan$ pages/client/Thanhtoan.php [L]
+RewriteRule ^Sellcode$ pages/client/Sellcode.php [L]
+RewriteRule ^Verify$ pages/client/Verify.php [L]
+
+RewriteRule ^Docs_api$ pages/client/Docs_api.php [L]
+RewriteRule ^Nap/Vi/([A-Za-z0-9-_]+)$ pages/client/Hoadon_vi.php?magd=$1 [L]
+RewriteRule ^don-hang/([A-Za-z0-9-_]+)$ pages/client/HistoryDonHang.php?magd=$1 [L]
+RewriteRule ^Nap/Paypal$ pages/client/Paypal.php [L]
+RewriteRule ^Nap/Card$ pages/client/Napcard.php [L]
+RewriteRule ^upanh$ pages/client/Upanh.php [L]
+RewriteRule ^LoginFacebook$ api/Login/Facebook.php [L]
+RewriteRule ^LoginGoogle$ api/Login/Google.php [L]
+
+
+
+RewriteRule ^tao-web/([A-Za-z0-9-_]+)$ pages/client/Taotrangweb.php?id=$1 [L]
+RewriteRule ^Ma-giam-gia$ pages/client/Magiamgia.php [L]
+
+RewriteRule ^apiv2/whois$ api/Whois.php [L]
+RewriteRule ^apiv2/listcode$ api/Listcode.php [L]
+
+RewriteRule ^apiv2/muacode$ api/Muacode.php [L]
+RewriteRule ^apiv2/muamien$ api/Muamien.php [L]
+RewriteRule ^apiv2/infodomain$ api/InfoDomain.php [L]
+RewriteRule ^apiv2/statusdomain$ api/StatusDomain.php [L]
+
+
+
+RewriteRule ^Admin$ pages/admin/Home.php [L]
+RewriteRule ^Login-Admin$ pages/admin/LoginAdmin.php [L]
+RewriteRule ^Admin/Quanlythanhvien$ pages/admin/Quanlythanhvien.php [L]
+RewriteRule ^Admin/QuanlythanhvienKhoa$ pages/admin/QuanlythanhvienKhoa.php [L]
+RewriteRule ^Admin/Danhmuccode$ pages/admin/Danhmucbancode.php[L]
+RewriteRule ^Admin/ThanhVienON$ pages/admin/DanhsachthanhvienON.php [L]
+RewriteRule ^Admin/Danhmuctaoweb$ pages/admin/Danhmuctaoweb.php [L]
+RewriteRule ^Admin/ThemMauWeb$ pages/admin/ThemMauWeb.php [L]
+RewriteRule ^Admin/Danhmucbancode$ pages/admin/Danhmucbancode.php [L]
+RewriteRule ^Admin/HistoryChuyentien$ pages/admin/HistoryChuyentien.php [L]
+RewriteRule ^Admin/HistoryBiendongsodu$ pages/admin/HistoryBiendongsodu.php [L]
+RewriteRule ^Admin/Lichsugiahan$ pages/admin/Lichsugiahan.php [L]
+RewriteRule ^Admin/ThemMaNguon$ pages/admin/ThemMaNguon.php [L]
+RewriteRule ^Admin/Quanlytaoweb$ pages/admin/Quanlytaoweb.php [L]
+RewriteRule ^Admin/Quanlymuamien$ pages/admin/Quanlymuamien.php [L]
+RewriteRule ^Admin/Lichsunaptien$ pages/admin/Lichsunaptien.php [L]
+RewriteRule ^Admin/LichsunaptienATM$ pages/admin/LichsunaptienATM.php [L]
+RewriteRule ^Admin/Lichsumuacode$ pages/admin/Lichsumuacode.php [L]
+RewriteRule ^Admin/View/Muacode/([A-Za-z0-9-_]+)$ pages/admin/ViewLichsumuacode.php?magd=$1 [L]
+RewriteRule ^Admin/Hoadontsr$ pages/admin/Hoadontsr.php [L]
+RewriteRule ^Admin/Magiamgia$ pages/admin/Magiamgia.php [L]
+RewriteRule ^Admin/Quanlyapi$ pages/admin/Quanlyapi.php [L]
+RewriteRule ^Admin/Blockip$ pages/admin/Blockip.php [L]
+RewriteRule ^Admin/Sukien$ pages/admin/Sukien.php [L]
+RewriteRule ^Admin/AddNapAtm$ pages/admin/AddNapAtm.php [L]
+RewriteRule ^Admin/SettingClf$ pages/admin/SettingClf.php [L]
+RewriteRule ^Admin/SettingAdmin$ pages/admin/SettingAdmin.php [L]
+RewriteRule ^Admin/HosoXacMinh$ pages/admin/HosoXacMinh.php [L]
+RewriteRule ^Admin/Par_manguon$ pages/admin/Par_manguon.php [L]
+RewriteRule ^Admin/Par_ruttien$ pages/admin/Par_ruttien.php [L]
+RewriteRule ^Admin/EditPar_ruttien$ pages/admin/EditPar_ruttien.php [L]
+RewriteRule ^Admin/Par_biendongsodu$ pages/admin/Par_biendongsodu.php [L]
+RewriteRule ^Admin/EditPar_manguon$ pages/admin/EditPar_manguon.php [L]
+
+RewriteRule ^Admin/EditQuanlytaoweb/([A-Za-z0-9-_]+)$ pages/client/EditQuanlytaoweb.php?id=$1 [L]
+RewriteRule ^Admin/Logout$ pages/admin/Logout.php [L]
+
+
+RewriteRule ^Partner$ pages/partner/Home.php [L]
+RewriteRule ^Partner/HistoryCode$ pages/partner/HistoryCode.php [L]
+RewriteRule ^Partner/EditCode$ pages/partner/EditCode.php [L]
+RewriteRule ^Partner/ThemMaNguon$ pages/partner/ThemMaNguon.php [L]
+RewriteRule ^Partner/Ruttien$ pages/partner/Ruttien.php [L]
+RewriteRule ^Partner/Biendongsodu$ pages/partner/Biendongsodu.php [L]
+RewriteRule ^Partner/HistoryBuyCode$ pages/partner/HistoryBuyCode.php [L]
+
+
+
+ErrorDocument 404 /pages/404.html
+
+<Files 403.shtml>
+order allow,deny
+allow from all
+</Files>
+
