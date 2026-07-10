@@ -1,11 +1,11 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 if(isset($_POST['type']) && $_POST['type'] == 'UpDate')
 {
-    if($TUANORI->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."'  ")) {
+    if($DMH->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."'  ")) {
         msg_error2('Bạn đã bị chặn sử dụng tính năng của chúng tôi vĩnh viễn. Xin cảm ơn');
     }
     if(empty($_COOKIE['token'])) {
@@ -16,7 +16,7 @@ if(isset($_POST['type']) && $_POST['type'] == 'UpDate')
     $list_code      = check_string($_POST['list_code']);
     $buy_code       = check_string($_POST['buy_code']);
     $buy_domain     = check_string($_POST['buy_domain']);
-    $update = $TUANORI->update("key_apis", array(
+    $update = $DMH->update("key_apis", array(
         'whois'         => $whois,
         'list_code'     => $list_code,
         'buy_code'      => $buy_code,

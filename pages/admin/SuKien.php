@@ -18,7 +18,7 @@ if(isset($_POST['Kichhoat']) && $getUser['level'] == 'admin')
                 $key = 'timeskoff';
             }
         }
-        $UPDATTE = $TUANORI->update("options", array(
+        $UPDATTE = $DMH->update("options", array(
             'value' => $value
         ), " `key` = '$key' ");
     }
@@ -50,26 +50,26 @@ if(isset($_POST['Kichhoat']) && $getUser['level'] == 'admin')
                 <div class="form-group">
                     <label class="control-label">Tên sự kiện</label>
 
-                    <input type="text" class="form-control" name="namesukien" value="<?=$TUANORI->site('namesukien');?>" placeholder="Tên sự kiện" />
+                    <input type="text" class="form-control" name="namesukien" value="<?=$DMH->site('namesukien');?>" placeholder="Tên sự kiện" />
                 </div>
 
                 <div class="form-group">
                     <label class="control-label">Nội dung sự kiện</label>
-                    <textarea class="form-control ckeditor" name="noidungsukien"><?=$TUANORI->site('noidungsukien');?></textarea>
+                    <textarea class="form-control ckeditor" name="noidungsukien"><?=$DMH->site('noidungsukien');?></textarea>
                 </div>
 
                 <div class="form-group">
                     <label class="control-label" style="color: green">% giảm giá code</label>
-                    <input type="text" class="form-control" value="<?=$TUANORI->site('ptgiamgia');?>" name="ptgiamgia" placeholder="% giảm giá code" />
+                    <input type="text" class="form-control" value="<?=$DMH->site('ptgiamgia');?>" name="ptgiamgia" placeholder="% giảm giá code" />
                 </div>
                 <div class="form-group">
                     <label class="control-label" style="color: green">% giảm giá tạo websitie</label>
-                    <input type="text" class="form-control" value="<?=$TUANORI->site('ptgiamgiaweb');?>" name="ptgiamgiaweb" placeholder="% giảm giá web" />
+                    <input type="text" class="form-control" value="<?=$DMH->site('ptgiamgiaweb');?>" name="ptgiamgiaweb" placeholder="% giảm giá web" />
                 </div>
 
                 <div class="form-group">
                     <label class="control-label">Tặng % nạp tiền</label>
-                    <input type="text" class="form-control" name="khuyenmai" value="<?=$TUANORI->site('khuyenmai');?>" placeholder="Tặng % nạp tiền" />
+                    <input type="text" class="form-control" name="khuyenmai" value="<?=$DMH->site('khuyenmai');?>" placeholder="Tặng % nạp tiền" />
                 </div>
                 <div class="form-group">
                     <label class="control-label">Số ngày hoạt động</label>
@@ -78,14 +78,14 @@ if(isset($_POST['Kichhoat']) && $getUser['level'] == 'admin')
                 <div class="form-group">
                     <label class="control-label">ON/OFF sự kiện</label>
                     <select name="sukien" class="selectboxit">
-                        <option value="ON" <?=($TUANORI->site('sukien') == 'ON') ? 'selected' : ''?>>Hiển thị</option>
-                        <option value="OFF" <?=($TUANORI->site('sukien') == 'OFF') ? 'selected' : ''?>>Ẩn đi</option>
+                        <option value="ON" <?=($DMH->site('sukien') == 'ON') ? 'selected' : ''?>>Hiển thị</option>
+                        <option value="OFF" <?=($DMH->site('sukien') == 'OFF') ? 'selected' : ''?>>Ẩn đi</option>
                     </select>
                 </div>
-                <?php if($TUANORI->site('sukien') == 'ON') { ?>
+                <?php if($DMH->site('sukien') == 'ON') { ?>
                 <div class="form-group">
                     <label class="control-label">Ngày kết thúc sự kiện</label>
-                    <input type="text" class="form-control" value="<?=gettime2($TUANORI->site('timeskoff'));?>" placeholder="Số ngày hoạt động" />
+                    <input type="text" class="form-control" value="<?=gettime2($DMH->site('timeskoff'));?>" placeholder="Số ngày hoạt động" />
                 </div>
                 <?php } ?>
 
@@ -104,7 +104,7 @@ if(isset($_POST['Kichhoat']) && $getUser['level'] == 'admin')
 <br />
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

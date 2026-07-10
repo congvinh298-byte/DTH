@@ -10,11 +10,11 @@ CheckAdmin();
 <?php
 if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `danhmucmuacode` WHERE `id` = '".$_GET['xoa']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `danhmucmuacode` WHERE `id` = '".$_GET['xoa']."'");
     if(!$user2) {
         echo msg_admin("error", "Mã nguồn này không tồn tại trong hệ thống", BASE_URL('Admin/Danhmucbancode'), 2000);
     } else {
-        $dele = $TUANORI->remove("danhmucmuacode", " `id` = '".$_GET['xoa']."' ");
+        $dele = $DMH->remove("danhmucmuacode", " `id` = '".$_GET['xoa']."' ");
         if($dele) {
             echo msg_admin("success","Đã xóa danh mục thành công", BASE_URL('Admin/Danhmucbancode'), 2000);
         } else {
@@ -124,7 +124,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 		</tr>
 	</thead>
 	<tbody>
-        <?php $i = 0;  foreach($TUANORI->get_list(" SELECT * FROM `danhmucmuacode` ORDER BY id DESC") as $row){ ?>
+        <?php $i = 0;  foreach($DMH->get_list(" SELECT * FROM `danhmucmuacode` ORDER BY id DESC") as $row){ ?>
         <tr>
             <td><?=++$i;?></td>
             <td><b style="font-size: 15px"><?=$row['title'];?></b></td>
@@ -148,7 +148,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

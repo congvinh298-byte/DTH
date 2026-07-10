@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -20,7 +20,7 @@
         else
         {
             $mk = md5($mk);
-            $rowlog = $TUANORI->get_row(" SELECT * FROM `users` WHERE `tokenlog` = '".$_COOKIE['token']."' AND `passwordc2` = '$mk' AND `level` = 'admin'");
+            $rowlog = $DMH->get_row(" SELECT * FROM `users` WHERE `tokenlog` = '".$_COOKIE['token']."' AND `passwordc2` = '$mk' AND `level` = 'admin'");
             if(!$rowlog)
             {
                 msg("error", "Thông tin đăng nhập không chính xác. Vui lòng kiểm tra lại");

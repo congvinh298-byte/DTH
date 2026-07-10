@@ -22,10 +22,10 @@ CheckAdmin();
 		</tr>
 	</thead>
 	<tbody>
-    <?php $i = 1;  foreach($TUANORI->get_list(" SELECT * FROM `lichsumuacode` ORDER BY id DESC LIMIT 100") as $row){ ?>
+    <?php $i = 1;  foreach($DMH->get_list(" SELECT * FROM `lichsumuacode` ORDER BY id DESC LIMIT 100") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
-            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
+            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
             <?php
                 if(isset($row['magd'])) {
                     $url = 'Admin/View/Muacode/'.$row['id_code'];
@@ -44,6 +44,6 @@ CheckAdmin();
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>

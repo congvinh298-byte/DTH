@@ -10,14 +10,14 @@ CheckAdmin();
 <?php
 if(isset($_GET['id']) && $getUser['level'] == 'admin')
 {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `blockip` WHERE `id` = '".$_GET['id']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `blockip` WHERE `id` = '".$_GET['id']."'");
     if(!$user2)
     {
         echo msg_admin("error", "Tài khoản này không tồn tại trong hệ thống", BASE_URL('Admin/Blockip'), 1000);
     }
     else
     {
-        $dele = $TUANORI->remove("blockip", " `id` = '".$_GET['id']."' ");
+        $dele = $DMH->remove("blockip", " `id` = '".$_GET['id']."' ");
         if($dele)
         {
             echo msg_admin("success","Ân xá thành công cho thiết bị này", BASE_URL('Admin/Blockip'), 1500);
@@ -108,12 +108,12 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin')
             <th>THAO TÁC</th>
 		</tr>
 	</thead>
-	<?php $i = 1;  foreach($TUANORI->get_list(" SELECT * FROM `blockip` ORDER BY id DESC") as $row){ ?>
+	<?php $i = 1;  foreach($DMH->get_list(" SELECT * FROM `blockip` ORDER BY id DESC") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
             <td>
-                <?php foreach($TUANORI->get_list(" SELECT * FROM `users` WHERE `ip` = '".$row['ip']."' ORDER BY id DESC") as $row2){ 
-                    echo '<a href="/pages/admin/EditQuanlythanhvien.php?id='.$TUANORI->getUser($row2['username'])['id'].'">'.$row2['username'].'</a>, ';
+                <?php foreach($DMH->get_list(" SELECT * FROM `users` WHERE `ip` = '".$row['ip']."' ORDER BY id DESC") as $row2){ 
+                    echo '<a href="/pages/admin/EditQuanlythanhvien.php?id='.$DMH->getUser($row2['username'])['id'].'">'.$row2['username'].'</a>, ';
                 }
                 ?>
             </td>
@@ -132,7 +132,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin')
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

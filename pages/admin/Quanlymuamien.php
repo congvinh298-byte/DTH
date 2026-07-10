@@ -10,13 +10,13 @@ CheckAdmin();
 <?php
 if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `lichsumuamien` WHERE `id` = '".$_GET['xoa']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `lichsumuamien` WHERE `id` = '".$_GET['xoa']."'");
     if(!$user2) {
         echo msg_admin("error","Lịch sử mua miền này không tồn tại", BASE_URL('Admin/Quanlymuamien'), 2000); die;
     }
     else
     {
-        $dele = $TUANORI->remove("lichsumuamien", " `id` = '".$_GET['xoa']."' ");
+        $dele = $DMH->remove("lichsumuamien", " `id` = '".$_GET['xoa']."' ");
         if($dele) {
             echo msg_admin("success", "Đã xóa lịch sử mua miền này thành công", BASE_URL('Admin/Quanlymuamien'), 2000);
         } else {
@@ -42,10 +42,10 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 		</tr>
 	</thead>
 	<tbody>
-    <?php $i = 1; foreach($TUANORI->get_list(" SELECT * FROM `lichsumuamien` ORDER BY id DESC LIMIT 50") as $row){ ?>
+    <?php $i = 1; foreach($DMH->get_list(" SELECT * FROM `lichsumuamien` ORDER BY id DESC LIMIT 50") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
-            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
+            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
             <td style="font-weight: bold;"><a target="_blank" href="//<?=$row['domain'];?>"><?=$row['domain'];?></a></td>
             <td style="color: green; font-weight: bold;"><?=number_format($row['tongtien']);?>đ</td>
             <td  style="font-weight: bold;"><?=$row['timemua'];?></td>
@@ -75,6 +75,6 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>

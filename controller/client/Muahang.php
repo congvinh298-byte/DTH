@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -8,7 +8,7 @@ require_once('../../class/PHPMailerAutoload.php');
 require_once('../../class/class.phpmailer.php');
 if(isset($_POST['type']))
 {
-    if($TUANORI->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."' "))
+    if($DMH->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."' "))
     {
         msg_error2('Bạn đã bị chặn sử dụng tính năng của chúng tôi vĩnh viễn. Xin cảm ơn');
     }
@@ -49,23 +49,23 @@ if(isset($_POST['type']))
         if(!check_domain($tuan)) {
             msg_error2("Tên miền bạn nhập không hợp lệ.");
         }
-        if($TUANORI->get_row(" SELECT * FROM `lichsutaoweb` WHERE `tenmien` = '$mien' AND `buoc` = '4'"))
+        if($DMH->get_row(" SELECT * FROM `lichsutaoweb` WHERE `tenmien` = '$mien' AND `buoc` = '4'"))
         {
             msg_error2("Tên miền bạn nhập đã tồn tại trong hệ thống");
         }
-        $check = $TUANORI->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '$id' AND `hienthi` = 'SHOW'");
-        if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgiaweb') > 0) {
-            $sotien = ($check['money'] - ($check['money'] * $TUANORI->site('ptgiamgiaweb') / 100)) ;
+        $check = $DMH->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '$id' AND `hienthi` = 'SHOW'");
+        if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgiaweb') > 0) {
+            $sotien = ($check['money'] - ($check['money'] * $DMH->site('ptgiamgiaweb') / 100)) ;
         } else {
             $sotien = $check['money'] ;
         }
         $mgg22 = false;
         // thêm phần xử lý mua website
         if($magiamgia) {
-            if($TUANORI->site('sukien') == 'ON'  && $TUANORI->site('ptgiamgiaweb') >= 1) {
+            if($DMH->site('sukien') == 'ON'  && $DMH->site('ptgiamgiaweb') >= 1) {
                 msg_error2("Không thể áp dụng mã giảm giá. Do đang có dự kiện giảm giá từ trước.");
             }
-            $magg = $TUANORI->get_row(" SELECT * FROM `magiamgia` WHERE `magiamgia` = '$magiamgia'");
+            $magg = $DMH->get_row(" SELECT * FROM `magiamgia` WHERE `magiamgia` = '$magiamgia'");
             if(!$magg)
             {
                 if($magiamgia === strtoupper(substr(md5($getUser['timereg2']), 0 , 7)))
@@ -103,10 +103,10 @@ if(isset($_POST['type']))
         }
         else
         {
-            if($TUANORI->site('sukien') == 'OFF') {
+            if($DMH->site('sukien') == 'OFF') {
                 $magiamgia = NULL;
-            } else if($TUANORI->site('ptgiamgiaweb') > 0) {
-                $magiamgia = 'Giảm '.$TUANORI->site('ptgiamgiaweb').'% do sự kiện';
+            } else if($DMH->site('ptgiamgiaweb') > 0) {
+                $magiamgia = 'Giảm '.$DMH->site('ptgiamgiaweb').'% do sự kiện';
             }
         }
         if ($sotien < 1)
@@ -120,11 +120,11 @@ if(isset($_POST['type']))
         if($check['status'] == 'OFF') {
             msg_error2("Phải rất tiếc thông báo. Mẫu website này chúng tôi không còn hỗ trợ tạo nữa. Bạn vui lòng chọn mẫu khác.");
         }
-        if($TUANORI->site('sukien') == 'OFF') {
+        if($DMH->site('sukien') == 'OFF') {
             if($magiamgia) {
                 if($mgg22) {
-                    $mgg2 = $TUANORI->tru("magiamgia", "conlai", 1, " `magiamgia` = '$magiamgia'");
-                    $TUANORI->cong("magiamgia", "dasudung", 1, " `magiamgia` = '$magiamgia'");
+                    $mgg2 = $DMH->tru("magiamgia", "conlai", 1, " `magiamgia` = '$magiamgia'");
+                    $DMH->cong("magiamgia", "dasudung", 1, " `magiamgia` = '$magiamgia'");
                     if(!$mgg2)
                     {
                         msg_error2("Lỗi cấu hình CSDL rồi");
@@ -134,20 +134,20 @@ if(isset($_POST['type']))
         }
         
         $hethan = time() + ($time*86400);
-        $create = $TUANORI->insert("lichsutaoweb", [
+        $create = $DMH->insert("lichsutaoweb", [
             'username'          => $getUser['username'],
             'tenmien'           => $mien,
             'id_code'           => $id,
             'ngaytao'           => time(),
             'taikhoan'          => $tk,
             'matkhau'           => $mk,
-            'moneygiahan'       => $TUANORI->site('tiengiahan'),
+            'moneygiahan'       => $DMH->site('tiengiahan'),
             'tongtien'          => $sotien,
             'magiamgia'         => $magiamgia,
             'buoc'              => 1,
             'type'              => 'LOGIN'
         ]);
-        $add = $TUANORI->insert("biendongsodu", [
+        $add = $DMH->insert("biendongsodu", [
             'username'      => $getUser['username'],
             'truoc'         => $my_money,
             'sau'           => $my_money - $sotien,
@@ -155,7 +155,7 @@ if(isset($_POST['type']))
             'tongtien'      => $sotien,
             'time'          => gettime()
         ]);
-        $isMoney = $TUANORI->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
+        $isMoney = $DMH->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
         if($create && $isMoney && $add) {
             msg_success('Bạn đã đặt tạo web thành công! Vui lòng chờ xử lý', BASE_URL('History-tao-web'), 1000);
         } else {
@@ -177,7 +177,7 @@ if(isset($_POST['type']))
         }
         $mgg    = check_string($_POST['magiamgia']);
         $id     = check_string($_POST['id']);
-        $check = $TUANORI->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '$id' AND `hienthi` = 'SHOW'");
+        $check = $DMH->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '$id' AND `hienthi` = 'SHOW'");
         if(!$check)
         {
             msg_error2("Code này không tồn tại hoặc đã bị ẩn");
@@ -189,14 +189,14 @@ if(isset($_POST['type']))
         $sotien = $check['money']; // TIỀN THANH TOÁN
         if($mgg)
         {
-            if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgia') > 0) {
+            if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0) {
                 msg_error2("Đang có sự kiện giảm giá, không thể sử dụng mã.");
             }
             if($check['money'] == 0)
             {
                 msg_error2("Code miễn phí, không áp dụng mã giảm giá");
             }
-            $check2 = $TUANORI->get_row(" SELECT * FROM `magiamgia` WHERE `magiamgia` = '$mgg'");
+            $check2 = $DMH->get_row(" SELECT * FROM `magiamgia` WHERE `magiamgia` = '$mgg'");
             if(!$check2)
             {
                 msg_error2("Mã giảm giá chưa đúng");
@@ -218,9 +218,9 @@ if(isset($_POST['type']))
                 msg_error2("Mã giảm giá chưa đúng. Hãy kiểm tra lại");
             }
         }
-        if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgia') > 0) {
-            $sotien -=$sotien *$TUANORI->site('ptgiamgia') / 100;
-            $mgg = 'Giảm '.$TUANORI->site('ptgiamgia').'% do sự kiện';
+        if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0) {
+            $sotien -=$sotien *$DMH->site('ptgiamgia') / 100;
+            $mgg = 'Giảm '.$DMH->site('ptgiamgia').'% do sự kiện';
 
         }
         if ($sotien < 0) {
@@ -232,7 +232,7 @@ if(isset($_POST['type']))
         }
         else
         {
-            $create = $TUANORI->insert("lichsumuacode", [
+            $create = $DMH->insert("lichsumuacode", [
                 'username'          => $getUser['username'],
                 'id_code'           => $id,
                 'magiamgia'         => $mgg,
@@ -242,7 +242,7 @@ if(isset($_POST['type']))
             ]);
             if($sotien > 0)
             {
-                $TUANORI->insert("biendongsodu", [
+                $DMH->insert("biendongsodu", [
                     'username'      => $getUser['username'],
                     'truoc'         => $my_money,
                     'sau'           => $my_money - $sotien,
@@ -251,45 +251,45 @@ if(isset($_POST['type']))
                     'time'          => gettime()
                 ]);
                 if($check['partner'] != 'adminori') {
-                    $par = $TUANORI->getUser($check['partner']);
-                    $TUANORI->insert("partner_biendongsodu", [
+                    $par = $DMH->getUser($check['partner']);
+                    $DMH->insert("partner_biendongsodu", [
                         'username'      => $check['partner'],
                         'usermua'       => $getUser['username'],
                         'truoc'         => $par['money'],
-                        'sau'           => $par['money'] + giamgia($sotien, $TUANORI->site('ptpartner')),
+                        'sau'           => $par['money'] + giamgia($sotien, $DMH->site('ptpartner')),
                         'note'          => $getUser['username'].' mua code thành công mã '.$id.' giá '.format_cash($sotien).'đ',
-                        'tongtien'      => giamgia($sotien, $TUANORI->site('ptpartner')),
+                        'tongtien'      => giamgia($sotien, $DMH->site('ptpartner')),
                         'id_code'       => $id, 
                         'time'          => gettime()
                     ]);
-                    $TUANORI->cong("users", "money_partner", giamgia($sotien, $TUANORI->site('ptpartner')), " `username` = '".$check['partner']."'");
+                    $DMH->cong("users", "money_partner", giamgia($sotien, $DMH->site('ptpartner')), " `username` = '".$check['partner']."'");
                 }
 
             }
             
             if($create)
             {
-                $isMoney = $TUANORI->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
+                $isMoney = $DMH->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
                 if($isMoney)
                 {
                     if($mgg)
                     {
-                        $mgg2 = $TUANORI->tru("magiamgia", "conlai", 1, " `magiamgia` = '$mgg'");
-                        $TUANORI->cong("magiamgia", "dasudung", 1, " `magiamgia` = '$mgg'");
+                        $mgg2 = $DMH->tru("magiamgia", "conlai", 1, " `magiamgia` = '$mgg'");
+                        $DMH->cong("magiamgia", "dasudung", 1, " `magiamgia` = '$mgg'");
                         if(!$mgg2)
                         {
                             msg_error2("Lỗi cấu hình CSDL rồi");
                         }
                     }
-                    $TUANORI->cong("danhsachmuacode", "luottai", 1, " `id` = '$id'");
+                    $DMH->cong("danhsachmuacode", "luottai", 1, " `id` = '$id'");
                     // $_SESSION['muacode'] = time() + 15; // 15s mua được 1 lần code
                     
                     if($sotien >= 1)
                     {
                         
-                        $bcc = 'TUANORI.VN';
+                        $bcc = 'dienmayhieu.com';
                         $subject = "Thông báo mua thành công mã nguồn #$id";
-                        $hoten = 'Hoàng Tuấn';
+                        $hoten = 'Điện Máy Hiếu';
                         
                         $noi_dung = '<html xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml">
 
@@ -521,7 +521,7 @@ if(isset($_POST['type']))
                                                                                                                                                                 <tbody>
                                                                                                                                                                     <tr>
                                                                                                                                                                         <td class="paddingcomp" style="border:0px;padding:7px 15px;text-align:center;padding-top:7px;padding-bottom:7px;padding-right:15px;padding-left:50px;">
-                                                                                                                                                                            <img align="left" alt="https://campaign-image.com/zohocampaigns/133052000002837925_zc_v14_1613975809972_logo_bs_2.png" class="zpImage" height="auto" hspace="0" size="O" src="'.$TUANORI->site('logo').'" style="width:150px;height:autopx;max-width:150px !important;border:0px;text-align:left;" vspace="0" width="58">
+                                                                                                                                                                            <img align="left" alt="https://campaign-image.com/zohocampaigns/133052000002837925_zc_v14_1613975809972_logo_bs_2.png" class="zpImage" height="auto" hspace="0" size="O" src="'.$DMH->site('logo').'" style="width:150px;height:autopx;max-width:150px !important;border:0px;text-align:left;" vspace="0" width="58">
                                                                                                                                                                         </td>
                                                                                                                                                                     </tr>
                                                                                                                                                                 </tbody>
@@ -557,7 +557,7 @@ if(isset($_POST['type']))
                                                                                                                                                 <tr>
                                                                                                                                                     <td class="paddingcomp" style="border:0px;padding:7px 15px;line-height:19pt;border-top:0px none ;   border-bottom:0px none ;padding-top:25px;padding-bottom:7px;padding-right:54px;padding-left:50px;">
                                                                                                                                                         <div componentpaddingbottom="7px" componentpaddingleft="50px" componentpaddingright="54px" componentpaddingtop="25px" style>
-                                                                                                                                                            <p align="right" style="font-family:Arial,verdana;font-size:12px; color:#000000;padding:0px;margin: 0;line-height: 19pt; text-align: right;"><b><u><a alt="Mua th&ecirc;m m&atilde; nguồn" href="https://tuanori.com/mua-source-code" rel="noopener noreferrer" style="text-decoration:underline;" target="_blank" title="Mua th&ecirc;m m&atilde; nguồn"><font color="#0001ee" style="color:#0001ee;">Mua th&ecirc;m m&atilde; nguồn</font></a></u></b>
+                                                                                                                                                            <p align="right" style="font-family:Arial,verdana;font-size:12px; color:#000000;padding:0px;margin: 0;line-height: 19pt; text-align: right;"><b><u><a alt="Mua th&ecirc;m m&atilde; nguồn" href="https://dmh.com/mua-source-code" rel="noopener noreferrer" style="text-decoration:underline;" target="_blank" title="Mua th&ecirc;m m&atilde; nguồn"><font color="#0001ee" style="color:#0001ee;">Mua th&ecirc;m m&atilde; nguồn</font></a></u></b>
                                                                                                                                                             </p>
                                                                                                                                                         </div>
                                                                                                                                                     </td>
@@ -691,8 +691,8 @@ if(isset($_POST['type']))
                                                                                                                 <span style="font-size: 12pt; line-height: 23pt;">
                                                                                                                 <font face="Arial, Helvetica" style="line-height: 23pt;">
                                                                                                                 <font color="#696969">Cảm ơn bạn đ&atilde; mua h&agrave;ng tại website </font>
-                                                                                                                <b style><font color="#006cfb"><a alt="TUANORI.VN" href="https://tuanori.com/" rel="noopener noreferrer" style="text-decoration:underline;" target="_blank" title="TUANORI.VN">
-                                                                                                                <font color="#006cfb" style="color:#006cfb;">TUANORI.VN</font></a></font></b>
+                                                                                                                <b style><font color="#006cfb"><a alt="dienmayhieu.com" href="https://dmh.com/" rel="noopener noreferrer" style="text-decoration:underline;" target="_blank" title="dienmayhieu.com">
+                                                                                                                <font color="#006cfb" style="color:#006cfb;">dienmayhieu.com</font></a></font></b>
                                                                                                                
                                                                                                             
                                                                                                                
@@ -948,13 +948,13 @@ if(isset($_POST['type']))
                                                                                                                                                                                                 <tbody>
                                                                                                                                                                                                     <tr>
                                                                                                                                                                                                         <td align="center" name="sclwdgtimges" style="border: none;padding: 0px;margin: 0px;padding-bottom: 6px;" valign="middle">
-                                                                                                                                                                                                            <a href="https://www.facebook.com/Hotro.Tuanori" style="text-decoration:underline;display: block;font-size: 1px;" target="_blank"><img alt="Facebook" height="35" src="https://zohopublic.com/zohocampaigns/1060061000000056006_1_1675537192642_zcsclwgtfb2.png" style="border: 0px; margin: 0px; outline: none; text-decoration: none; width: 25px; height: 25px;" vspace="10" width="35">
+                                                                                                                                                                                                            <a href="https://www.facebook.com/Hotro.DMH" style="text-decoration:underline;display: block;font-size: 1px;" target="_blank"><img alt="Facebook" height="35" src="https://zohopublic.com/zohocampaigns/1060061000000056006_1_1675537192642_zcsclwgtfb2.png" style="border: 0px; margin: 0px; outline: none; text-decoration: none; width: 25px; height: 25px;" vspace="10" width="35">
                                                                                                                                                                                                             </a>
                                                                                                                                                                                                         </td>
                                                                                                                                                                                                     </tr>
                                                                                                                                                                                                     <tr>
                                                                                                                                                                                                         <td align="center" name="sclwdgtcaptns" style="border:none;padding: 0px;margin: 0px;" valign="middle">
-                                                                                                                                                                                                            <a href="https://www.facebook.com/Hotro.Tuanori" style="display: block;font-size: 1px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;" target="_blank">
+                                                                                                                                                                                                            <a href="https://www.facebook.com/Hotro.DMH" style="display: block;font-size: 1px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;" target="_blank">
                                                                                                                                                                                                                 <p fntname="Arial" fntsze="8" style="font-family:Arial,verdana;font-size:12px; color:#000000;padding:0px;margin: 0;line-height: normal; font-family: Arial, Helvetica, sans-serif; color: rgb(27, 107, 189); font-size: 8pt;">Facebook</p>
                                                                                                                                                                                                             </a>
                                                                                                                                                                                                         </td>
@@ -1018,13 +1018,13 @@ if(isset($_POST['type']))
                                                                                                                                                                                                 <tbody>
                                                                                                                                                                                                     <tr>
                                                                                                                                                                                                         <td align="center" name="sclwdgtimges" style="border: none;padding: 0px;margin: 0px;padding-bottom: 6px;" valign="middle">
-                                                                                                                                                                                                            <a href="mailto:cskh@tuanori.vn" style="text-decoration:underline;display: block;font-size: 1px;" target="_blank"><img alt="Email" height="35" src="https://zohopublic.com/zohocampaigns/1060061000000056006_3_1675537192718_zcsclwgtmail2.png" style="border: 0px; margin: 0px; outline: none; text-decoration: none; width: 25px; height: 25px;" vspace="10" width="35">
+                                                                                                                                                                                                            <a href="mailto:cskh@dmh.vn" style="text-decoration:underline;display: block;font-size: 1px;" target="_blank"><img alt="Email" height="35" src="https://zohopublic.com/zohocampaigns/1060061000000056006_3_1675537192718_zcsclwgtmail2.png" style="border: 0px; margin: 0px; outline: none; text-decoration: none; width: 25px; height: 25px;" vspace="10" width="35">
                                                                                                                                                                                                             </a>
                                                                                                                                                                                                         </td>
                                                                                                                                                                                                     </tr>
                                                                                                                                                                                                     <tr>
                                                                                                                                                                                                         <td align="center" name="sclwdgtcaptns" style="border:none;padding: 0px;margin: 0px;" valign="middle">
-                                                                                                                                                                                                            <a href="mailto:cskh@tuanori.vn" style="display: block;font-size: 1px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;" target="_blank">
+                                                                                                                                                                                                            <a href="mailto:cskh@dmh.vn" style="display: block;font-size: 1px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;" target="_blank">
                                                                                                                                                                                                                 <p fntname="Arial" fntsze="8" style="font-family:Arial,verdana;font-size:12px; color:#000000;padding:0px;margin: 0;line-height: normal; font-family: Arial, Helvetica, sans-serif; color: rgb(27, 107, 189); font-size: 8pt;">Email</p>
                                                                                                                                                                                                             </a>
                                                                                                                                                                                                         </td>
@@ -1146,7 +1146,7 @@ if(isset($_POST['type']))
         {
             msg_error2("Tên miền của bạn không dược chứa kí tự lạ");
         }
-        $duoi1 = $TUANORI->get_row(" SELECT * FROM `danhsachmien` WHERE `id` = '$duoi' ");
+        $duoi1 = $DMH->get_row(" SELECT * FROM `danhsachmien` WHERE `id` = '$duoi' ");
         $duoi = $duoi1['domain'];
         $sotien = $duoi1['money'] + ($nam-1)*$duoi1['giahan'];
         if ($sotien < 1)
@@ -1163,12 +1163,12 @@ if(isset($_POST['type']))
             msg_error2("Tối thiểu có 2 nameserver");
         }
         $tenmien = $ten.'.'.$duoi;
-        if($TUANORI->get_row(" SELECT * FROM `lichsumuamien` WHERE `domain` =  '$tenmien' AND `status` = 'xuly'")) {
+        if($DMH->get_row(" SELECT * FROM `lichsumuamien` WHERE `domain` =  '$tenmien' AND `status` = 'xuly'")) {
             msg_error2("Tên miền này đã được mua trên hệ thống");
         }
         $check = json_decode(curl_get('https://whois.inet.vn/api/whois/domainspecify/'.$tenmien), true);
         if($check['code'] == '1') {
-            $create = $TUANORI->insert("lichsumuamien", [
+            $create = $DMH->insert("lichsumuamien", [
                 'username'      => $getUser['username'],
                 'domain'        => $tenmien,
                 'ns'            => $ns,
@@ -1180,7 +1180,7 @@ if(isset($_POST['type']))
                 'type'          => 'LOGIN'
             ]);
             if($create) {
-                $TUANORI->insert("biendongsodu", [
+                $DMH->insert("biendongsodu", [
                     'username'      => $getUser['username'],
                     'truoc'         => $my_money,
                     'sau'           => $my_money - $sotien,
@@ -1188,17 +1188,17 @@ if(isset($_POST['type']))
                     'tongtien'      => $sotien,
                     'time'          => gettime()
                 ]);
-                $isMoney = $TUANORI->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
+                $isMoney = $DMH->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
                 if($isMoney){
-                    $clf = $TUANORI->get_row(" SELECT * FROM `domainclf` WHERE `accountid` IS NOT NULL AND `status` = 'ON' LIMIT 1 ");
-                    $rs = $TUANORI->get_row(" SELECT * FROM `lichsutaoweb` WHERE `tenmien` = '$tenmien' AND `buoc` = 2 AND `username` = '".$getUser['username']."' ORDER BY id DESC LIMIT 1 ") ?? false;
+                    $clf = $DMH->get_row(" SELECT * FROM `domainclf` WHERE `accountid` IS NOT NULL AND `status` = 'ON' LIMIT 1 ");
+                    $rs = $DMH->get_row(" SELECT * FROM `lichsutaoweb` WHERE `tenmien` = '$tenmien' AND `buoc` = 2 AND `username` = '".$getUser['username']."' ORDER BY id DESC LIMIT 1 ") ?? false;
                     if($rs && count($nss) == 2 &&  ( ($nss[0] == $clf['ns1'] && $nss[1] == $clf['ns2']) || ($nss[1] == $clf['ns1'] && $nss[0] == $clf['ns2'])  )  ) {
-                        $TUANORI->update("lichsutaoweb", array(
+                        $DMH->update("lichsutaoweb", array(
                             'buoc'       => 3,
                         ), " `id` = '".$rs['id']."' ");
                         msg_success('Mua miền thành công, chúng tôi đã xác nhận đơn tạo website!', BASE_URL('QuanLy/TrangWeb/'.$rs['id']), 1500);
                     }
-                    // send_tele($getUser['username']." vừa mua tên miền ".$ten.'.'.$duoi.". Admin vui lòng duyệt tại website TUANORI.COM.");
+                    // send_tele($getUser['username']." vừa mua tên miền ".$ten.'.'.$duoi.". Admin vui lòng duyệt tại website dienmayhieu.com.");
                     msg_success('Mua miền thành công! Vui lòng chờ xử lý', BASE_URL('Mua-mien'), 1000);
                 }
             }
@@ -1212,7 +1212,7 @@ if(isset($_POST['type']))
     } 
     if($_POST['type'] == 'DownLoadCodeAdmin') {
         if($getUser['level'] == 'admin') {
-            $row = $TUANORI->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$_POST['id']."' ");
+            $row = $DMH->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$_POST['id']."' ");
             if(!$row) {
                 msg_error2("Mã code này không tồn tại rồi!");
             }
@@ -1229,8 +1229,8 @@ if(isset($_POST['type']))
     {
         if($getUser['level'] == 'admin')
         {
-            $row = $TUANORI->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '".$_POST['id']."' ");
-            $row2 = $TUANORI->get_row(" SELECT * FROM `danhsachmuacode` WHERE `img` = '".$row['img']."' ");
+            $row = $DMH->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '".$_POST['id']."' ");
+            $row2 = $DMH->get_row(" SELECT * FROM `danhsachmuacode` WHERE `img` = '".$row['img']."' ");
             if(!$row)
             {
                 msg_error2("Mã code này không tồn tại rồi!");
@@ -1248,7 +1248,7 @@ if(isset($_POST['type']))
 
     if($_POST['type'] == 'XulyTaoWeb') {
         $id = check_string($_POST['id']);
-        $row = $TUANORI->get_row(" SELECT * FROM `lichsutaoweb` WHERE `id` = '$id' AND `username` = '".$getUser['username']."' AND `buoc` != '6' ");
+        $row = $DMH->get_row(" SELECT * FROM `lichsutaoweb` WHERE `id` = '$id' AND `username` = '".$getUser['username']."' AND `buoc` != '6' ");
         if(!$id) {
             msg_error2("Bạn chưa truyền đủ tham số");
         }
@@ -1271,7 +1271,7 @@ if(isset($_POST['type']))
                     $napthem = $sotien - $my_money;
                     msg_error2("Số tiền bạn không đủ để thực hiện thanh toán (Vui lòng nạp thêm ".format_cash($napthem)."đ vào tài khoản)");
                 } else {
-                    $TUANORI->insert("biendongsodu", [
+                    $DMH->insert("biendongsodu", [
                         'username'      => $getUser['username'],
                         'truoc'         => $my_money,
                         'sau'           => $my_money - $sotien,
@@ -1279,11 +1279,11 @@ if(isset($_POST['type']))
                         'tongtien'      => $sotien,
                         'time'          => gettime()
                     ]);
-                    $isMoney = $TUANORI->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
+                    $isMoney = $DMH->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
                 }
                 if($row['buoc'] != 1) {
                     // chỉ có bước 4 và 5 mới có thể add gia hạn
-                    $TUANORI->insert("lichsugiahan", [
+                    $DMH->insert("lichsugiahan", [
                         'username'  => $getUser['username'],
                         'id_web'    => $id,
                         'tenmien'   => $row['tenmien'],
@@ -1295,14 +1295,14 @@ if(isset($_POST['type']))
                 }
                 if($isMoney)
                 {
-                    // send_tele($getUser['username']." vừa mua tên miền ".$ten.'.'.$duoi.". Admin vui lòng duyệt tại website TUANORI.COM.");
+                    // send_tele($getUser['username']." vừa mua tên miền ".$ten.'.'.$duoi.". Admin vui lòng duyệt tại website dienmayhieu.com.");
                     if($row['buoc'] == 1) {
-                        $TUANORI->cong("lichsutaoweb", "buoc", 1, " `id` = '$id'");
-                        $TUANORI->update("lichsutaoweb", array(
+                        $DMH->cong("lichsutaoweb", "buoc", 1, " `id` = '$id'");
+                        $DMH->update("lichsutaoweb", array(
                             'thangmua'       => $thang,
                         ), " `id` = '".$row['id']."' ");
                     }
-                    // if($row['buoc'] != 1) $TUANORI->cong("lichsutaoweb", "ngayhethan", $timec, " `id` = '$id'");
+                    // if($row['buoc'] != 1) $DMH->cong("lichsutaoweb", "ngayhethan", $timec, " `id` = '$id'");
                     msg_success('Đã thực hiện gia hạn thành công!', '', 1000);
                 }
             } else {
@@ -1310,16 +1310,16 @@ if(isset($_POST['type']))
             }
         // xử lý bước 2
         } else if($row['buoc'] == 2) {
-            $clf = $TUANORI->get_row(" SELECT * FROM `domainclf` WHERE `accountid` IS NOT NULL AND `status` = 'ON' ");
+            $clf = $DMH->get_row(" SELECT * FROM `domainclf` WHERE `accountid` IS NOT NULL AND `status` = 'ON' ");
             $domain = check_string($_POST['tenmien']);
             $tuan = explode('.',$domain);
             if(!check_domain($tuan)) {
                 msg_error2("Tên miền bạn nhập không hợp lệ.");
             }
-            $TUANORI->update("lichsutaoweb", array(
+            $DMH->update("lichsutaoweb", array(
                 'tenmien'       => $domain,
             ), " `id` = '".$row['id']."' ");
-            $data = json_decode(curl_get("https://api.tuanori.vn/domain.php?domain=$domain"), true);
+            $data = json_decode(curl_get("https://api.dmh.vn/domain.php?domain=$domain"), true);
             if($data['true'] == 0){ 
                 msg_error2("Tên miền chưa được đăng ký, không thể xác nhận.");
             }
@@ -1350,7 +1350,7 @@ if(isset($_POST['type']))
                 curl_close($curl);
                 $kq = json_decode($response, true);
                 if($kq['success'] == true){
-                    $TUANORI->update("lichsutaoweb", array(
+                    $DMH->update("lichsutaoweb", array(
                         'tenmien'       => $domain,
                         'domainclf'     => $clf['id'],
                         'tenmien'       => $mien,
@@ -1361,9 +1361,9 @@ if(isset($_POST['type']))
                     ), " `id` = '".$row['id']."' ");
 
                 } else {
-                    $res = $TUANORI->get_row(" SELECT * FROM `lichsutaoweb` WHERE `tenmien` = '$domain' ");
+                    $res = $DMH->get_row(" SELECT * FROM `lichsutaoweb` WHERE `tenmien` = '$domain' ");
                     if($res['domainclf']) {
-                        $TUANORI->update("lichsutaoweb", array(
+                        $DMH->update("lichsutaoweb", array(
                             'tenmien'       => $domain,
                             'domainclf'     => $res['domainclf'],
                             'domainid'      => $res['domainid'],
@@ -1392,7 +1392,7 @@ if(isset($_POST['type']))
                 $data = json_decode($sonuc, true);
                 if(isset($data['result']) && $data['result']['status'] == 'active')
                 {
-                    $TUANORI->update("lichsutaoweb", array(
+                    $DMH->update("lichsutaoweb", array(
                         'tenmien'   => $domain,
                         'statusclf' => 'active',
                         'buoc'      => 3
@@ -1414,7 +1414,7 @@ if(isset($_POST['type']))
         if(!$id || !$thang) {
             msg_error2("Vui lòng chọn thời gian gia hạn");
         }
-        if(!$row = $TUANORI->get_row(" SELECT * FROM `lichsumuamien` WHERE `id` = '$id' AND `username` = '".$getUser['username']."' ")) {
+        if(!$row = $DMH->get_row(" SELECT * FROM `lichsumuamien` WHERE `id` = '$id' AND `username` = '".$getUser['username']."' ")) {
             msg_error2("Dữ liệu tên miền không hợp lệ");
         }
         if($thang < 1 && $thang > 9) {
@@ -1431,13 +1431,13 @@ if(isset($_POST['type']))
             
         }
         $data = explode('.', $row['domain']);
-        $row2 = $TUANORI->get_row(" SELECT * FROM `danhsachmien` WHERE `domain` = '".end($data)."' ");
+        $row2 = $DMH->get_row(" SELECT * FROM `danhsachmien` WHERE `domain` = '".end($data)."' ");
         $sotien = $thang*$row2['giahan'];
         if($my_money < $sotien) {
             $napthem = $sotien - $my_money;
             msg_error2("Số tiền bạn không đủ để thực hiện thanh toán (Vui lòng nạp thêm ".format_cash($napthem)."đ vào tài khoản)");
         }
-        $TUANORI->insert("biendongsodu", [
+        $DMH->insert("biendongsodu", [
             'username'      => $getUser['username'],
             'truoc'         => $my_money,
             'sau'           => $my_money - $sotien,
@@ -1445,7 +1445,7 @@ if(isset($_POST['type']))
             'tongtien'      => $sotien,
             'time'          => gettime()
         ]);
-        $TUANORI->insert("giahanmien", [
+        $DMH->insert("giahanmien", [
             'username'      => $getUser['username'],
             'id_domain'     => $id,
             'tenmien'       => $row['domain'],
@@ -1454,9 +1454,9 @@ if(isset($_POST['type']))
             'status'        => 'xuly',
             'time'          => gettime()
         ]);
-        $isMoney = $TUANORI->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
+        $isMoney = $DMH->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
         if($isMoney){
-            // send_tele($getUser['username']." vừa gia hạn tên miền ".$row['domain']." thêm $thang năm. Admin vui lòng duyệt tại website TUANORI.COM.");
+            // send_tele($getUser['username']." vừa gia hạn tên miền ".$row['domain']." thêm $thang năm. Admin vui lòng duyệt tại website dienmayhieu.com.");
             msg_success("Bạn đã gia hạn thành công thêm $thang năm", "", 1000);
         }
     }

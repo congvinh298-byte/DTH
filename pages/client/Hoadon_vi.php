@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -11,7 +11,7 @@ CheckLogin();
 <?php
 if(isset($_GET['magd'])) {
     $magd = check_string($_GET['magd']);
-    $row = $TUANORI->get_row(" SELECT * FROM `hoadon_vi` WHERE `magd` = '".check_string($_GET['magd'])."' AND `username` = '".$getUser['username']."' ");
+    $row = $DMH->get_row(" SELECT * FROM `hoadon_vi` WHERE `magd` = '".check_string($_GET['magd'])."' AND `username` = '".$getUser['username']."' ");
     if(!$row)
     {
         msg_error("Dữ liệu tạo này không hợp lệ", BASE_URL('Nap/Vi'), 500);
@@ -144,6 +144,6 @@ if(isset($_GET['magd'])) {
 </div>
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

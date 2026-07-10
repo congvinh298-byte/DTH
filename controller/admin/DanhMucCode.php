@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -22,7 +22,7 @@
                 /*XỬ LÝ THÊM DANH MỤC*/
                 if($_POST['type2'] == 'AddDanhmuccode')
                 {
-                    $create = $TUANORI->insert("danhmucmuacode", [
+                    $create = $DMH->insert("danhmucmuacode", [
                         'title'       => $name,
                         'mota'        => $mota,
                         'img'         => $img
@@ -39,7 +39,7 @@
                     if(!$status) {
                         msg("error","Vui lòng chọn status");
                     }
-                    $TUANORI->update("danhmucmuacode", array(
+                    $DMH->update("danhmucmuacode", array(
                         'title'        => $name,
                         'mota'         => $mota,
                         'img'          => $img,
@@ -81,7 +81,7 @@
                 /*XỬ LÝ ĐĂNG BÁN MÃ NGUỒN*/
 
             if($_POST['type2'] == 'AddThemCode') {
-                $create = $TUANORI->insert("danhsachmuacode", [
+                $create = $DMH->insert("danhsachmuacode", [
                     'id_danhmuc'        => $id_danhmuc,
                     'title'             => $name,
                     'mota'              => $mota,
@@ -106,7 +106,7 @@
             if($_POST['type2'] == 'EditThemCode')
             {
                 // msg("error","Thêm dữ liệu lỗi");
-                $TUANORI->update("danhsachmuacode", array(
+                $DMH->update("danhsachmuacode", array(
                     'id_danhmuc'        => $id_danhmuc,
                     'title'             => $name,
                     'mota'              => $mota,

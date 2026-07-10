@@ -10,11 +10,11 @@ CheckAdmin();
 <?php
 if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `magiamgia` WHERE `id` = '".$_GET['xoa']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `magiamgia` WHERE `id` = '".$_GET['xoa']."'");
     if(!$user2) {
         echo msg_admin("error", "Mã giảm giá này không tồn tại", BASE_URL('Admin/Magiamgia'), 1000);
     } else {
-        $dele = $TUANORI->remove("magiamgia", " `id` = '".$_GET['xoa']."' ");
+        $dele = $DMH->remove("magiamgia", " `id` = '".$_GET['xoa']."' ");
         if($dele) {
             echo msg_admin("success","Đã xóa mã giảm giá thành công", BASE_URL('Admin/Magiamgia'), 1000);
         } else {
@@ -139,7 +139,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
             <th>Thao tác</th>
 		</tr>
 	</thead>
-	<?php $i = 1;  foreach($TUANORI->get_list(" SELECT * FROM `magiamgia` ORDER BY id DESC") as $row){ ?>
+	<?php $i = 1;  foreach($DMH->get_list(" SELECT * FROM `magiamgia` ORDER BY id DESC") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
             <td><b style="color: green"><?=$row['magiamgia'];?></b></td>
@@ -166,7 +166,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

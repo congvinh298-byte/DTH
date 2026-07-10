@@ -9,7 +9,7 @@ CheckAdmin();
 ?>
 <?php
 if(isset($_GET['id']) && $getUser['level'] == 'admin') {
-    $row = $TUANORI->get_row(" SELECT * FROM `partner_ruttien` WHERE `id` = '".$_GET['id']."'");
+    $row = $DMH->get_row(" SELECT * FROM `partner_ruttien` WHERE `id` = '".$_GET['id']."'");
     if(!$row) {
         echo msg_admin("error", "Đơn rút tiền không tồn tại", BASE_URL('Admin/Par_ruttien'), 1000); die;
     }
@@ -67,9 +67,9 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin') {
                         <label class="col-sm-3 control-label">MÃ QR CODE</label>
                         <div class="col-sm-5">
                             <?php if($row['atm'] == 'MOMO') { ?>
-                                <img src="https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=2|99|<?=$row['stk'];?>|||0|0|<?=$row['sotien'];?>|TUANORI THANH TOAN|transfer_myqr" width="400px">
+                                <img src="https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=2|99|<?=$row['stk'];?>|||0|0|<?=$row['sotien'];?>|DMH THANH TOAN|transfer_myqr" width="400px">
                             <?php } else { ?>
-                                <img src="https://api.vietqr.io/<?=$row['atm'];?>/<?=$row['stk'];?>/<?=$row['sotien'];?>/TUANORI THANH TOAN/vietqr_net_2.jpg?accountName=<?=$row['name'];?>" width="400px">
+                                <img src="https://api.vietqr.io/<?=$row['atm'];?>/<?=$row['stk'];?>/<?=$row['sotien'];?>/DMH THANH TOAN/vietqr_net_2.jpg?accountName=<?=$row['name'];?>" width="400px">
                             <?php } ?>
                         </div>
                     </div>
@@ -151,7 +151,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin') {
             <th>Thao tác</th>
 		</tr>
 	</thead>
-	<?php $i = 1;  foreach($TUANORI->get_list(" SELECT * FROM `partner_ruttien` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC") as $row){ ?>
+	<?php $i = 1;  foreach($DMH->get_list(" SELECT * FROM `partner_ruttien` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
             <td><b style="color: green"><?=$row['atm'];?></b></td>
@@ -172,7 +172,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin') {
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

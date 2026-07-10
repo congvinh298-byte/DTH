@@ -1,6 +1,6 @@
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -12,10 +12,10 @@ require_once("../../pages/client/Header.php");
   
 <?php
 $id = check_string($_GET['id']);
-$check = $TUANORI->get_row(" SELECT * FROM `danhmuctaoweb` WHERE `id` = '$id' ");
+$check = $DMH->get_row(" SELECT * FROM `danhmuctaoweb` WHERE `id` = '$id' ");
 if(!$check)
 {
-    /*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+    
     msg_error('Link bạn truy cập không đúng hoặc đã bị xóa', BASE_URL(''), 3000);
 }
 ?>
@@ -57,7 +57,7 @@ if(!$check)
                                 </div>
                             </div>
                             <div class="ant-row css-eq3tly" style="margin-left: -9px; margin-right: -9px;">
-                                <?php foreach($TUANORI->get_list(" SELECT * FROM `danhsachtaoweb` WHERE `id_danhmuc` = '$id' AND `hienthi` = 'SHOW' ORDER BY id DESC") as $row){ ?>
+                                <?php foreach($DMH->get_list(" SELECT * FROM `danhsachtaoweb` WHERE `id_danhmuc` = '$id' AND `hienthi` = 'SHOW' ORDER BY id DESC") as $row){ ?>
                                     <div class="ant-col ant-col-xs-24 ant-col-md-8 ant-col-lg-6 mb-2 mt-2 cursor-pointer css-eq3tly" style="padding-left: 9px; padding-right: 9px;">
                                         <div class="ant-ribbon-wrapper css-eq3tly">
                                             <div class="ant-ribbon-wrapper css-eq3tly">
@@ -91,9 +91,9 @@ if(!$check)
                                                         <div class="text-center grid grid-cols-2 gap-3">
                                                             <div class="col-span-2">
                                                                 <div class="border border-red-500 rounded-lg p-1 font-bold"><i class="fa-solid fa-wallet"></i> 
-                                                                    <?php if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgiaweb') > 0 && $row['money'] > 0) { ?>
+                                                                    <?php if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgiaweb') > 0 && $row['money'] > 0) { ?>
                                                                         <del style="color: red"><?=sotienmua($row['money']);?></del> - 
-                                                                        <span class="text-green-600"><?=sotienmua($row['money'] - ($row['money']*$TUANORI->site('ptgiamgiaweb')/100));?></span>
+                                                                        <span class="text-green-600"><?=sotienmua($row['money'] - ($row['money']*$DMH->site('ptgiamgiaweb')/100));?></span>
                                                                     <?php } else { ?>
                                                                         <span class="text-green-600"><?=sotienmua($row['money']);?></span>
                                                                     <?php } ?>
@@ -114,8 +114,8 @@ if(!$check)
                                                    <div class="ant-ribbon-corner"></div>
                                                 </div>
                                             </div>
-                                            <?php if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgiaweb') > 0 && $row['money'] > 0) { ?>
-                                            <div class="ant-ribbon ant-ribbon-placement-start ant-ribbon-color-red css-eq3tly"><span class="ant-ribbon-text">-<?=$TUANORI->site('ptgiamgiaweb');?>%</span>
+                                            <?php if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgiaweb') > 0 && $row['money'] > 0) { ?>
+                                            <div class="ant-ribbon ant-ribbon-placement-start ant-ribbon-color-red css-eq3tly"><span class="ant-ribbon-text">-<?=$DMH->site('ptgiamgiaweb');?>%</span>
                                                 <div class="ant-ribbon-corner"></div>
                                             </div>
                                             <?php } ?>
@@ -135,6 +135,6 @@ if(!$check)
 </div>
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

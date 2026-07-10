@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -7,12 +7,12 @@ $title = "Quản Lý Tạo Website";
 require_once("../../pages/client/Head.php");
 require_once("../../pages/client/Header.php");
 CheckLogin();
-$rowV2 = $TUANORI->get_row(" SELECT * FROM `domainclf` WHERE `accountid` IS NOT NULL AND `status` = 'ON' ");
+$rowV2 = $DMH->get_row(" SELECT * FROM `domainclf` WHERE `accountid` IS NOT NULL AND `status` = 'ON' ");
 ?>
 <?php
 if(isset($_GET['id'])) {
     $id = check_string($_GET['id']);
-    $row = $TUANORI->get_row(" SELECT * FROM `lichsutaoweb` WHERE `id` = '".check_string($_GET['id'])."' AND `username` = '".$getUser['username']."' ");
+    $row = $DMH->get_row(" SELECT * FROM `lichsutaoweb` WHERE `id` = '".check_string($_GET['id'])."' AND `username` = '".$getUser['username']."' ");
     if(!$row) {
         msg_error("Dữ liệu tạo trang web này không hợp lệ", BASE_URL('History-tao-web'), 500);
     }
@@ -291,7 +291,7 @@ if(isset($_GET['id'])) {
                                                                 </tr>
                                                             </thead>
                                                             <tbody class="ant-table-tbody">
-                                                                <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `lichsugiahan` WHERE `id_web` = '$id' ORDER BY id DESC LIMIT 30") as $row){ ?>
+                                                                <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `lichsugiahan` WHERE `id_web` = '$id' ORDER BY id DESC LIMIT 30") as $row){ ?>
                                                                     <tr class="ant-table-row ant-table-row-level-0">
                                                                         <td class="ant-table-cell"><?=++$i;?></td>
                                                                         <td class="ant-table-cell"><a href="//<?=$row['tenmien'];?>" target="_blank" style="color: green"><?=$row['tenmien'];?></a></td>
@@ -336,6 +336,6 @@ if(isset($_GET['id'])) {
 </div>
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

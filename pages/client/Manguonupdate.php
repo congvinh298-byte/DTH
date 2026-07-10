@@ -1,6 +1,6 @@
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -45,7 +45,7 @@ require_once("../../pages/client/Header.php");
                                 </div>
                             </div>
                             <div class="ant-row css-eq3tly" style="margin-left: -9px; margin-right: -9px;">
-                                <?php foreach($TUANORI->get_list(" SELECT * FROM `danhsachmuacode` WHERE YEAR(timeupdate) = ".date('Y')." AND MONTH(timeupdate) = ".date('m')." ORDER BY timeupdate DESC") as $row){ ?>
+                                <?php foreach($DMH->get_list(" SELECT * FROM `danhsachmuacode` WHERE YEAR(timeupdate) = ".date('Y')." AND MONTH(timeupdate) = ".date('m')." ORDER BY timeupdate DESC") as $row){ ?>
                                     <div class="ant-col ant-col-xs-24 ant-col-md-8 ant-col-lg-6 mb-2 mt-2 cursor-pointer css-eq3tly" style="padding-left: 9px; padding-right: 9px;">
                                         <div class="ant-ribbon-wrapper css-eq3tly">
                                             <div class="ant-ribbon-wrapper css-eq3tly">
@@ -78,9 +78,9 @@ require_once("../../pages/client/Header.php");
                                                         <div class="text-center grid grid-cols-2 gap-3">
                                                             <div class="col-span-2">
                                                                 <div class="border border-red-500 rounded-lg p-1 font-bold"><i class="fa-solid fa-wallet"></i>
-                                                                    <?php if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgia') > 0 && $row['money'] > 0) { ?>
+                                                                    <?php if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0 && $row['money'] > 0) { ?>
                                                                         <del style="color: red"><?=sotienmua($row['money']);?></del> - 
-                                                                        <span class="text-green-600"><?=sotienmua($row['money'] - ($row['money']*$TUANORI->site('ptgiamgia')/100));?></span>
+                                                                        <span class="text-green-600"><?=sotienmua($row['money'] - ($row['money']*$DMH->site('ptgiamgia')/100));?></span>
                                                                     <?php } else { ?>
                                                                         <span class="text-green-600"><?=sotienmua($row['money']);?></span>
                                                                     <?php } ?>
@@ -89,7 +89,7 @@ require_once("../../pages/client/Header.php");
                                                             <?php 
                                                             $truedz = false;
                                                             if(isset($_COOKIE['token'])) {
-                                                                if($TUANORI->get_row(" SELECT * FROM `giohang` WHERE `id_code` = '".$row['id']."' AND `username` = '".$getUser['username']."' ") ) {
+                                                                if($DMH->get_row(" SELECT * FROM `giohang` WHERE `id_code` = '".$row['id']."' AND `username` = '".$getUser['username']."' ") ) {
                                                                     $truedz = true;
                                                                 }
                                                             }
@@ -110,8 +110,8 @@ require_once("../../pages/client/Header.php");
                                                    <div class="ant-ribbon-corner"></div>
                                                 </div>
                                             </div>
-                                            <?php if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgia') > 0 && $row['money'] > 0) { ?>
-                                            <div class="ant-ribbon ant-ribbon-placement-start ant-ribbon-color-red css-eq3tly"><span class="ant-ribbon-text">-<?=$TUANORI->site('ptgiamgia');?>%</span>
+                                            <?php if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0 && $row['money'] > 0) { ?>
+                                            <div class="ant-ribbon ant-ribbon-placement-start ant-ribbon-color-red css-eq3tly"><span class="ant-ribbon-text">-<?=$DMH->site('ptgiamgia');?>%</span>
                                                 <div class="ant-ribbon-corner"></div>
                                             </div>
                                             <?php } ?>
@@ -131,6 +131,6 @@ require_once("../../pages/client/Header.php");
 </div>
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

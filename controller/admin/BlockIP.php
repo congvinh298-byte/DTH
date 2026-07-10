@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -12,24 +12,24 @@
         if(!$user) {
             msg("error", "Vui lòng nhập đầy đủ thông tin để tiếp tục"); 
         }
-        $check = $TUANORI->get_row(" SELECT * FROM `users` WHERE `ip` = '$user' or `username` = '$user'");
+        $check = $DMH->get_row(" SELECT * FROM `users` WHERE `ip` = '$user' or `username` = '$user'");
         if(!$check) {
             msg("error", "Tên người dùng này không tồn tại");
         }
-        $check2 = $TUANORI->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".$check['ip']."' ");
+        $check2 = $DMH->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".$check['ip']."' ");
         if($check2) {
             msg("error", "Tài khoản này đã bị blockIP từ trước rồi");
         } else {
-            $is = $TUANORI->num_rows("SELECT * FROM `users` WHERE `ip` = '".$check['ip']."' ");
-            $update =  $TUANORI->update("users", array(
+            $is = $DMH->num_rows("SELECT * FROM `users` WHERE `ip` = '".$check['ip']."' ");
+            $update =  $DMH->update("users", array(
                     'banned'        => 'OFF',
                     'online'        => 'OFFLINE'
                 ), " `ip` = '".$check['ip']."' ");
-            $update2 =  $TUANORI->update("users", array(
+            $update2 =  $DMH->update("users", array(
                     'banned'        => 'OFF',
                     'online'        => 'OFFLINE'
                 ), " `ip` = '".$check['ip']."' ");
-            $create = $TUANORI->insert("blockip", [
+            $create = $DMH->insert("blockip", [
                 'ip'            => $check['ip'],
                 'time'          => gettime()
             ]);

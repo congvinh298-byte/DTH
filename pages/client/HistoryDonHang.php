@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -10,7 +10,7 @@ CheckLogin();
 if(isset($_GET['magd']))
 {
     $magd = check_string($_GET['magd']);
-    $row2 = $TUANORI->get_row(" SELECT * FROM `lichsumuacode` WHERE `magd` = '".check_string($_GET['magd'])."' AND `username` = '".$getUser['username']."' ");
+    $row2 = $DMH->get_row(" SELECT * FROM `lichsumuacode` WHERE `magd` = '".check_string($_GET['magd'])."' AND `username` = '".$getUser['username']."' ");
     if(!$row2)
     {
         msg_error("Dữ liệu đơn hàng này không hợp lệ", BASE_URL('History-mua-code'), 500);
@@ -71,8 +71,8 @@ else
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody class="ant-table-tbody">
-                                                                    <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `lichsumuacode2` WHERE `username` = '".$getUser['username']."' AND `magd` = '".check_string($_GET['magd'])."' ORDER BY id DESC") as $row){ ?>
-                                                                        <?php $code = $TUANORI->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$row['id_code']."' AND `hienthi` = 'SHOW'"); ?>
+                                                                    <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `lichsumuacode2` WHERE `username` = '".$getUser['username']."' AND `magd` = '".check_string($_GET['magd'])."' ORDER BY id DESC") as $row){ ?>
+                                                                        <?php $code = $DMH->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$row['id_code']."' AND `hienthi` = 'SHOW'"); ?>
                                                                         <tr class="ant-table-row ant-table-row-level-0">
                                                                             <td class="ant-table-cell"><?=++$i;?></td>
                                                                             <td class="ant-table-cell"><a target="_bank" href="/mua-code/<?=$row['id_code'];?>">
@@ -81,7 +81,7 @@ else
                                                                             </td>
                                                                             <td class="ant-table-cell"><?=sotienmua($row['tongtien']);?></td>
                                                                             <td class="ant-table-cell"><?=$row['thoigian'];?></td>
-                                                                            <?php $code = $TUANORI->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$row['id_code']."' AND `hienthi` = 'SHOW'"); ?>
+                                                                            <?php $code = $DMH->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$row['id_code']."' AND `hienthi` = 'SHOW'"); ?>
                                                                             <td class="ant-table-cell">
                                                                                 <a target="_blank" href="<?=$code['download'];?>">
                                                                                     <span class="badge bg-warning rounded-lg" style="background-color: #33FF33"><i class="fa-solid fa-download"></i> Tải xuống</span></a>
@@ -168,6 +168,6 @@ else
 </div>
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

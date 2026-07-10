@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -41,7 +41,7 @@ if(isset($_GET['z'])) {
                             <div class="flex-1">
                                 <div class="max-w-[180px]">
                                     <h4 class="mb-2 text-2xl font-medium text-[#27374D]"><span class="block text-sm">Chưa hoạt động,</span>
-                                    <span class="block"><?=number_format($TUANORI->num_rows(" SELECT * FROM `lichsutaoweb` WHERE`username` = '".$getUser['username']."' AND `buoc` IN (1,2,3) "));?></span></h4>
+                                    <span class="block"><?=number_format($DMH->num_rows(" SELECT * FROM `lichsutaoweb` WHERE`username` = '".$getUser['username']."' AND `buoc` IN (1,2,3) "));?></span></h4>
                                 </div>
                             </div>
                             <div class="flex-none"><a href="/History-tao-web?z=1" class="btn-light btn-sm btn bg-white">Kiểm tra</a>
@@ -51,7 +51,7 @@ if(isset($_GET['z'])) {
                             <div class="flex-1">
                                 <div class="max-w-[180px]">
                                     <h4 class="mb-2 text-2xl font-medium text-[#27374D]"><span class="block text-sm">Đang hoạt động,</span>
-                                    <span class="block"><?=number_format($TUANORI->num_rows(" SELECT * FROM `lichsutaoweb` WHERE`username` = '".$getUser['username']."' AND `buoc` IN (4,5)"));?></span></h4>
+                                    <span class="block"><?=number_format($DMH->num_rows(" SELECT * FROM `lichsutaoweb` WHERE`username` = '".$getUser['username']."' AND `buoc` IN (4,5)"));?></span></h4>
                                 </div>
                             </div>
                             <div class="flex-none"><a href="/History-tao-web?z=2" class="btn-light btn-sm btn bg-white">Kiểm tra</a>
@@ -61,7 +61,7 @@ if(isset($_GET['z'])) {
                             <div class="flex-1">
                                 <div class="max-w-[180px]">
                                     <h4 class="mb-2 text-2xl font-medium text-white"><span class="block text-sm"> Đã hết hạn </span>
-                                    <span class="block"><?=number_format($TUANORI->num_rows(" SELECT * FROM `lichsutaoweb` WHERE`username` = '".$getUser['username']."' AND `buoc` = '6'"));?> </span></h4>
+                                    <span class="block"><?=number_format($DMH->num_rows(" SELECT * FROM `lichsutaoweb` WHERE`username` = '".$getUser['username']."' AND `buoc` = '6'"));?> </span></h4>
                                 </div>
                             </div>
                             <div class="flex-none"><a href="/History-tao-web?z=3" class="btn-light btn-sm btn bg-white">Kiểm tra</a>
@@ -71,7 +71,7 @@ if(isset($_GET['z'])) {
                             <div class="flex-1">
                                 <div class="max-w-[180px]">
                                     <h4 class="mb-2 text-2xl font-medium text-white"><span class="block text-sm"> Cần gia hạn, </span>
-                                    <span class="block"><?=number_format($TUANORI->num_rows(" SELECT * FROM `lichsutaoweb` WHERE`username` = '".$getUser['username']."' AND `buoc` = '5'"));?></span></h4>
+                                    <span class="block"><?=number_format($DMH->num_rows(" SELECT * FROM `lichsutaoweb` WHERE`username` = '".$getUser['username']."' AND `buoc` = '5'"));?></span></h4>
                                 </div>
                             </div>
                             <div class="flex-none"><a href="/History-tao-web?z=4" class="btn-light btn-sm btn bg-white">Kiểm tra</a>
@@ -124,7 +124,7 @@ if(isset($_GET['z'])) {
                                                                 </tr>
                                                             </thead>
                                                             <tbody class="ant-table-tbody">
-                                                                <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `lichsutaoweb` WHERE `username` = '".$getUser['username']."' $check ORDER BY id DESC") as $row){ ?>
+                                                                <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `lichsutaoweb` WHERE `username` = '".$getUser['username']."' $check ORDER BY id DESC") as $row){ ?>
                                                                     <tr class="ant-table-row ant-table-row-level-0">
                                                                         <td class="ant-table-cell"><?=++$i;?></td>
                                                                         <td class="ant-table-cell"><a target="_bank" href="/mua-code/<?=$row['id_code'];?>" style="color: red"><?=$row['id_code'];?></a></td>
@@ -184,6 +184,6 @@ if(isset($_GET['z'])) {
 </div>
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

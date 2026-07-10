@@ -1,11 +1,11 @@
 <?php
 define("IN_SITE", true);
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 if(isset($_POST['type']) && $_POST['type'] == 'ChangeAPI')
 {
-    if($TUANORI->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."'  ")) {
+    if($DMH->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."'  ")) {
         msg_error2('Bạn đã bị chặn sử dụng tính năng của chúng tôi vĩnh viễn. Xin cảm ơn');
     }
     if(empty($_COOKIE['token'])) {
@@ -13,7 +13,7 @@ if(isset($_POST['type']) && $_POST['type'] == 'ChangeAPI')
     }
     // XỬ LÝ EDIT API
     
-    $update = $TUANORI->update("users", array(
+    $update = $DMH->update("users", array(
         'token_api'         => strtoupper(randomtoken2())
     ), " `username` = '".$getUser['username']."' ");
     if($update) {

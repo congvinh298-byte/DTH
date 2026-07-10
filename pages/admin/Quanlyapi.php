@@ -12,13 +12,13 @@ if(isset($_GET['dele']) || isset($_GET['on']) || isset($_GET['off']))
 {
     if($getUser['level'] == 'admin')
     {
-        $user2 = $TUANORI->get_row(" SELECT * FROM `key_apis` WHERE `id` = '".$_GET['id']."'");
+        $user2 = $DMH->get_row(" SELECT * FROM `key_apis` WHERE `id` = '".$_GET['id']."'");
         if(!$user2)
         {
             echo msg_admin("error","Token API này không chính xác", BASE_URL('Admin/Quanlyapi'), 1000);
         } else {
             if(isset($_GET['dele'])) {
-                $dele = $TUANORI->remove("key_apis", " `id` = '".$_GET['id']."' ");
+                $dele = $DMH->remove("key_apis", " `id` = '".$_GET['id']."' ");
                 if($dele) {
                     echo msg_admin("success","Đã xóa API thành công", BASE_URL('Admin/Quanlyapi'), 1000);
                 } else {
@@ -31,7 +31,7 @@ if(isset($_GET['dele']) || isset($_GET['on']) || isset($_GET['off']))
                 } else {
                     $giatri = 'OFF';
                 }
-                $update = $TUANORI->update("key_apis", array(
+                $update = $DMH->update("key_apis", array(
                     'whois'         => $giatri,
                     'list_code'     => $giatri,
                     'buy_code'      => $giatri,
@@ -127,10 +127,10 @@ if(isset($_GET['dele']) || isset($_GET['on']) || isset($_GET['off']))
             <th>Thao tác</th>
 		</tr>
 	</thead>
-	<?php $i = 1;  foreach($TUANORI->get_list(" SELECT * FROM `key_apis` ORDER BY id DESC LIMIT 200") as $row){ ?>
+	<?php $i = 1;  foreach($DMH->get_list(" SELECT * FROM `key_apis` ORDER BY id DESC LIMIT 200") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
-            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
+            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
             <td><?=on_off($row['whois']);?></td>
             <td><?=on_off($row['list_code']);?></td>
             <td><?=on_off($row['buy_code']);?></td>
@@ -160,7 +160,7 @@ if(isset($_GET['dele']) || isset($_GET['on']) || isset($_GET['off']))
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

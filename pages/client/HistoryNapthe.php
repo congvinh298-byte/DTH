@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -22,7 +22,7 @@ CheckLogin();
                             <div class="flex-1">
                                 <div class="max-w-[180px]">
                                     <h4 class="mb-2 text-2xl font-medium text-[#27374D]"><span class="block text-sm">Số tiền đã nạp,</span><span class="block">
-                                        <?=number_format($TUANORI->get_row("SELECT SUM(`menhgia`) FROM `napcard` WHERE `status` = 'thanhcong'  AND `username` = '".$getUser['username']."'  ")['SUM(`menhgia`)']);?>
+                                        <?=number_format($DMH->get_row("SELECT SUM(`menhgia`) FROM `napcard` WHERE `status` = 'thanhcong'  AND `username` = '".$getUser['username']."'  ")['SUM(`menhgia`)']);?>
                                      ₫</span></h4>
                                 </div>
                             </div>
@@ -33,7 +33,7 @@ CheckLogin();
                             <div class="flex-1">
                                 <div class="max-w-[180px]">
                                     <h4 class="mb-2 text-2xl font-medium text-white"><span class="block text-sm"> Số Tiền thực nhận, </span><span class="block">
-                                        <?=number_format($TUANORI->get_row("SELECT SUM(`thucnhan`) FROM `napcard` WHERE `status` = 'thanhcong'  AND `username` = '".$getUser['username']."'  ")['SUM(`thucnhan`)']);?>
+                                        <?=number_format($DMH->get_row("SELECT SUM(`thucnhan`) FROM `napcard` WHERE `status` = 'thanhcong'  AND `username` = '".$getUser['username']."'  ")['SUM(`thucnhan`)']);?>
                                     ₫</span></h4>
                                 </div>
                             </div>
@@ -44,7 +44,7 @@ CheckLogin();
                             <div class="flex-1">
                                 <div class="max-w-[180px]">
                                     <h4 class="mb-2 text-2xl font-medium text-white"><span class="block text-sm"> Tổng thẻ đúng, </span><span class="block">
-                                        <?=number_format($TUANORI->num_rows(" SELECT * FROM `napcard` WHERE`username` = '".$getUser['username']."' AND `status` = 'thanhcong'"));?>
+                                        <?=number_format($DMH->num_rows(" SELECT * FROM `napcard` WHERE`username` = '".$getUser['username']."' AND `status` = 'thanhcong'"));?>
                                     </span></h4>
                                 </div>
                             </div>
@@ -54,7 +54,7 @@ CheckLogin();
                         <div class="relative flex items-center rounded-[6px] bg-cover bg-center bg-no-repeat px-5 py-8" style="background-image: url(&quot;https://lychuotbach.vn/images/all-img/widget-bg-4.png&quot;);">
                             <div class="flex-1">
                                 <div class="max-w-[180px]">
-                                    <h4 class="mb-2 text-2xl font-medium text-white"><span class="block text-sm"> Nạp Tháng <?=date('m/Y');?>, </span><span class="block"><?=number_format($TUANORI->get_row("SELECT SUM(`thucnhan`) FROM `napcard` WHERE YEAR(thoigian) = ".date('Y')." AND MONTH(thoigian) = ".date('m')." AND  `status` = 'thanhcong'  AND `username` = '".$getUser['username']."'  ")['SUM(`thucnhan`)']);?> ₫</span></h4>
+                                    <h4 class="mb-2 text-2xl font-medium text-white"><span class="block text-sm"> Nạp Tháng <?=date('m/Y');?>, </span><span class="block"><?=number_format($DMH->get_row("SELECT SUM(`thucnhan`) FROM `napcard` WHERE YEAR(thoigian) = ".date('Y')." AND MONTH(thoigian) = ".date('m')." AND  `status` = 'thanhcong'  AND `username` = '".$getUser['username']."'  ")['SUM(`thucnhan`)']);?> ₫</span></h4>
                                 </div>
                             </div>
                             <div class="flex-none"><a href="/Nap-Tien" class="btn-light btn-sm btn bg-white">NẠP THÊM</a>
@@ -108,7 +108,7 @@ CheckLogin();
                                                                 </tr>
                                                             </thead>
                                                             <tbody class="ant-table-tbody">
-                                                                <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `napcard` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC LIMIT 30") as $row){ ?>
+                                                                <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `napcard` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC LIMIT 30") as $row){ ?>
                                                                     <tr class="ant-table-row ant-table-row-level-0">
                                                                         <td class="ant-table-cell"><?=++$i;?></td>
                                                                         <td class="ant-table-cell"><?=$row['seri'];?></td>
@@ -152,6 +152,6 @@ CheckLogin();
 </div>
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

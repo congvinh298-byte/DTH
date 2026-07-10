@@ -1,6 +1,6 @@
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -8,7 +8,7 @@ $title = "KẾT NỐI API";
 require_once("../../pages/client/Head.php");
 require_once("../../pages/client/Header.php");
 CheckLogin();
-$row = $TUANORI->get_row(" SELECT * FROM `key_apis` WHERE `username` = '".$getUser['username']."' ");
+$row = $DMH->get_row(" SELECT * FROM `key_apis` WHERE `username` = '".$getUser['username']."' ");
 ?>
 
 <div class="content-wrapper transition-all duration-150 ltr:ml-0 rtl:mr-0 xl:ltr:ml-[248px] xl:rtl:mr-[248px]" id="content_wrapper">
@@ -158,6 +158,6 @@ $row = $TUANORI->get_row(" SELECT * FROM `key_apis` WHERE `username` = '".$getUs
 </div>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

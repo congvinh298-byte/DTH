@@ -10,13 +10,13 @@ CheckAdmin();
 <?php
 if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `users` WHERE `id` = '".$_GET['xoa']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `users` WHERE `id` = '".$_GET['xoa']."'");
     if(!$user2) {
         echo msg_admin("error","Tài khoản này không tồn tại trong hệ thống", BASE_URL('Admin/Quanlythanhvien'), 2000); die;
     }
     else
     {
-        $dele = $TUANORI->remove("users", " `id` = '".$_GET['xoa']."' ");
+        $dele = $DMH->remove("users", " `id` = '".$_GET['xoa']."' ");
 		$dele = true;
         if($dele) {
 			echo msg_admin("success","Đã xóa tài khoản thành công", BASE_URL('Admin/Quanlythanhvien'), 2000);
@@ -29,17 +29,17 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 }
 if(isset($_GET['khoa']) && $getUser['level'] == 'admin')
 {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `users` WHERE `id` = '".$_GET['khoa']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `users` WHERE `id` = '".$_GET['khoa']."'");
     if(!$user2) {
         echo msg_admin("error", "Tài khoản này không tồn tại trong hệ thống", BASE_URL('Admin/Quanlythanhvien'), 2000);
     } else {
-        $is = $TUANORI->num_rows("SELECT * FROM `users` WHERE `ip` = '".$user2['ip']."' ");
-        $update =  $TUANORI->update("users", array(
+        $is = $DMH->num_rows("SELECT * FROM `users` WHERE `ip` = '".$user2['ip']."' ");
+        $update =  $DMH->update("users", array(
                 'banned'        => 'OFF',
                 'online'        => 'OFFLINE'
             ), " `ip` = '".$user2['ip']."' ");
      
-        $create = $TUANORI->insert("blockip", [
+        $create = $DMH->insert("blockip", [
             'ip'            => $user2['ip'],
             'time'          => gettime()
         ]);
@@ -146,7 +146,7 @@ if(isset($_POST['Search']) && $getUser['level'] == 'admin') {
 		</tr>
 	</thead>
 	<tbody>
-		<?php $i = 0;  foreach($TUANORI->get_list(" SELECT * FROM `users` WHERE `banned` = 'ON' $tim ORDER BY id DESC LIMIT 50") as $row){ ?>
+		<?php $i = 0;  foreach($DMH->get_list(" SELECT * FROM `users` WHERE `banned` = 'ON' $tim ORDER BY id DESC LIMIT 50") as $row){ ?>
 		<tr>
 			<td><?=$i++;?></td>
 			<td><b style="color: green"><?=$row['username'];?></b></td>
@@ -176,6 +176,6 @@ if(isset($_POST['Search']) && $getUser['level'] == 'admin') {
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>

@@ -1,10 +1,10 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 $id = check_string($_GET['id']);
-$tt = $TUANORI->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '$id' AND `hienthi` = 'SHOW'");
+$tt = $DMH->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '$id' AND `hienthi` = 'SHOW'");
 $title = '['.strtoupper($_SERVER['SERVER_NAME']).'] '.$tt['title'];
 $mota = $tt['mota'];
 $anhbia = $tt['img'];
@@ -14,8 +14,8 @@ if(!$tt)
 {
 	msg_error('Link bạn truy cập không đúng hoặc đã bị xóa', BASE_URL(''), 3000);
 }
-if($TUANORI->site('sukien') == 'ON') {
-    $tongtien = $tt['money'] - ($tt['money'] * $TUANORI->site('ptgiamgia') / 100);
+if($DMH->site('sukien') == 'ON') {
+    $tongtien = $tt['money'] - ($tt['money'] * $DMH->site('ptgiamgia') / 100);
 }
 else {
     $tongtien = $tt['money'];
@@ -45,8 +45,8 @@ else {
                                         <div class="ant-ribbon ant-ribbon-placement-end ant-ribbon-color-black css-eq3tly"><span class="ant-ribbon-text">Mã: <?=$tt['id'];?></span>
                                             <div class="ant-ribbon-corner"></div>
                                         </div>
-                                        <?php if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgiaweb') > 0) { ?>
-                                            <div class="ant-ribbon ant-ribbon-placement-start ant-ribbon-color-red css-eq3tly"><span class="ant-ribbon-text">-<?=$TUANORI->site('ptgiamgiaweb');?>%</span>
+                                        <?php if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgiaweb') > 0) { ?>
+                                            <div class="ant-ribbon ant-ribbon-placement-start ant-ribbon-color-red css-eq3tly"><span class="ant-ribbon-text">-<?=$DMH->site('ptgiamgiaweb');?>%</span>
                                                 <div class="ant-ribbon-corner"></div>
                                             </div>
                                         <?php } ?>
@@ -88,8 +88,8 @@ else {
                                       </div>
                                       <div class="text-center">
                                         <h2 class="text-sm text-primary">Giá: 
-                                            <?php if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgiaweb') > 0 && $tt['money'] > 0) { ?> 
-                                                <del><b style="color: red"><?=sotienmua($tt['money']);?></b></del> - <b style="color: green"><?=sotienmua($tt['money'] - $tt['money']*$TUANORI->site('ptgiamgiaweb')/100);?></b>
+                                            <?php if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgiaweb') > 0 && $tt['money'] > 0) { ?> 
+                                                <del><b style="color: red"><?=sotienmua($tt['money']);?></b></del> - <b style="color: green"><?=sotienmua($tt['money'] - $tt['money']*$DMH->site('ptgiamgiaweb')/100);?></b>
                                             <?php } else { ?>
                                                 <b style="color: green"><?=sotienmua($tt['money']);?></b>
                                             <?php } ?>
@@ -140,11 +140,11 @@ else {
                                         <div class="text-center">
                                             <ul class="nav nav-pills flex items-center flex-wrap list-none pl-0 mb-6 space-x-4 justify-center" id="pills-tabHorizontal" role="tablist">
                                                 <li class="nav-item text-center" role="presentation">
-                                                    <a href="<?=$TUANORI->site('fbadmin');?>" target="_blank" class="nav-link block font-medium font-Inter text-sm leading-tight capitalize rounded-md px-6 py-3 focus:outline-none focus:ring-0 active dark:bg-slate-900 dark:text-slate-300">
+                                                    <a href="<?=$DMH->site('fbadmin');?>" target="_blank" class="nav-link block font-medium font-Inter text-sm leading-tight capitalize rounded-md px-6 py-3 focus:outline-none focus:ring-0 active dark:bg-slate-900 dark:text-slate-300">
                                                         <i class="fa-brands fa-facebook"></i> FB ADMIN </a>
                                                 </li> 
                                                 <li class="nav-item text-center" role="presentation">
-                                                    <a href="https://zalo.me/<?=$TUANORI->site('zaloadmin');?>" target="_blank"  class="nav-link block font-medium font-Inter text-sm leading-tight capitalize rounded-md px-6 py-3 focus:outline-none focus:ring-0 active dark:bg-slate-900 dark:text-slate-300">
+                                                    <a href="https://zalo.me/<?=$DMH->site('zaloadmin');?>" target="_blank"  class="nav-link block font-medium font-Inter text-sm leading-tight capitalize rounded-md px-6 py-3 focus:outline-none focus:ring-0 active dark:bg-slate-900 dark:text-slate-300">
                                                         <i class="fab fa-facebook-messenger"></i> Zalo ADMIN</a>
                                                 </li> 
                                             </ul>
@@ -199,7 +199,7 @@ else {
 </div>
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>
 

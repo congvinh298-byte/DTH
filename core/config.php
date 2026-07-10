@@ -8,7 +8,7 @@ $base_url = 'https://'.$_SERVER['SERVER_NAME'].'/'; // Thay url web bạn
 // ini_set('display_errors', 1);
 
 // $base_url = 'https://localhost/';
-class TUANORI
+class DMH
 {
     private $ketnoi;
     function connect()
@@ -148,8 +148,8 @@ class TUANORI
 }
 if(isset($_COOKIE['token']))
 { 
-    $TUANORI = new TUANORI;
-    $getUser = $TUANORI->get_row(" SELECT * FROM users WHERE tokenlog = '".$_COOKIE['token']."' ");
+    $DMH = new DMH;
+    $getUser = $DMH->get_row(" SELECT * FROM users WHERE tokenlog = '".$_COOKIE['token']."' ");
     $my_username = True;
     $my_money = $getUser['money'];
     $verifx = $getUser['verify'];
@@ -161,7 +161,7 @@ if(isset($_COOKIE['token']))
         die();
     }
     if ($getUser['money'] < 0) {
-        $TUANORI->update("users", array(
+        $DMH->update("users", array(
             'banned' => 'OFF'
         ), "tokenlog = '".$_COOKIE['token']."' ");
         unset($_COOKIE['token']);

@@ -5,15 +5,15 @@
     if(empty($_COOKIE['token'])) die(json_encode(['status' => 'error', 'msg' => 'Đăng nhập để tiếp tục']));
     $id = check_string($_POST['id']);
     if(!$id) die(json_encode(['status' => 'error', 'msg' => 'Không nhận được dữ liệu sản phẩm']));
-    $check = $TUANORI->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '$id' ");
+    $check = $DMH->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '$id' ");
     if($check['statusmua'] == 'OFF' || $check['hienthi'] != 'SHOW') die(json_encode(['status' => 'error', 'msg' => 'Sản phẩm này hiện đang không thể mua']));
-    if($TUANORI->get_row(" SELECT * FROM `giohang` WHERE `id_code` = '$id' AND `username` = '".$getUser['username']."' "))  {
+    if($DMH->get_row(" SELECT * FROM `giohang` WHERE `id_code` = '$id' AND `username` = '".$getUser['username']."' "))  {
         die;
     }
-    if($TUANORI->num_rows(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ") >= 10) 
+    if($DMH->num_rows(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ") >= 10) 
         die(json_encode(['status' => 'error', 'msg' => 'Giỏ hàng chỉ có thể chứa tối đa 10 sản phẩm']));
     if($getUser['username']) {
-        $create = $TUANORI->insert("giohang", [
+        $create = $DMH->insert("giohang", [
             'username'  => $getUser['username'],
             'id_code'   => $id,
             'sotien'    => $check['money'],

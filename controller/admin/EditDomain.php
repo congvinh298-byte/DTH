@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -25,7 +25,7 @@
             if(count( explode("\n", $ns) ) < 2) {
                 msg("error","Tối thiểu có 2 nameserver");
             }
-            $check = $TUANORI->get_row(" SELECT * FROM `lichsumuamien` WHERE `id` = '$id'");
+            $check = $DMH->get_row(" SELECT * FROM `lichsumuamien` WHERE `id` = '$id'");
             if(!$check) {
                 msg("error","Tên miền không tồn tại trong hệ thống");
             }
@@ -35,12 +35,12 @@
                     if($check['status'] == 'thatbai') {
                         msg("error","Đơn này đã được hoàn tiền rồi. Nên không thể hoàn tiền nữa");
                     }
-                    $isMoney    = $TUANORI->cong("users", "money", $check['tongtien'], " `username` = '".$check['username']."'");
+                    $isMoney    = $DMH->cong("users", "money", $check['tongtien'], " `username` = '".$check['username']."'");
                     if($isMoney) {
-                        $TUANORI->insert("biendongsodu", [
+                        $DMH->insert("biendongsodu", [
                             'username'      => $check['username'],
-                            'truoc'         => $TUANORI->getUser($check['username'])['money'] - $check['tongtien'],
-                            'sau'           => $TUANORI->getUser($check['username'])['money'],
+                            'truoc'         => $DMH->getUser($check['username'])['money'] - $check['tongtien'],
+                            'sau'           => $DMH->getUser($check['username'])['money'],
                             'tongtien'      => $check['tongtien'],
                             'note'          => 'Hệ thống hoàn tiền mua tên miền '.$check['domain'].' vì thất bại',
                             'time'          => gettime()
@@ -54,7 +54,7 @@
                 else if($status == 'thanhcong') {
                     $timedie = gettime2(time() + $onethang*12*$tgian);
                 }
-                $update = $TUANORI->update("lichsumuamien", array(
+                $update = $DMH->update("lichsumuamien", array(
                     'domain'    => $domain,
                     'ns'        => $ns,
                     'thoihan'   => $tgian,

@@ -22,11 +22,11 @@ CheckAdmin();
 		</tr>
 	</thead>
 	<tbody>
-        <?php $i = 1;  foreach($TUANORI->get_list(" SELECT * FROM `chuyentien` ORDER BY id DESC LIMIT 100") as $row){ ?>
+        <?php $i = 1;  foreach($DMH->get_list(" SELECT * FROM `chuyentien` ORDER BY id DESC LIMIT 100") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
-            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['userchuyen'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['userchuyen'];?></a></td>
-            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['usernhan'])['id'];?>" target="_blank" style="color: #333300; font-weight: bold;"><?=$row['usernhan'];?></a></td>
+            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['userchuyen'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['userchuyen'];?></a></td>
+            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['usernhan'])['id'];?>" target="_blank" style="color: #333300; font-weight: bold;"><?=$row['usernhan'];?></a></td>
             <td><b style="color: green">+ <?=format_cash($row['sotien']);?>đ</b> </td>
             <td><b><?=gettime2($row['time']);?></b></td>
             <td><?=$row['ip'];?></td>
@@ -37,6 +37,6 @@ CheckAdmin();
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>

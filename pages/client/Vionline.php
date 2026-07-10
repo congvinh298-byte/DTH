@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -66,9 +66,9 @@ CheckLogin();
                                         <p class="text-red-500 text-xl">1. Số tiền nạp tối thiểu là 10.000VNĐ</p>
                                         <p class="text-red-500 text-xl">2. Sau khi nạp, vui lòng chờ 1-2p hệ thống sẽ tự động cộng tiền</p>
                                         <p class="text-red-500 text-xl">3. Nạp tiền sẽ được cộng ngay lập tức.</p>
-                                        <?php if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('khuyenmai') > 0) { ?>
+                                        <?php if($DMH->site('sukien') == 'ON' && $DMH->site('khuyenmai') > 0) { ?>
                                         <p class="text-xl">
-                                            <i style="color: green" class="fa-solid fa-crown"></i> <b style="color: green">Hệ thống đang khuyến mãi thêm <b style="color: red"><?=$TUANORI->site('khuyenmai');?>%</b> giá trị nạp tiền qua ATM/ MOMO/ THESIEURE.</b>
+                                            <i style="color: green" class="fa-solid fa-crown"></i> <b style="color: green">Hệ thống đang khuyến mãi thêm <b style="color: red"><?=$DMH->site('khuyenmai');?>%</b> giá trị nạp tiền qua ATM/ MOMO/ THESIEURE.</b>
                                         </p>
                                         <br/>
                                         <?php } ?>
@@ -134,7 +134,7 @@ CheckLogin();
                                                                 </tr>
                                                             </thead>
                                                             <tbody class="ant-table-tbody">
-                                                                <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `hoadon_vi` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC LIMIT 30") as $row){ ?>
+                                                                <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `hoadon_vi` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC LIMIT 30") as $row){ ?>
                                                                     <tr class="ant-table-row ant-table-row-level-0">
                                                                         <td class="ant-table-cell"><?=++$i;?></td>
                                                                         <td class="ant-table-cell"><b><?=$row['magd'];?></b></td>
@@ -187,6 +187,6 @@ CheckLogin();
 </div>
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

@@ -469,4 +469,4 @@ function theme1($username, $time, $img, $url, $domain) {
     return $show;
 }
 
-// theme1('adminori', '26/12/2024', 'https://i.imgur.com/Br8B2q4.jpg', 'https://localhost/dang-nhap', 'tuanorine.com');
+// theme1('adminori', '26/12/2024', 'https://i.imgur.com/Br8B2q4.jpg', 'https://localhost/dang-nhap', 'dmhne.com');

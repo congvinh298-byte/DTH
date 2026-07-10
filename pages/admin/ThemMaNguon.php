@@ -10,14 +10,14 @@ CheckAdmin();
 <?php
 if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$_GET['xoa']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$_GET['xoa']."'");
     if(!$user2)
     {
         echo msg_admin("error","Mã nguồn này không tồn tại", BASE_URL('Admin/ThemMaNguon'), 1000); die;
     }
     else
     {
-        $dele = $TUANORI->remove("danhsachmuacode", " `id` = '".$_GET['xoa']."' ");
+        $dele = $DMH->remove("danhsachmuacode", " `id` = '".$_GET['xoa']."' ");
         if($dele)
         {
             echo msg_admin("success","Đã xóa mã nguồn thành công", BASE_URL('Admin/ThemMaNguon'), 1000);
@@ -45,7 +45,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
                         
                         <div class="col-sm-5">
                             <select id="danhmuc" class="selectboxit">
-                                <?php foreach($TUANORI->get_list(" SELECT * FROM `danhmuctaoweb` ORDER BY id DESC") as $row){ ?>
+                                <?php foreach($DMH->get_list(" SELECT * FROM `danhmuctaoweb` ORDER BY id DESC") as $row){ ?>
                                     <option value="<?=$row['id'];?>"><?=$row['title'];?></option>
                                 <?php } ?>
                             </select>
@@ -174,7 +174,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
             <th>Thao tác</th>
 		</tr>
 	</thead>
-	<?php $i = 1;  foreach($TUANORI->get_list(" SELECT * FROM `danhsachmuacode` ORDER BY id DESC LIMIT 50") as $row){ ?>
+	<?php $i = 1;  foreach($DMH->get_list(" SELECT * FROM `danhsachmuacode` ORDER BY id DESC LIMIT 50") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
             <td><a target="_blank" href="/pages/admin/EditDanhmucbancode.php?id=<?=$row['id_danhmuc'];?>"><span class="btn btn-info" style="padding: 4px 8px;"><?=$row['id_danhmuc'];?></span></a></td>
@@ -201,7 +201,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

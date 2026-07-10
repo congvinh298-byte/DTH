@@ -10,16 +10,16 @@ CheckAdmin();
 <?php
 if(isset($_GET['status']) && isset($_GET['id']) && $getUser['level'] == 'admin') {
     $status = check_string($_GET['status']);
-    $user2 = $TUANORI->get_row(" SELECT * FROM `lichsugiahan` WHERE `id` = '".$_GET['id']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `lichsugiahan` WHERE `id` = '".$_GET['id']."'");
     if(!$user2) {
         echo msg_admin("error","Lịch sử gia hạn này không tồn tại", BASE_URL('Admin/Lichsugiahan'), 1000); die;
     } else {
         if($user2['status'] == 'thatbai') {
             echo msg_admin("error","Đã cập nhật trạng thái từ trước", BASE_URL('Admin/Lichsugiahan'), 1000); die;
         }
-        $check_user = $TUANORI->getUser($user2['username']);
+        $check_user = $DMH->getUser($user2['username']);
         if($status == 'thatbai') {
-            $add = $TUANORI->insert("biendongsodu", [
+            $add = $DMH->insert("biendongsodu", [
                 'username'      => $user2['username'],
                 'truoc'         => $check_user['money'],
                 'sau'           => $check_user['money'] + $user2['tongtien'],
@@ -27,13 +27,13 @@ if(isset($_GET['status']) && isset($_GET['id']) && $getUser['level'] == 'admin')
                 'tongtien'      => $user2['tongtien'],
                 'time'          => gettime()
             ]);
-            $cong = $TUANORI->cong("users", "money", $user2['tongtien'], " `username` = '".$user2['username']."' ");
+            $cong = $DMH->cong("users", "money", $user2['tongtien'], " `username` = '".$user2['username']."' ");
         }
-        $update = $TUANORI->update("lichsugiahan", array(
+        $update = $DMH->update("lichsugiahan", array(
             'status'        => $status
         ), " `id` = '".$_GET['id']."' ");
-        $TUANORI->cong("lichsutaoweb", "ngayhethan", $user2['thoigian']*$onethang, " `id` = '".$user2['id_web']."'");
-        $update = $TUANORI->update("lichsutaoweb", array(
+        $DMH->cong("lichsutaoweb", "ngayhethan", $user2['thoigian']*$onethang, " `id` = '".$user2['id_web']."'");
+        $update = $DMH->update("lichsutaoweb", array(
             'buoc'        => 4
         ), " `id` = '".$user2['id_web']."' AND `username` = '".$user2['username']."' ");
         if($update) {
@@ -62,18 +62,18 @@ if(isset($_GET['status']) && isset($_GET['id']) && $getUser['level'] == 'admin')
 		</tr>
 	</thead>
 	<tbody>
-    <?php $i = 1;  foreach($TUANORI->get_list(" SELECT * FROM `lichsugiahan` ORDER BY id DESC LIMIT 20") as $row){
-        $id_web = $TUANORI->get_row(" SELECT * FROM `lichsutaoweb` WHERE `id` = '".$row['id_web']."'")['id_code'];
+    <?php $i = 1;  foreach($DMH->get_list(" SELECT * FROM `lichsugiahan` ORDER BY id DESC LIMIT 20") as $row){
+        $id_web = $DMH->get_row(" SELECT * FROM `lichsutaoweb` WHERE `id` = '".$row['id_web']."'")['id_code'];
         ?>
         <tr>
             <td><?=$i++;?></td>
-            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
+            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
             <td><a target="_blank" href="/tao-web/<?=$id_web;?>"><span class="btn btn-info" style="padding: 4px 8px;"><?=$id_web;?></span></a></td>
             <td><a style="color: red; font-weight: bold;" target="_blank" href="//<?=$row['tenmien'];?>"><?=$row['tenmien'];?></td>
             <td style="color: green; font-weight: bold;"><?=format_cash($row['tongtien']);?>đ</td>
             <td style="font-weight: bold;"><?=$row['time'];?></td>
             <td><b style="color: green">+ <?=$row['thoigian'];?> Tháng</b></td>
-            <?php $check = $TUANORI->get_row(" SELECT * FROM `lichsutaoweb` WHERE `id` = '".$row['id_web']."'"); ?>
+            <?php $check = $DMH->get_row(" SELECT * FROM `lichsutaoweb` WHERE `id` = '".$row['id_web']."'"); ?>
             <td><?=sttgiahan($row['status']);?></td>
             <td>
                 <?php if($row['status'] == 'xuly') { ?>
@@ -102,6 +102,6 @@ if(isset($_GET['status']) && isset($_GET['id']) && $getUser['level'] == 'admin')
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>

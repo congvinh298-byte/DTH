@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -23,7 +23,7 @@
         if($sotien+ 5000 > $getUser['money_partner']) {
             msg("error", "Số tiền không đủ để trả phí rút.");
         }
-        $create = $TUANORI->insert("partner_ruttien", [
+        $create = $DMH->insert("partner_ruttien", [
             'username'  => $getUser['username'],
             'atm'       => $atm,
             'stk'       => $stk,
@@ -32,8 +32,8 @@
             'status'    => 'xuly'
         ]);
         $sotien+=5000;
-        $isMoney = $TUANORI->tru("users", "money_partner", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
-        $TUANORI->insert("partner_biendongsodu", [
+        $isMoney = $DMH->tru("users", "money_partner", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
+        $DMH->insert("partner_biendongsodu", [
             'username'      => $getUser['username'],
             'usermua'       => $getUser['username'],
             'truoc'         => $getUser['money_partner'],

@@ -10,7 +10,7 @@ CheckAdmin();
 <?php
 if(isset($_GET['id']) && $getUser['level'] == 'admin')
 {
-    $row = $TUANORI->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '".$_GET['id']."'");
+    $row = $DMH->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '".$_GET['id']."'");
     if(!$row)
     {
         echo msg_admin("error" ,"mẫu web không tồn tạii",BASE_URL('Admin/ThemMauWeb'), 1000); die;
@@ -35,7 +35,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin')
                         
                         <div class="col-sm-5">
                             <select id="danhmuc" class="selectboxit">
-                                <?php foreach($TUANORI->get_list(" SELECT * FROM `danhmuctaoweb` ORDER BY id DESC") as $row2){ ?>
+                                <?php foreach($DMH->get_list(" SELECT * FROM `danhmuctaoweb` ORDER BY id DESC") as $row2){ ?>
                                     <option value="<?=$row2['id'];?>" <?=($row2['id'] == $row['id_danhmuc']) ? 'selected' : ''?>><?=$row2['title'];?></option>
                                 <?php } ?>
                             </select>
@@ -148,7 +148,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin')
 
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

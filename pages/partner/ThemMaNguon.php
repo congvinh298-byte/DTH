@@ -10,14 +10,14 @@ CheckVeri();
 <?php
 if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$_GET['xoa']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$_GET['xoa']."'");
     if(!$user2)
     {
         echo msg_admin("error","Mã nguồn này không tồn tại", BASE_URL('Admin/ThemMaNguon'), 1000); die;
     }
     else
     {
-        $dele = $TUANORI->remove("danhsachmuacode", " `id` = '".$_GET['xoa']."' ");
+        $dele = $DMH->remove("danhsachmuacode", " `id` = '".$_GET['xoa']."' ");
         if($dele)
         {
             echo msg_admin("success","Đã xóa mã nguồn thành công", BASE_URL('Admin/ThemMaNguon'), 1000);
@@ -59,7 +59,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
                         
                         <div class="col-sm-5">
                             <select id="chude" class="selectboxit">
-                                <?php foreach($TUANORI->get_list(" SELECT * FROM `danhmucmuacode` WHERE `status` = 'SHOW' ") as $row){ ?>
+                                <?php foreach($DMH->get_list(" SELECT * FROM `danhmucmuacode` WHERE `status` = 'SHOW' ") as $row){ ?>
                                     <option value="<?=$row['id'];?>"><?=$row['title'];?></option>
                                 <?php } ?>
                             </select>
@@ -76,7 +76,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
                         <label class="col-sm-3 control-label" style="color: green">Số Tiền</label>
                         <div class="col-sm-5">
                             <input type="text" id="sotien" class="form-control daterange fnum" />
-                            <i>Bạn sẽ chỉ nhận được <?=(100-$TUANORI->site('ptpartner'));?>% số tiền khi có khách mua</i>
+                            <i>Bạn sẽ chỉ nhận được <?=(100-$DMH->site('ptpartner'));?>% số tiền khi có khách mua</i>
                         </div>
                     </div>
                     <div class="form-group">
@@ -162,7 +162,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

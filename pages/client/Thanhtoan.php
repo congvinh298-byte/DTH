@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -9,9 +9,9 @@ require_once("../../pages/client/Header.php");
 CheckLogin();
 $sotien = $cnt = 0;
 ?>
-<?php foreach($TUANORI->get_list(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ") as $ok) {
-    if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgia') > 0) {
-        $sotien +=$ok['sotien'] - ($ok['sotien']*$TUANORI->site('ptgiamgia')/100);
+<?php foreach($DMH->get_list(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ") as $ok) {
+    if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0) {
+        $sotien +=$ok['sotien'] - ($ok['sotien']*$DMH->site('ptgiamgia')/100);
     } else {
         $sotien +=$ok['sotien'];
     }
@@ -95,6 +95,6 @@ $("#Thanhtoan").on("click", function() {
 });
 </script>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

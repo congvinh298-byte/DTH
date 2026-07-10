@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once(__DIR__."/core/config.php");
 require_once(__DIR__."/core/function.php");
@@ -31,7 +31,7 @@ require_once(__DIR__."/pages/client/Header.php");
                 <!-- ALERTS & BANNERS (OCD: Clean layout, strict padding) -->
                 <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="col-span-1 lg:col-span-2 overflow-hidden rounded-2xl shadow-xl">
-                        <img src="<?=$TUANORI->site('banner1');?>" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt="Banner" />
+                        <img src="<?=$DMH->site('banner1');?>" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt="Banner" />
                     </div>
                     
                     <div class="col-span-1 flex flex-col gap-6">
@@ -40,24 +40,24 @@ require_once(__DIR__."/pages/client/Header.php");
                                 <i class="fa fa-bell text-blue-500"></i> Thông Báo
                             </h2>
                             <div class="prose text-gray-600 font-medium leading-relaxed">
-                                <?=$TUANORI->site('thongbao');?>
+                                <?=$DMH->site('thongbao');?>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <?php if($TUANORI->site('sukien') == 'ON') { ?>
+                <?php if($DMH->site('sukien') == 'ON') { ?>
                 <section class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl p-6 md:p-8 shadow-2xl text-white transform hover:-translate-y-1 transition-transform">
                     <div class="flex flex-col md:flex-row items-center gap-6">
                         <img src="https://imgur.com/56EFXz7.gif" class="w-16 h-16 md:w-24 md:h-24 rounded-full shadow-lg" alt="Khuyến mãi" />
                         <div class="flex-1 space-y-2">
                             <h2 class="text-3xl font-black uppercase tracking-tight">Sự Kiện Đang Diễn Ra!</h2>
-                            <?php if($TUANORI->site('khuyenmai') > 0) { ?>
-                            <p class="text-lg font-bold">🔥 +<?=$TUANORI->site('ptgiamgia');?>% Giá trị nạp tiền (ATM/Momo/Thesieure)</p>
-                            <?php } if($TUANORI->site('ptgiamgiaweb') > 0) { ?>
-                            <p class="text-lg font-bold">🚀 Giảm <?=$TUANORI->site('ptgiamgiaweb');?>% khi TẠO WEBSITE</p>
-                            <?php } if($TUANORI->site('ptgiamgia') > 0) { ?>
-                            <p class="text-lg font-bold">⚡ Giảm <?=$TUANORI->site('ptgiamgia');?>% khi MUA CODE</p>
+                            <?php if($DMH->site('khuyenmai') > 0) { ?>
+                            <p class="text-lg font-bold">🔥 +<?=$DMH->site('ptgiamgia');?>% Giá trị nạp tiền (ATM/Momo/Thesieure)</p>
+                            <?php } if($DMH->site('ptgiamgiaweb') > 0) { ?>
+                            <p class="text-lg font-bold">🚀 Giảm <?=$DMH->site('ptgiamgiaweb');?>% khi TẠO WEBSITE</p>
+                            <?php } if($DMH->site('ptgiamgia') > 0) { ?>
+                            <p class="text-lg font-bold">⚡ Giảm <?=$DMH->site('ptgiamgia');?>% khi MUA CODE</p>
                             <?php } ?>
                         </div>
                     </div>
@@ -76,7 +76,7 @@ require_once(__DIR__."/pages/client/Header.php");
                         <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col h-full border border-gray-100 relative">
                             <div class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase z-10 shadow">Bảo hành trọn đời</div>
                             <div class="h-48 overflow-hidden">
-                                <img src="/images/svg/spinner.svg" data-src="<?=$TUANORI->site('danhmuc1');?>" class="lazyload w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Tạo Trang Web" />
+                                <img src="/images/svg/spinner.svg" data-src="<?=$DMH->site('danhmuc1');?>" class="lazyload w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Tạo Trang Web" />
                             </div>
                             <div class="p-6 flex flex-col flex-1">
                                 <h2 class="text-2xl font-extrabold text-gray-900 mb-2">Tạo Trang Web</h2>
@@ -88,7 +88,7 @@ require_once(__DIR__."/pages/client/Header.php");
                         <!-- Service 2 -->
                         <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col h-full border border-gray-100">
                             <div class="h-48 overflow-hidden">
-                                <img src="/images/svg/spinner.svg" data-src="<?=$TUANORI->site('danhmuc2');?>" class="lazyload w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Mã Nguồn" />
+                                <img src="/images/svg/spinner.svg" data-src="<?=$DMH->site('danhmuc2');?>" class="lazyload w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Mã Nguồn" />
                             </div>
                             <div class="p-6 flex flex-col flex-1">
                                 <h2 class="text-2xl font-extrabold text-gray-900 mb-2">Mã Nguồn</h2>
@@ -100,7 +100,7 @@ require_once(__DIR__."/pages/client/Header.php");
                         <!-- Service 3 -->
                         <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col h-full border border-gray-100">
                             <div class="h-48 overflow-hidden">
-                                <img src="/images/svg/spinner.svg" data-src="<?=$TUANORI->site('danhmuc3');?>" class="lazyload w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Đăng Ký Tên Miền" />
+                                <img src="/images/svg/spinner.svg" data-src="<?=$DMH->site('danhmuc3');?>" class="lazyload w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Đăng Ký Tên Miền" />
                             </div>
                             <div class="p-6 flex flex-col flex-1">
                                 <h2 class="text-2xl font-extrabold text-gray-900 mb-2">Đăng Ký Tên Miền</h2>
@@ -112,7 +112,7 @@ require_once(__DIR__."/pages/client/Header.php");
                         <!-- Service 4 -->
                         <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col h-full border border-gray-100">
                             <div class="h-48 overflow-hidden">
-                                <img src="/images/svg/spinner.svg" data-src="<?=$TUANORI->site('danhmuc4');?>" class="lazyload w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Upload Ảnh" />
+                                <img src="/images/svg/spinner.svg" data-src="<?=$DMH->site('danhmuc4');?>" class="lazyload w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Upload Ảnh" />
                             </div>
                             <div class="p-6 flex flex-col flex-1">
                                 <h2 class="text-2xl font-extrabold text-gray-900 mb-2">Lưu Trữ Hình Ảnh</h2>
@@ -131,12 +131,12 @@ require_once(__DIR__."/pages/client/Header.php");
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        <?php foreach($TUANORI->get_list(" SELECT * FROM `danhsachmuacode` WHERE `hienthi` = 'SHOW' AND `money` > 0 ORDER BY id DESC LIMIT 16") as $row){ ?>
+                        <?php foreach($DMH->get_list(" SELECT * FROM `danhsachmuacode` WHERE `hienthi` = 'SHOW' AND `money` > 0 ORDER BY id DESC LIMIT 16") as $row){ ?>
                         <div class="group bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col relative border border-gray-100">
                             
-                            <?php if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgia') > 0) { ?>
+                            <?php if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0) { ?>
                             <div class="absolute top-3 right-3 bg-red-600 text-white text-xs font-black px-2 py-1 rounded-md z-10 shadow-lg">
-                                -<?=$TUANORI->site('ptgiamgia');?>%
+                                -<?=$DMH->site('ptgiamgia');?>%
                             </div>
                             <?php } ?>
 
@@ -157,9 +157,9 @@ require_once(__DIR__."/pages/client/Header.php");
                                 <div class="flex items-center justify-between mb-4 bg-gray-50 p-2 rounded-lg border border-gray-100">
                                     <span class="text-sm font-bold text-gray-500">MÃ: #<?=$row['id'];?></span>
                                     <div class="text-right">
-                                        <?php if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgia') > 0 && $row['money'] > 0) { ?>
+                                        <?php if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0 && $row['money'] > 0) { ?>
                                             <div class="text-xs text-gray-400 line-through"><?=sotienmua($row['money']);?></div>
-                                            <div class="text-lg font-black text-red-600"><?=sotienmua($row['money'] - ($row['money']*$TUANORI->site('ptgiamgia')/100));?></div>
+                                            <div class="text-lg font-black text-red-600"><?=sotienmua($row['money'] - ($row['money']*$DMH->site('ptgiamgia')/100));?></div>
                                         <?php } else { ?>
                                             <div class="text-lg font-black text-green-600"><?=sotienmua($row['money']);?></div>
                                         <?php } ?>
@@ -170,7 +170,7 @@ require_once(__DIR__."/pages/client/Header.php");
                                     <?php 
                                     $truedz = false;
                                     if(isset($_COOKIE['token'])) {
-                                        if($TUANORI->get_row(" SELECT * FROM `giohang` WHERE `id_code` = '".$row['id']."' AND `username` = '".$getUser['username']."' ") ) {
+                                        if($DMH->get_row(" SELECT * FROM `giohang` WHERE `id_code` = '".$row['id']."' AND `username` = '".$getUser['username']."' ") ) {
                                             $truedz = true;
                                         }
                                     }
@@ -199,6 +199,6 @@ require_once(__DIR__."/pages/client/Header.php");
 </div>
 
 <?php
-    /*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+    
     require_once(__DIR__."/pages/client/Footer.php");
 ?>

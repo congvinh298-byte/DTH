@@ -1,11 +1,11 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 if(isset($_POST['type']))
 {
-    if($TUANORI->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."'  "))
+    if($DMH->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."'  "))
     {
         msg_error2('Bạn đã bị chặn sử dụng tính năng của chúng tôi vĩnh viễn. Xin cảm ơn');
     }
@@ -14,8 +14,8 @@ if(isset($_POST['type']))
         msg_error('Vui lòng đăng nhập để sử dụng tính năng', BASE_URL(''), 1000);
     }
     if(
-        $TUANORI->num_rows("SELECT * FROM `napcard` WHERE `status` = 'thatbai' AND `username` = '".$getUser['username']."' AND `thoigian` >= DATE(NOW()) AND `thoigian` < DATE(NOW()) + INTERVAL 1 DAY  ") - 
-        $TUANORI->num_rows("SELECT * FROM `napcard` WHERE `status` = 'hoantat' AND `username` = '".$getUser['username']."' AND `thoigian` >= DATE(NOW()) AND `thoigian` < DATE(NOW()) + INTERVAL 1 DAY  ") >= 6)
+        $DMH->num_rows("SELECT * FROM `napcard` WHERE `status` = 'thatbai' AND `username` = '".$getUser['username']."' AND `thoigian` >= DATE(NOW()) AND `thoigian` < DATE(NOW()) + INTERVAL 1 DAY  ") - 
+        $DMH->num_rows("SELECT * FROM `napcard` WHERE `status` = 'hoantat' AND `username` = '".$getUser['username']."' AND `thoigian` >= DATE(NOW()) AND `thoigian` < DATE(NOW()) + INTERVAL 1 DAY  ") >= 6)
     {
         msg_error2("Rất tiếc. Bạn đang có nhiều thẻ nạp sai. Vui lòng chờ hôm sau để nạp tiếp");
     }
@@ -36,13 +36,13 @@ if(isset($_POST['type']))
     {
         msg_error2("Độ dài seri không đúng định dạng");
     }
-    if($TUANORI->num_rows(" SELECT * FROM `napcard` WHERE `username` = '".$getUser['username']."' AND `status` = 'xuly'") >= 3)
+    if($DMH->num_rows(" SELECT * FROM `napcard` WHERE `username` = '".$getUser['username']."' AND `status` = 'xuly'") >= 3)
     {
         msg_error2("Bạn đang có 3 thẻ chờ duyệt. Vui lòng duyệt xong rồi nạp tiếp");
     }
     else
     {
-        // $data = curl_get('https://thesieure.com/chargingws/v2?sign='.md5($TUANORI->site('partner_key').$pin.$seri).'&telco='.$type.'&code='.$pin.'&serial='.$seri.'&amount='.$amount.'&request_id='.$tranid.'&partner_id='.$TUANORI->site('partner_id').'&command=charging');
+        // $data = curl_get('https://thesieure.com/chargingws/v2?sign='.md5($DMH->site('partner_key').$pin.$seri).'&telco='.$type.'&code='.$pin.'&serial='.$seri.'&amount='.$amount.'&request_id='.$tranid.'&partner_id='.$DMH->site('partner_id').'&command=charging');
         $partner_id = '13113605845';
         $partner_key = '7899ea11f5d604645da8c64d17ba677e';
         $curl = curl_init();
@@ -51,7 +51,7 @@ if(isset($_POST['type']))
             CURLOPT_CONNECTTIMEOUT => 0,
             CURLOPT_TIMEOUT => 16,
           CURLOPT_URL => 'https://cardvip.vn/chargingws/v2',
-            CURLOPT_USERAGENT => 'TUANORI CURL',
+            CURLOPT_USERAGENT => 'DMH CURL',
             CURLOPT_POST => 1,
             CURLOPT_SSL_VERIFYPEER => false, //Bỏ kiểm SSL
             CURLOPT_POSTFIELDS => http_build_query(array(
@@ -72,8 +72,8 @@ if(isset($_POST['type']))
         {
             if($data['status'] == 99)
             {
-                $thucnhan = chietkhau($amount, $TUANORI->site('ckcard'));
-                $create = $TUANORI->insert("napcard", [
+                $thucnhan = chietkhau($amount, $DMH->site('ckcard'));
+                $create = $DMH->insert("napcard", [
                     'username'          => $getUser['username'],
                     'loaithe'           => $type,
                     'menhgia'           => $amount,
@@ -102,7 +102,7 @@ if(isset($_POST['type']))
         //     CURLOPT_CONNECTTIMEOUT => 0,
         //     CURLOPT_TIMEOUT => 16,
         //   CURLOPT_URL => 'https://api.cardvip.vn/api/createExchange',
-        //     CURLOPT_USERAGENT => 'TUANORI CURL',
+        //     CURLOPT_USERAGENT => 'DMH CURL',
         //     CURLOPT_POST => 1,
         //     CURLOPT_SSL_VERIFYPEER => false, //Bỏ kiểm SSL
         //     CURLOPT_POSTFIELDS => http_build_query(array(
@@ -125,8 +125,8 @@ if(isset($_POST['type']))
         // {
         //     if($data['status'] == 200)
         //     {
-        //         $thucnhan = chietkhau($amount, $TUANORI->site('ckcard'));
-        //         $create = $TUANORI->insert("napcard", [
+        //         $thucnhan = chietkhau($amount, $DMH->site('ckcard'));
+        //         $create = $DMH->insert("napcard", [
         //             'username'          => $getUser['username'],
         //             'loaithe'           => $type,
         //             'menhgia'           => $amount,

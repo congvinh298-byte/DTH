@@ -9,9 +9,9 @@ CheckAdmin();
 ?>
 <?php
 if(isset($_GET['id']) && $getUser['level'] == 'admin') {
-    $row = $TUANORI->get_row(" SELECT * FROM `lichsutaoweb` WHERE `id` = '".$_GET['id']."'");
-    $tuanitv2 = $TUANORI->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '".$row['id_code']."'");
-    $drivev2 = $TUANORI->get_row(" SELECT * FROM `danhsachmuacode` WHERE `img` = '".$tuanitv2['img']."' ");
+    $row = $DMH->get_row(" SELECT * FROM `lichsutaoweb` WHERE `id` = '".$_GET['id']."'");
+    $tuanitv2 = $DMH->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '".$row['id_code']."'");
+    $drivev2 = $DMH->get_row(" SELECT * FROM `danhsachmuacode` WHERE `img` = '".$tuanitv2['img']."' ");
     if(!$row)
     {
         echo msg_admin("error","Đơn tạo web này không tồn tại",BASE_URL('Admin/Quanlytaoweb'), 1000); die;
@@ -45,7 +45,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin') {
                 <div class="form-group">
                     <label class="col-sm-3 control-label">Email người dùng</label>
                     <div class="col-sm-5">
-                        <input type="text" class="form-control daterange" value="<?=$TUANORI->getUser($row['username'])['email'];?>" disabled/>
+                        <input type="text" class="form-control daterange" value="<?=$DMH->getUser($row['username'])['email'];?>" disabled/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -394,6 +394,6 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin') {
 <br />
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>

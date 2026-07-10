@@ -9,11 +9,11 @@ CheckAdmin();
 ?>
 <?php
 if(isset($_GET['xoa']) && $getUser['level'] == 'admin') {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `danhmuctaoweb` WHERE `id` = '".$_GET['xoa']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `danhmuctaoweb` WHERE `id` = '".$_GET['xoa']."'");
     if(!$user2) {
         echo msg_admin("error","Danh mục này không tồn tại", BASE_URL('Admin/Danhmuctaoweb'), 2000); die;
     } else {
-        $dele = $TUANORI->remove("danhmuctaoweb", " `id` = '".$_GET['xoa']."' ");
+        $dele = $DMH->remove("danhmuctaoweb", " `id` = '".$_GET['xoa']."' ");
         if($dele) {
             echo msg_admin("success","Đã xóa danh mục thành công", BASE_URL('Admin/Danhmuctaoweb'), 2000);
         } else {
@@ -122,7 +122,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin') {
 		</tr>
 	</thead>
 	<tbody>
-        <?php $i = 1;  foreach($TUANORI->get_list(" SELECT * FROM `danhmuctaoweb` ORDER BY id DESC") as $row){ ?>
+        <?php $i = 1;  foreach($DMH->get_list(" SELECT * FROM `danhmuctaoweb` ORDER BY id DESC") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
             <td><b style="font-size: 15px"><?=$row['title'];?></b></td>
@@ -146,7 +146,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin') {
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -34,7 +34,7 @@
     if($sotien > 100000000) {
         msg_error2("Số tiền quá lớn");
     }
-    if(!$TUANORI->get_row(" SELECT * FROM `danhmucmuacode` WHERE `id` = '$chude' AND `status` = 'SHOW'")) {
+    if(!$DMH->get_row(" SELECT * FROM `danhmucmuacode` WHERE `id` = '$chude' AND `status` = 'SHOW'")) {
         msg_error2("Chủ đề không hợp lệ");
     }
     if(!check_phone($getUser['zalo'])) {
@@ -43,7 +43,7 @@
     if(!$check) {
         msg_error2("Vui lòng xác nhận đã tuân thủ Nội Quy");
     }
-    $create = $TUANORI->insert("partner_code", [
+    $create = $DMH->insert("partner_code", [
         'username'      => $getUser['username'],
         'name'          => $name,
         'mota'          => $mota,

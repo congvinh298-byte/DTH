@@ -1,6 +1,6 @@
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -41,7 +41,7 @@ CheckLogin();
                                         <label for="mota" class="form-label">Chủ đề mã nguồn</label>
                                         <select class="form-control" id="chude" required>
                                             <option value="">Chọn chủ đề</option>
-                                            <?php foreach($TUANORI->get_list(" SELECT * FROM `danhmucmuacode` WHERE `status` = 'SHOW' ") as $row){ ?>
+                                            <?php foreach($DMH->get_list(" SELECT * FROM `danhmucmuacode` WHERE `status` = 'SHOW' ") as $row){ ?>
                                                 <option value="<?=$row['id'];?>"><?=$row['title'];?></option>
                                             <?php } ?>
                                         </select>
@@ -53,7 +53,7 @@ CheckLogin();
                                     <div class="input-area">
                                         <label for="sotien" class="form-label">Số tiền </label>
                                         <input type="number" class="form-control  py-2" id="sotien" placeholder="Số tiền" required="">
-                                        <i>Bạn sẽ chỉ nhận được <?=(100-$TUANORI->site('ptpartner'));?>% số tiền khi có khách mua</i>
+                                        <i>Bạn sẽ chỉ nhận được <?=(100-$DMH->site('ptpartner'));?>% số tiền khi có khách mua</i>
                                     </div>
                                     <div class="input-area">
                                         <label for="img_c" class="form-label">Link ảnh đại diện</label>
@@ -137,7 +137,7 @@ CheckLogin();
                                         <p>2.1 Chúng tôi có thể thay đổi lại tên, mô tả, giá bán nếu cảm thấy chưa phù hợp</p>
                                         <p>2.2 Bạn sẽ bị <b>chấm dứt hoạt động</b> nếu đăng mã nguồn không đúng hoặc vi phạm pháp luật</p>
                                         <p>2.3 Nếu được phê duyệt, mã nguồn của bạn sẽ được lên sàn</p>
-                                        <p>2.4 Bạn sẽ nhận được <?=(100-$TUANORI->site('ptpartner'));?>% số tiền khi có khách hàng thanh toán</p>
+                                        <p>2.4 Bạn sẽ nhận được <?=(100-$DMH->site('ptpartner'));?>% số tiền khi có khách hàng thanh toán</p>
                                         <p>2.5 Mã nguồn của bạn sẽ được gỡ xuống nếu phát hiện khiếu nại đúng</p>
                                         <p class="text-red-500 text-xl">Sau khi <b style="color: green">xác minh tài khoản</b> xong, bạn sẽ có trang quản lý riêng cho cộng tác viên bán mã nguồn. </p>
 
@@ -156,6 +156,6 @@ CheckLogin();
 </div>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

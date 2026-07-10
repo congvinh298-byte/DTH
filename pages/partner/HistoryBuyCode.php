@@ -7,11 +7,11 @@ require_once("../../pages/partner/Head.php");
 require_once("../../pages/partner/Header.php");
 CheckVeri();
 if(isset($_GET['xoa']) && $getUser['verify'] == 1) {
-    $row = $TUANORI->get_row(" SELECT * FROM `partner_code` WHERE `id` = '".$_GET['xoa']."' AND `username` = '".$getUser['username']."' ");
+    $row = $DMH->get_row(" SELECT * FROM `partner_code` WHERE `id` = '".$_GET['xoa']."' AND `username` = '".$getUser['username']."' ");
     if(!$row) {
         die(msg_admin("error", "Đơn bán code này không tồn tại",BASE_URL('Partner/HistoryCode'), 500));
     } else {
-        $TUANORI->remove("partner_code", " `id` = '".$_GET['xoa']."' ");
+        $DMH->remove("partner_code", " `id` = '".$_GET['xoa']."' ");
         die(msg_admin("success", "Đã xóa thành công",BASE_URL('Partner/HistoryCode'), 500));
     }
 }
@@ -32,7 +32,7 @@ if(isset($_GET['xoa']) && $getUser['verify'] == 1) {
 		</tr>
 	</thead>
 	<tbody>
-        <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `partner_biendongsodu` WHERE `username` = '".$getUser['username']."' AND `id_code` != 0 ORDER BY id DESC LIMIT 10") as $row){ ?>
+        <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `partner_biendongsodu` WHERE `username` = '".$getUser['username']."' AND `id_code` != 0 ORDER BY id DESC LIMIT 10") as $row){ ?>
         <tr>
             <td><?=++$i;?></td>
             <td><a target="_blank" href="/mua-code/<?=$row['id_code'];?>"><span class="btn btn-info" style="padding: 4px 8px;"><?=$row['id_code'];?></span></a></td>
@@ -47,6 +47,6 @@ if(isset($_GET['xoa']) && $getUser['verify'] == 1) {
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/partner/Footer.php");
 ?>

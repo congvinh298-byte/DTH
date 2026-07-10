@@ -9,7 +9,7 @@ CheckAdmin();
 ?>
 <?php
 if(isset($_GET['id']) && $getUser['level'] == 'admin') {
-    $row = $TUANORI->get_row(" SELECT * FROM `key_apis` WHERE `id` = '".$_GET['id']."'");
+    $row = $DMH->get_row(" SELECT * FROM `key_apis` WHERE `id` = '".$_GET['id']."'");
     if(!$row) {
         echo msg_admin("error","Danh mục không tồn tại",BASE_URL('Admin/Quanlyapi'), 1000); die;
     }
@@ -38,7 +38,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin') {
                     <div class="form-group">
                         <label class="col-sm-3 control-label">Mã API</label>
                         <div class="col-sm-5">
-                            <input type="text" value="<?=$TUANORI->getUser($row['username'])['token_api'];?>" class="form-control daterange" disabled/>
+                            <input type="text" value="<?=$DMH->getUser($row['username'])['token_api'];?>" class="form-control daterange" disabled/>
                         </div>
                     </div>
                     <div class="form-group">
@@ -142,10 +142,10 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin') {
             <th>Thao tác</th>
 		</tr>
 	</thead>
-	<?php $i = 1;  foreach($TUANORI->get_list(" SELECT * FROM `key_apis` WHERE `id` = '".$_GET['id']."' ") as $row){ ?>
+	<?php $i = 1;  foreach($DMH->get_list(" SELECT * FROM `key_apis` WHERE `id` = '".$_GET['id']."' ") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
-            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
+            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
             <td><?=on_off($row['whois']);?></td>
             <td><?=on_off($row['list_code']);?></td>
             <td><?=on_off($row['buy_code']);?></td>
@@ -170,7 +170,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin') {
 	
 </table>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -15,17 +15,17 @@
         if(strlen($token) < 15) {
             msg("error","Độ dài token không chính xác");
         } else {
-            $check = $TUANORI->get_row(" SELECT * FROM `users` WHERE `token_api` = '$token'");
+            $check = $DMH->get_row(" SELECT * FROM `users` WHERE `token_api` = '$token'");
             if(!$check) {
                 msg("error","Token không tồn tại trong hệ thống");
             } else {
-                $check2 = $TUANORI->get_row(" SELECT * FROM `key_apis` WHERE `username` = '".$check['username']."'");
+                $check2 = $DMH->get_row(" SELECT * FROM `key_apis` WHERE `username` = '".$check['username']."'");
                 if(empty($check2))
                 {
                     if($check['banned'] == 'OFF') {
                         msg("error","Tài khoản này của đối tác API đã bị khóa");
                     }
-                    $create = $TUANORI->insert("key_apis", [
+                    $create = $DMH->insert("key_apis", [
                         'username'      => $check['username']
                     ]);
                     if($create) {

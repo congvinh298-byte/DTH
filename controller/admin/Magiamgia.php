@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -24,11 +24,11 @@
             }
             /*EDIT MÃ GIẢM GIÁ*/
             if($_POST['type2'] == 'EditThemma') {
-                $check = $TUANORI->get_row(" SELECT * FROM `magiamgia` WHERE `id` = '".$_POST['id']."' ");
+                $check = $DMH->get_row(" SELECT * FROM `magiamgia` WHERE `id` = '".$_POST['id']."' ");
                 if(!$check) {
                     msg("error", "Mã giảm giá không tồn tại trong hệ thống");
                 }
-                $update = $TUANORI->update("magiamgia", array(
+                $update = $DMH->update("magiamgia", array(
                     'magiamgia'     => $magiamgia,
                     'giambaonhieu'  => $giam,
                     'theloai'       => $theloai,
@@ -44,11 +44,11 @@
 
             }
             else if($_POST['type2'] == 'Themma') {
-                $check = $TUANORI->get_row(" SELECT * FROM `magiamgia` WHERE `magiamgia` = '$magiamgia' ");
+                $check = $DMH->get_row(" SELECT * FROM `magiamgia` WHERE `magiamgia` = '$magiamgia' ");
                 if($check) {
                     msg("error", "Mã giảm giá đã tồn tại trong hệ thống");
                 }
-                $create = $TUANORI->insert("magiamgia", [
+                $create = $DMH->insert("magiamgia", [
                     'magiamgia'     => $magiamgia,
                     'giambaonhieu'  => $giam,
                     'theloai'       => $theloai,

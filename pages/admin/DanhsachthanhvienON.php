@@ -25,7 +25,7 @@ CheckAdmin();
 		</tr>
 	</thead>
 	<tbody>
-		<?php $i = 0;  foreach($TUANORI->get_list(" SELECT * FROM `users` WHERE `banned` = 'ON' AND `online` = 'ONLINE' ORDER BY id DESC") as $row){ ?>
+		<?php $i = 0;  foreach($DMH->get_list(" SELECT * FROM `users` WHERE `banned` = 'ON' AND `online` = 'ONLINE' ORDER BY id DESC") as $row){ ?>
 		<tr>
             <td><?=++$i;?></td>
 			<td><b style="color: green"><?=$row['username'];?></b></td>
@@ -48,6 +48,6 @@ CheckAdmin();
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>

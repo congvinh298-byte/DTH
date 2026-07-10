@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -14,7 +14,7 @@
             msg("error","Chưa nhận được ID hồ sơ");
         }
         
-        if(!$row = $TUANORI->get_row(" SELECT * FROM `upload_hoso` WHERE `id` = '$id'")) {
+        if(!$row = $DMH->get_row(" SELECT * FROM `upload_hoso` WHERE `id` = '$id'")) {
             msg("error","ID hồ sơ không tồn tại");
         }
         if(!$status) {
@@ -24,10 +24,10 @@
         if($status == 'thanhcong') {
             $veri = 1;
         }
-        $TUANORI->update("users", array(
+        $DMH->update("users", array(
             'verify'    => $veri
         ), " `id` = '".$row['id']."' AND `banned` = 'ON' ");
-        $TUANORI->update("upload_hoso", array(
+        $DMH->update("upload_hoso", array(
             'status'    => $status,
             'note'      => $note
         ), " `id` = '$id' ");

@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -30,11 +30,11 @@
                 $listimg = $img;
             }
 
-            if(!$row = $TUANORI->get_row(" SELECT * FROM `partner_code` WHERE `id` = '$id'")) {
+            if(!$row = $DMH->get_row(" SELECT * FROM `partner_code` WHERE `id` = '$id'")) {
                 msg("error","ID mã nguồn không tồn tại");
             }
 
-            $TUANORI->update("partner_code", array(
+            $DMH->update("partner_code", array(
                 'username'      => $getUser['username'],
                 'name'          => $name,
                 'mota'          => $mota,

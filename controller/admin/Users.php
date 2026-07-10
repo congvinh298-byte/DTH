@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -7,7 +7,7 @@
         if($getUser['level'] != 'admin') {
             msg("error", "Bạn không phải là ADMIN");
         }
-        $row = $TUANORI->get_row(" SELECT * FROM `users` WHERE `id` = '".check_string($_POST['id'])."'");
+        $row = $DMH->get_row(" SELECT * FROM `users` WHERE `id` = '".check_string($_POST['id'])."'");
         if(!$row) {
             msg("error", "Users không tồn tại");
         }
@@ -26,7 +26,7 @@
                 msg("error", "Số tiền không thể âm");
             }
             if($sotien != $row['money']) {
-                $TUANORI->insert("biendongsodu", [
+                $DMH->insert("biendongsodu", [
                     'username'      => $row['username'],
                     'truoc'         => $row['money'], 
                     'sau'           => $sotien,
@@ -35,7 +35,7 @@
                     'time'          => gettime()
                 ]);
             }
-            $TUANORI->update("users", array(
+            $DMH->update("users", array(
                 'email'         => $email,
                 'money'         => $sotien,
                 'total_money'   => $tongtien,
@@ -44,7 +44,7 @@
             ), " `id` = '".$row['id']."' ");
             if($status == 'OFF') {
                 /*THAY ĐỔI TOKEN LOG = LOGOUT*/
-                $TUANORI->update("users", array(
+                $DMH->update("users", array(
                     'tokenlog'         => rand(111,999)
                 ), " `id` = '".$row['id']."' ");
             }
@@ -58,7 +58,7 @@
             if($sotien <= 0 ) {
                 msg("error", "Số tiền cộng không hợp lệ");
             }
-            $create = $TUANORI->insert("biendongsodu", [
+            $create = $DMH->insert("biendongsodu", [
                 'username'      => $row['username'],
                 'note'          => $ghichu,
                 'truoc'         => $row['money'],
@@ -68,8 +68,8 @@
             ]);
             
             if($create) {
-                $TUANORI->cong("users", "money", $sotien, " `username` = '".$row['username']."' ");
-                $TUANORI->cong("users", "total_money", $sotien, " `username` = '".$row['username']."' ");
+                $DMH->cong("users", "money", $sotien, " `username` = '".$row['username']."' ");
+                $DMH->cong("users", "total_money", $sotien, " `username` = '".$row['username']."' ");
                 msg("success","Cộng tiền thành công!", "", 2000);
             } else {
                 msg("error", "Thêm dữ liệu lỗi!");
@@ -86,7 +86,7 @@
             if($row['money'] < $sotien) {
                 msg("error", "Số tiền bị âm sau khi trừ");
             }
-            $create = $TUANORI->insert("biendongsodu", [
+            $create = $DMH->insert("biendongsodu", [
                 'username'      => $row['username'],
                 'note'          => $ghichu,
                 'truoc'         => $row['money'],
@@ -95,7 +95,7 @@
                 'time'          => gettime()
             ]);
             if($create) {
-                $TUANORI->tru("users", "money", $sotien, " `username` = '".$row['username']."' ");
+                $DMH->tru("users", "money", $sotien, " `username` = '".$row['username']."' ");
                 msg("success","Trừ tiền thành công!", "", 2000);
             } else {
                 msg("error", "Thêm dữ liệu lỗi!");

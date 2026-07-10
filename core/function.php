@@ -1,10 +1,10 @@
 <?php
 if (!defined('IN_SITE')) die('The Request Not Found');
-$TUANORI = new TUANORI;
-$site_gmail_momo    = $TUANORI->site('email');
-$site_pass_momo     = $TUANORI->site('pass_email');
+$DMH = new DMH;
+$site_gmail_momo    = $DMH->site('email');
+$site_pass_momo     = $DMH->site('pass_email');
 require_once(__DIR__.'/../lib/Pusher.php');
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 $base_url = 'http://'.$_SERVER['SERVER_NAME'].'/'; // Thay url web bạn
 function danhmuc($data)
 {
@@ -87,7 +87,7 @@ function sendCSM($mail_nhan,$ten_nhan,$chu_de,$noi_dung,$bcc)
         $mail->SMTPDebug = 0;
         $mail ->Debugoutput = "html";
         $mail->isSMTP();
-        $mail->Host = 'mail.tuanori.vn';
+        $mail->Host = 'mail.dmh.vn';
         $mail->SMTPAuth = true;
         $mail->Username = $site_gmail_momo; // GMAIL STMP
         $mail->Password = $site_pass_momo; // PASS STMP
@@ -103,7 +103,7 @@ function sendCSM($mail_nhan,$ten_nhan,$chu_de,$noi_dung,$bcc)
         $send = $mail->send();
         return $send;
 }
-$MEMO_PREFIX = $TUANORI->site('nd_bank');
+$MEMO_PREFIX = $DMH->site('nd_bank');
 function get_id_bank($des)
 {
     global $MEMO_PREFIX;
@@ -238,7 +238,7 @@ function den() {
     $res = $_SESSION['url'] ?? '/';
     return $res;
 }
-$ck = $TUANORI->site('ckcard');
+$ck = $DMH->site('ckcard');
 function hamlogin($url)
 {
     global $tk, $mk, $login;
@@ -1104,7 +1104,7 @@ function randomtoken2($length = 15) {
 $onethang = 2592000;
 if(isset($_COOKIE['token']))
 {
-    $TUANORI->update("users", array(
+    $DMH->update("users", array(
         'timeon' => gettime(),
         'online' => 'ONLINE',
         'user_agent'    => $_SERVER['HTTP_USER_AGENT']
@@ -1112,10 +1112,10 @@ if(isset($_COOKIE['token']))
 }
 function logclient()
 {
-    global $TUANORI;
-    if(!$TUANORI->get_row(" SELECT * FROM `logclient` WHERE `ip` = '".myip()."' AND `time` >= DATE(NOW()) AND `time` < DATE(NOW()) + INTERVAL 1 DAY"))
+    global $DMH;
+    if(!$DMH->get_row(" SELECT * FROM `logclient` WHERE `ip` = '".myip()."' AND `time` >= DATE(NOW()) AND `time` < DATE(NOW()) + INTERVAL 1 DAY"))
     {
-            $TUANORI->insert("logclient", [
+            $DMH->insert("logclient", [
             'ip'    => myip(),
             'time'  => gettime()
         ]);

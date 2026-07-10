@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -21,7 +21,7 @@
             } else {
                 msg("error", "Xin chào các bạn nhé");
                 /*XỬ LÝ THÊM DANH MỤC*/
-                $create = $TUANORI->insert("danhmuctaoweb", [
+                $create = $DMH->insert("danhmuctaoweb", [
                     'title'       => $name,
                     'mota'        => $mota,
                     'img'         => $img
@@ -48,7 +48,7 @@
                 msg("error", "Hình ảnh phải là 1 url");
             } else {
                 /*XỬ LÝ THÊM DANH MỤC*/
-                $create = $TUANORI->update("danhmuctaoweb", array(
+                $create = $DMH->update("danhmuctaoweb", array(
                     'title'        => $name,
                     'mota'         => $mota,
                     'img'          => $img,
@@ -87,7 +87,7 @@
             }
             /*XỬ LÝ ĐĂNG BÁN MÃ NGUỒN*/
             if($_POST['type2'] == 'AddThemMauWeb') {
-                $create = $TUANORI->insert("danhsachtaoweb", [
+                $create = $DMH->insert("danhsachtaoweb", [
                     'id_danhmuc'        => $id_danhmuc,
                     'title'             => $name,
                     'mota'              => $mota,
@@ -105,7 +105,7 @@
             
             /*EDIT PHẦN THÊM WEBSITE*/
             if($_POST['type2'] == 'EditThemMauWeb') {
-                $TUANORI->update("danhsachtaoweb", array(
+                $DMH->update("danhsachtaoweb", array(
                     'id_danhmuc'        => $id_danhmuc,
                     'title'             => $name,
                     'mota'              => $mota,

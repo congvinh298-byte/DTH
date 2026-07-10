@@ -1,10 +1,10 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 
-if($TUANORI->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."' ")) {
+if($DMH->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."' ")) {
     msg_error2('Bạn đã bị chặn sử dụng tính năng của chúng tôi vĩnh viễn. Xin cảm ơn');
 }
 if(empty($_COOKIE['token']))
@@ -21,23 +21,23 @@ if(isset($_SESSION['muacode'])) {
 }
 if($getUser['total_money'] >= 0) {
     $mgg = check_string($_POST['mgg']);
-    if($TUANORI->num_rows(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ") < 1)
+    if($DMH->num_rows(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ") < 1)
     {
         msg_error2("Bạn không có sản phẩm để thanh toán");
     }
-    $sotien = $TUANORI->get_row("SELECT SUM(`sotien`) FROM `giohang` WHERE `username` = '".$getUser['username']."' ")['SUM(`sotien`)'];
-    $tongsp = $TUANORI->num_rows(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ");
-    $tongspcophi = $TUANORI->num_rows(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' AND `sotien` > 0 ");
+    $sotien = $DMH->get_row("SELECT SUM(`sotien`) FROM `giohang` WHERE `username` = '".$getUser['username']."' ")['SUM(`sotien`)'];
+    $tongsp = $DMH->num_rows(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ");
+    $tongspcophi = $DMH->num_rows(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' AND `sotien` > 0 ");
     if($tongsp <=0) msg_error2("Sản phẩm không có!");
     if($mgg) {
-        if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgia') > 0) {
+        if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0) {
             msg_error2("Đang có sự kiện giảm giá, không thể sử dụng mã.");
         }
         if($sotien == 0)
         {
             msg_error2("Code miễn phí, không áp dụng mã giảm giá");
         }
-        $check2 = $TUANORI->get_row(" SELECT * FROM `magiamgia` WHERE `magiamgia` = '$mgg'");
+        $check2 = $DMH->get_row(" SELECT * FROM `magiamgia` WHERE `magiamgia` = '$mgg'");
         if(!$check2)
         {
             msg_error2("Mã giảm giá chưa đúng");
@@ -54,7 +54,7 @@ if($getUser['total_money'] >= 0) {
         {
             // $sotien = $sotien - $sotien*$check2['giambaonhieu']/100;
             /*XỬ LÝ GIẢM GIÁ TỪNG ĐƠN HÀNG*/
-            foreach($TUANORI->get_list(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC") as $ok) {
+            foreach($DMH->get_list(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC") as $ok) {
                 $sotien+= $ok['sotien'] - $ok['sotien'] * $check2['giambaonhieu']/100;
             }
         }
@@ -65,10 +65,10 @@ if($getUser['total_money'] >= 0) {
     }
 
     /*XỬ LÝ NẾU CÓ TỒN TẠI SỰ KIỆN GIẢM GIÁ*/
-    if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgia') > 0) {
+    if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0) {
         $sotien = 0;
-        foreach($TUANORI->get_list(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC") as $ok) {
-            $sotien+= $ok['sotien'] - $ok['sotien'] * $TUANORI->site('ptgiamgia')/100;
+        foreach($DMH->get_list(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC") as $ok) {
+            $sotien+= $ok['sotien'] - $ok['sotien'] * $DMH->site('ptgiamgia')/100;
         }
         $mgg = 'SỰ KIỆN';
     }
@@ -83,7 +83,7 @@ if($getUser['total_money'] >= 0) {
     {
         if($sotien > 0)
         {
-            $create = $TUANORI->insert("biendongsodu", [
+            $create = $DMH->insert("biendongsodu", [
                 'username'      => $getUser['username'],
                 'truoc'         => $my_money,
                 'sau'           => $my_money - $sotien,
@@ -98,13 +98,13 @@ if($getUser['total_money'] >= 0) {
         }
         if($create)
         {
-            $isMoney = $TUANORI->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
+            $isMoney = $DMH->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
             if($isMoney)
             {
                 if($mgg)
                 {
-                    $mgg2 = $TUANORI->tru("magiamgia", "conlai", $tongspcophi, " `magiamgia` = '$mgg'");
-                    $TUANORI->cong("magiamgia", "dasudung", $tongspcophi, " `magiamgia` = '$mgg'");
+                    $mgg2 = $DMH->tru("magiamgia", "conlai", $tongspcophi, " `magiamgia` = '$mgg'");
+                    $DMH->cong("magiamgia", "dasudung", $tongspcophi, " `magiamgia` = '$mgg'");
                     if(!$mgg2)
                     {
                         msg_error2("Lỗi cấu hình CSDL rồi");
@@ -112,10 +112,10 @@ if($getUser['total_money'] >= 0) {
                 }
                 if($tongsp > 1) {
                     $magd = strtoupper(substr(randomtoken(), 0 , 7));
-                    foreach($TUANORI->get_list(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC") as $row){
-                        $TUANORI->cong("danhsachmuacode", "luottai", 1, " `id` = '".$row['id_code']."'");
+                    foreach($DMH->get_list(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC") as $row){
+                        $DMH->cong("danhsachmuacode", "luottai", 1, " `id` = '".$row['id_code']."'");
                         
-                        $TUANORI->insert("lichsumuacode2", [
+                        $DMH->insert("lichsumuacode2", [
                             'username'  => $getUser['username'],
                             'magd'      => $magd,
                             'id_code'   => $row['id_code'],
@@ -129,15 +129,15 @@ if($getUser['total_money'] >= 0) {
                 }
                 else
                 {
-                    $check = $TUANORI->get_row(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' LIMIT 1");
+                    $check = $DMH->get_row(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' LIMIT 1");
                     $macodene = $check['id_code'];
                     
                 }
-                $TUANORI->remove("giohang", " `username` = '".$getUser['username']."' ");
+                $DMH->remove("giohang", " `username` = '".$getUser['username']."' ");
                 $_SESSION['muacode'] = time() + 15*$tongsp; // 15s mua được 1 lần code
                 if($tongsp > 1) 
                 {
-                    $TUANORI->insert("lichsumuacode", [
+                    $DMH->insert("lichsumuacode", [
                         'username'          => $getUser['username'],
                         'magd'              => $macodene,
                         'id_code'           => $macodene,
@@ -150,7 +150,7 @@ if($getUser['total_money'] >= 0) {
                 }
                 else
                 {
-                    $TUANORI->insert("lichsumuacode", [
+                    $DMH->insert("lichsumuacode", [
                         'username'          => $getUser['username'],
                         'id_code'           => $macodene,
                         'magiamgia'         => $mgg,

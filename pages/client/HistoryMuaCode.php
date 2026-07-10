@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -22,7 +22,7 @@ CheckLogin();
                             <div class="flex-1">
                                 <div class="max-w-[180px]">
                                     <h4 class="mb-2 text-2xl font-medium text-[#27374D]"><span class="block text-sm">Code đã mua,</span>
-                                    <span class="block"><?=number_format($TUANORI->num_rows(" SELECT * FROM `lichsumuacode` WHERE`username` = '".$getUser['username']."'"));?></span></h4>
+                                    <span class="block"><?=number_format($DMH->num_rows(" SELECT * FROM `lichsumuacode` WHERE`username` = '".$getUser['username']."'"));?></span></h4>
                                 </div>
                             </div>
                             <div class="flex-none"><a href="/mua-source-code" class="btn-light btn-sm btn bg-white">MUA THÊM</a>
@@ -32,7 +32,7 @@ CheckLogin();
                             <div class="flex-1">
                                 <div class="max-w-[180px]">
                                     <h4 class="mb-2 text-2xl font-medium text-white"><span class="block text-sm"> Số Tiền Đã Mua, </span>
-                                    <span class="block"><?=number_format($TUANORI->get_row("SELECT SUM(`tongtien`) FROM `lichsumuacode` WHERE `username` = '".$getUser['username']."'  ")['SUM(`tongtien`)']);?> ₫</span></h4>
+                                    <span class="block"><?=number_format($DMH->get_row("SELECT SUM(`tongtien`) FROM `lichsumuacode` WHERE `username` = '".$getUser['username']."'  ")['SUM(`tongtien`)']);?> ₫</span></h4>
                                 </div>
                             </div>
                             <div class="flex-none"><a href="/mua-source-code" class="btn-light btn-sm btn bg-white">MUA THÊM</a>
@@ -81,7 +81,7 @@ CheckLogin();
                                                                 </tr>
                                                             </thead>
                                                             <tbody class="ant-table-tbody">
-                                                                <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `lichsumuacode` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC LIMIT 50") as $row){ ?>
+                                                                <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `lichsumuacode` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC LIMIT 50") as $row){ ?>
                                                                     <tr class="ant-table-row ant-table-row-level-0">
                                                                         <td class="ant-table-cell"><?=++$i;?></td>
                                                                         <td class="ant-table-cell">
@@ -98,7 +98,7 @@ CheckLogin();
                                                                         </td>
                                                                         <td class="ant-table-cell"><?=sotienmua($row['tongtien']);?></td>
                                                                         <td class="ant-table-cell"><?=$row['time'];?></td>
-                                                                        <?php $code = $TUANORI->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$row['id_code']."' AND `hienthi` = 'SHOW'"); ?>
+                                                                        <?php $code = $DMH->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$row['id_code']."' AND `hienthi` = 'SHOW'"); ?>
                                                                         <td class="ant-table-cell">
                                                                             <?php if(empty($row['magd'])) { ?>
                                                                                 <a target="_bank" href="<?=$code['download'];?>">
@@ -144,6 +144,6 @@ CheckLogin();
 </div>
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

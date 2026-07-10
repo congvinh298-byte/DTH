@@ -24,10 +24,10 @@ CheckAdmin();
 		</tr>
 	</thead>
 	<tbody>
-        <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `partner_biendongsodu` WHERE `username` = '".$getUser['username']."'  ORDER BY id DESC LIMIT 100") as $row){ ?>
+        <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `partner_biendongsodu` WHERE `username` = '".$getUser['username']."'  ORDER BY id DESC LIMIT 100") as $row){ ?>
         <tr>
             <td><?=++$i;?></td>
-            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
+            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
             <td><b><?=number_format($row['truoc']);?>đ</b></td>
             <td>
                 <?php if($row['sau'] > $row['truoc']) {
@@ -46,6 +46,6 @@ CheckAdmin();
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/partner/Footer.php");
 ?>

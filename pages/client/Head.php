@@ -96,9 +96,9 @@
   <meta property="og:title" content="<?=$title;?>">
   <meta property="og:site_name" content="<?=$title;?>">
   <meta property="og:description" content="<?=$mota;?>">
-<?php } else {  $tieude2 = ' - '. $TUANORI->site('title'); ?>
-  <meta name="description" content="<?=$TUANORI->site('mota');?>">
-  <meta name="keywords" content="<?=$TUANORI->site('tukhoa');?>">
+<?php } else {  $tieude2 = ' - '. $DMH->site('title'); ?>
+  <meta name="description" content="<?=$DMH->site('mota');?>">
+  <meta name="keywords" content="<?=$DMH->site('tukhoa');?>">
   <meta name="author" content="">
   <meta name="robots" content="index, follow">
   <meta name="googlebot" content="index, follow">
@@ -106,18 +106,18 @@
   <meta name="generator" content="<?=strtoupper($_SERVER['SERVER_NAME']);?>">
   <link rel="canonical" href="<?=strtoupper($_SERVER['SERVER_NAME']);?>">
 
-  <meta name="application-name" content="<?=$TUANORI->site('title');?>">
-  <meta property="og:image:secure_url" content="<?=$TUANORI->site('anhbia');?>">
-  <meta property="og:image:alt" content="<?=$TUANORI->site('title');?>">
+  <meta name="application-name" content="<?=$DMH->site('title');?>">
+  <meta property="og:image:secure_url" content="<?=$DMH->site('anhbia');?>">
+  <meta property="og:image:alt" content="<?=$DMH->site('title');?>">
 
-  <meta property="og:image" content="<?=$TUANORI->site('anhbia');?>">
-  <meta property="og:title" content="<?=$TUANORI->site('title');?>">
-  <meta property="og:description" content="<?=$TUANORI->site('mota');?>">
+  <meta property="og:image" content="<?=$DMH->site('anhbia');?>">
+  <meta property="og:title" content="<?=$DMH->site('title');?>">
+  <meta property="og:description" content="<?=$DMH->site('mota');?>">
   <meta property="og:url" content="<?='https://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];?>">
 
-  <meta property="og:title" content="<?=$TUANORI->site('title');?>">
-  <meta property="og:site_name" content="<?=$TUANORI->site('title');?>">
-  <meta property="og:description" content="<?=$TUANORI->site('mota');?>">
+  <meta property="og:title" content="<?=$DMH->site('title');?>">
+  <meta property="og:site_name" content="<?=$DMH->site('title');?>">
+  <meta property="og:description" content="<?=$DMH->site('mota');?>">
 <?php } ?>
 
   <meta property="og:type" content="website">

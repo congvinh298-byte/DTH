@@ -1,21 +1,21 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../core/config.php");
 require_once("../core/function.php");
-//https://localhost/api/Taoweb.php?token=25729BD0EACBFABFEB77C72037EF92&domain=tuanorii.com&nam=1&name1=213&name2=2
+//https://localhost/api/Taoweb.php?token=25729BD0EACBFABFEB77C72037EF92&domain=dmhi.com&nam=1&name1=213&name2=2
 if(empty($_GET['token'])) {
     json_code(false, "Thiếu dữ liệu token gửi lên");
 }
 $token = check_string($_GET['token']);
-$check_api = $TUANORI->get_row(" SELECT * FROM `users` WHERE `token_api` = '$token' AND `banned` = 'ON' ");
+$check_api = $DMH->get_row(" SELECT * FROM `users` WHERE `token_api` = '$token' AND `banned` = 'ON' ");
 if(!$check_api || $token !== $check_api['token_api']) {
     json_code(false, "Token không tồn tại hoặc tài khoản đã bị đình chỉ");
 } else {
-    if($TUANORI->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."' ")) {
+    if($DMH->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."' ")) {
         json_code(false, "Bạn đã bị chặn sử dụng tính năng của chúng tôi vĩnh viễn. Xin cảm ơn");
     }
-    $api_keys = $TUANORI->get_row(" SELECT * FROM `key_apis` WHERE `username` = '".$check_api['username']."'");
+    $api_keys = $DMH->get_row(" SELECT * FROM `key_apis` WHERE `username` = '".$check_api['username']."'");
     if($api_keys) {
         if($api_keys['buy_domain'] == 'ON') {
             if(empty($_GET['domain'])) {    
@@ -45,7 +45,7 @@ if(!$check_api || $token !== $check_api['token_api']) {
             if(preg_match('/[#@! $%^&*()+=\-\[\]\';,.\/{}|":<>?~\\\\]/', $ten)) {
                 json_code(false, "Tên miền không được chứa kí tự lạ");
             }
-            $data   = $TUANORI->get_row(" SELECT * FROM `danhsachmien` WHERE `domain` = '".$duoi."' ");
+            $data   = $DMH->get_row(" SELECT * FROM `danhsachmien` WHERE `domain` = '".$duoi."' ");
             if(!$data) {
                 json_code(false, "Chúng tôi không hỗ trợ đuôi miền $duoi");
             }
@@ -53,7 +53,7 @@ if(!$check_api || $token !== $check_api['token_api']) {
             // if($sotien > $check_api['money']) {
             //     json_code(false, "Tài khoản của bạn không đủ tiền để mua tên miền");
             // }
-            $duoi1 = $TUANORI->get_row(" SELECT * FROM `danhsachmien` WHERE `domain` = '$duoi' ");
+            $duoi1 = $DMH->get_row(" SELECT * FROM `danhsachmien` WHERE `domain` = '$duoi' ");
             $sotien = $duoi1['money'] + ($nam-1)*$duoi1['giahan'];
             if ($sotien < 1) {
                 json_code(false, "Số tiền không hợp lệ");
@@ -93,7 +93,7 @@ if(!$check_api || $token !== $check_api['token_api']) {
 
             // KIỂM TRA TÊN MIỀN
             if($check['status'] != '1') {
-                $isMoney = $TUANORI->tru("users", "money", $sotien, " `token_api` = '$token'");
+                $isMoney = $DMH->tru("users", "money", $sotien, " `token_api` = '$token'");
                 if($isMoney) {
                     $nss = '';
                     $datans = [];
@@ -101,7 +101,7 @@ if(!$check_api || $token !== $check_api['token_api']) {
                         $nss .= $okk."\n";
                         array_push($datans, $okk);
                     }
-                    $create = $TUANORI->insert("lichsumuamien", [
+                    $create = $DMH->insert("lichsumuamien", [
                         'username'      => $check_api['username'],
                         'domain'        => $domain,
                         'ns'            => $nss,
@@ -113,7 +113,7 @@ if(!$check_api || $token !== $check_api['token_api']) {
                         'type'          => 'API'
                     ]);
                     if($create) {
-                        $update = $TUANORI->insert("biendongsodu", [
+                        $update = $DMH->insert("biendongsodu", [
                             'username'      => $check_api['username'],
                             'truoc'         => $check_api['money'],
                             'sau'           => $check_api['money'] - $sotien,

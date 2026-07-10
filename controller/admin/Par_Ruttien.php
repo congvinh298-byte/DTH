@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -17,13 +17,13 @@
         if(!$atm || !$stk || !$name || !$sotien || !$status) {
             msg("error", "Vui lòng không bỏ trống thông tin");
         }
-        if(!$row = $TUANORI->get_row(" SELECT * FROM `partner_ruttien` WHERE `id` = '$id' ")) {
+        if(!$row = $DMH->get_row(" SELECT * FROM `partner_ruttien` WHERE `id` = '$id' ")) {
             msg("error", "Đơn rút tiền không tồn tại"); 
         }
         if($row['status'] == 'thatbai') {
             msg("error", "Đơn rút tiền này đã được xử lý từ trước"); 
         }
-        $TUANORI->update("partner_ruttien", array(
+        $DMH->update("partner_ruttien", array(
             'atm'       => $atm,
             'stk'       => $stk,
             'name'      => $name,
@@ -32,10 +32,10 @@
             'status'    => $status
         ), " `id` = '$id' ");
         if($status == 'thatbai') {
-            $userr = $TUANORI->getUser($row['username']);
+            $userr = $DMH->getUser($row['username']);
             $sotien = $row['sotien'] + 5000;
-            $isMoney = $TUANORI->cong("users", "money_partner", $sotien, " `username` = '".$row['username']."'");
-            $TUANORI->insert("partner_biendongsodu", [
+            $isMoney = $DMH->cong("users", "money_partner", $sotien, " `username` = '".$row['username']."'");
+            $DMH->insert("partner_biendongsodu", [
                 'username'      => $row['username'],
                 'usermua'       => $row['username'],
                 'truoc'         => $userr['money_partner'],

@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -34,13 +34,13 @@ if(isset($_GET['name']) && isset($_GET['duoi'])) {
                                   <form method="POST" class="space-y-3">
                                       <div class="input-area">
                                           <label for="ten" class="form-label">Nhập tên miền</label>
-                                          <input type="text" class="form-control  py-2" id="ten" placeholder="VD: tuanori" value="<?=$name;?>" required="">
+                                          <input type="text" class="form-control  py-2" id="ten" placeholder="VD: dmh" value="<?=$name;?>" required="">
                                       </div>
                                       <div class="input-area">
                                           <label for="duoi" class="form-label">Chọn Đuôi Miền</label>
                                           <select class="form-control" id="duoi" required>
                                             <option value="0">Chọn loại miền</option>
-                                              <?php foreach($TUANORI->get_list(" SELECT * FROM `danhsachmien`") as $row){ ?>
+                                              <?php foreach($DMH->get_list(" SELECT * FROM `danhsachmien`") as $row){ ?>
                                                 <option value="<?=$row['id'];?>" <?=($duoi == $row['domain']) ? 'selected': '';?> >.<?=$row['domain'];?> - (<?=format_cash($row['money']);?>đ)</option>
                                               <?php } ?>
                                           </select>
@@ -179,7 +179,7 @@ if(isset($_GET['name']) && isset($_GET['duoi'])) {
                                                                 </tr>
                                                             </thead>
                                                             <tbody class="ant-table-tbody">
-                                                                <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `lichsumuamien` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC") as $row){ ?>
+                                                                <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `lichsumuamien` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC") as $row){ ?>
                                                                     <tr class="ant-table-row ant-table-row-level-0">
                                                                         <td class="ant-table-cell"><?=++$i;?></td>
                                                                         <td class="ant-table-cell"><a target="_blank" style="color: green" href="//<?=$row['domain'];?>"><b><?=$row['domain'];?></b></a></td>
@@ -239,6 +239,6 @@ if(isset($_GET['name']) && isset($_GET['duoi'])) {
 </div>
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

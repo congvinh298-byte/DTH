@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -19,7 +19,7 @@
     if(empty($_FILES['file1']) || empty($_FILES['file2']) || empty($_FILES['file3'])) {
         msg_error2('Vui lòng gửi ảnh lên cho đầy đủ.');
     }
-    if($TUANORI->get_row(" SELECT * FROM `upload_hoso` WHERE `username` = '".$getUser['username']."' AND `status` = 'xuly'  ")) {
+    if($DMH->get_row(" SELECT * FROM `upload_hoso` WHERE `username` = '".$getUser['username']."' AND `status` = 'xuly'  ")) {
         msg_error2('Bạn đang có hồ sơ đang chờ xử lý.');
     }
     $arr = [];
@@ -30,7 +30,7 @@
     $resultCreate       = upload_imgur($_FILES['file3']['tmp_name']);
     array_push($arr, json_decode($resultCreate, true)['data']['link']);
     /*XỬ LÝ THÔNG TIN KHI ĐÃ HOÀN THÀNH */
-    $create = $TUANORI->insert("upload_hoso", [
+    $create = $DMH->insert("upload_hoso", [
         'username'  => $getUser['username'],
         'mattruoc'  => $arr[0],
         'matsau'    => $arr[1],

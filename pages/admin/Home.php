@@ -6,19 +6,19 @@ $tieude = 'TRANG QUẢN TRỊ HỆ THỐNG';
 require_once("../../pages/admin/Head.php");
 require_once("../../pages/admin/Header.php");
 CheckAdmin();
-$tvdkhn = $TUANORI->num_rows(" SELECT * FROM `users` WHERE `timereg` >= DATE(NOW()) AND `timereg` < DATE(NOW()) + INTERVAL 1 DAY ") ?? 0;
-$viewhn = $TUANORI->num_rows(" SELECT * FROM `logclient` WHERE `ip` != '' AND `time` >= DATE(NOW()) AND `time` < DATE(NOW()) + INTERVAL 1 DAY ") ?? 0;
+$tvdkhn = $DMH->num_rows(" SELECT * FROM `users` WHERE `timereg` >= DATE(NOW()) AND `timereg` < DATE(NOW()) + INTERVAL 1 DAY ") ?? 0;
+$viewhn = $DMH->num_rows(" SELECT * FROM `logclient` WHERE `ip` != '' AND `time` >= DATE(NOW()) AND `time` < DATE(NOW()) + INTERVAL 1 DAY ") ?? 0;
 
 // doanh thu hôm nay
-$tiencard = $TUANORI->get_row("SELECT SUM(`thucnhan`) FROM `napcard` WHERE `status` = 'thanhcong' AND `thoigian` >= DATE(NOW()) AND `thoigian` < DATE(NOW()) + INTERVAL 1 DAY ")['SUM(`thucnhan`)'];
-$tienatm  = $TUANORI->get_row("SELECT SUM(`sotien`) FROM `napatm` WHERE `thoigian` >= DATE(NOW()) AND `thoigian` < DATE(NOW()) + INTERVAL 1 DAY ")['SUM(`sotien`)'];
+$tiencard = $DMH->get_row("SELECT SUM(`thucnhan`) FROM `napcard` WHERE `status` = 'thanhcong' AND `thoigian` >= DATE(NOW()) AND `thoigian` < DATE(NOW()) + INTERVAL 1 DAY ")['SUM(`thucnhan`)'];
+$tienatm  = $DMH->get_row("SELECT SUM(`sotien`) FROM `napatm` WHERE `thoigian` >= DATE(NOW()) AND `thoigian` < DATE(NOW()) + INTERVAL 1 DAY ")['SUM(`sotien`)'];
 $doanhthuhn = $tiencard + $tienatm;
 
 //download code hôm nay 
 $downhn = 0;
-foreach($TUANORI->get_list(" SELECT * FROM `lichsumuacode` WHERE `time` >= DATE(NOW()) AND `time` < DATE(NOW()) + INTERVAL 1 DAY") as $ok) {
+foreach($DMH->get_list(" SELECT * FROM `lichsumuacode` WHERE `time` >= DATE(NOW()) AND `time` < DATE(NOW()) + INTERVAL 1 DAY") as $ok) {
     if(isset($ok['magd'])) {
-        $downhn +=$TUANORI->num_rows(" SELECT * FROM `lichsumuacode2` WHERE `magd` = '".$ok['magd']."' ") ?? 0;
+        $downhn +=$DMH->num_rows(" SELECT * FROM `lichsumuacode2` WHERE `magd` = '".$ok['magd']."' ") ?? 0;
     } else {
         ++$downhn;
     }
@@ -109,10 +109,10 @@ foreach($TUANORI->get_list(" SELECT * FROM `lichsumuacode` WHERE `time` >= DATE(
                 </thead>
 
                 <tbody>
-                    <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `biendongsodu` ORDER BY id DESC LIMIT 6") as $row){ ?>
+                    <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `biendongsodu` ORDER BY id DESC LIMIT 6") as $row){ ?>
                     <tr>
                         <td><?=++$i;?></td>
-                        <td><a target="_blank" style="color: #0099CC; font-weight: bold" href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['username'])['id'];?>"><?=$row['username'];?></a></td>
+                        <td><a target="_blank" style="color: #0099CC; font-weight: bold" href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['username'])['id'];?>"><?=$row['username'];?></a></td>
                         <td><b><?=number_format($row['truoc']);?>đ</b></td>
                         <td>
                             <?php if($row['sau'] > $row['truoc']) {
@@ -167,10 +167,10 @@ foreach($TUANORI->get_list(" SELECT * FROM `lichsumuacode` WHERE `time` >= DATE(
                 </thead>
 
                 <tbody>
-                    <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `lichsutaoweb` WHERE `buoc` = '3' ORDER BY id DESC LIMIT 6") as $row){ ?>
+                    <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `lichsutaoweb` WHERE `buoc` = '3' ORDER BY id DESC LIMIT 6") as $row){ ?>
                     <tr>
                         <td><?=++$i;?></td>
-                        <td><a target="_blank" style="color: #0099CC; font-weight: bold" href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['username'])['id'];?>"><?=$row['username'];?></a></td>
+                        <td><a target="_blank" style="color: #0099CC; font-weight: bold" href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['username'])['id'];?>"><?=$row['username'];?></a></td>
                         <td><a target="_blank" href ="//<?=$row['tenmien'];?>" style="color: green; font-weight: bold;"><?=$row['tenmien'];?></a></td>
                         <td><b style="color: red"><?=number_format($row['tongtien']);?>đ</b></td>
                         <td ><b><?=gettime2($row['ngaytao']);?></b></td>
@@ -194,6 +194,6 @@ foreach($TUANORI->get_list(" SELECT * FROM `lichsumuacode` WHERE `time` >= DATE(
  
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>

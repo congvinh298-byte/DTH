@@ -1,16 +1,16 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 if(isset($_POST['id']) && isset($_COOKIE['token'])) {
     $id = check_string($_POST['id']);
     if($id == -1) {
-        $TUANORI->remove("giohang", " `username` = '".$getUser['username']."' ");
+        $DMH->remove("giohang", " `username` = '".$getUser['username']."' ");
         echo json_encode(['status' => 'success', 'msg' => 'Đã xóa hết giỏ hàng']);
         die;
     } else {
-        $TUANORI->remove("giohang", " `id` = '".$id."' AND `username` = '".$getUser['username']."' ");
+        $DMH->remove("giohang", " `id` = '".$id."' AND `username` = '".$getUser['username']."' ");
         echo json_encode(['status' => 'success', 'msg' => 'Đã xóa khỏi giỏ hàng']);
         die;
     }
@@ -82,9 +82,9 @@ CheckLogin();
                                                                 </tr>
                                                             </thead>
                                                             <tbody class="ant-table-tbody">
-                                                                <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC") as $row){
-                                                                        if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgia') > 0) {
-                                                                            $tienid= $row['sotien'] - ($row['sotien']*$TUANORI->site('ptgiamgia')/100);
+                                                                <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `giohang` WHERE `username` = '".$getUser['username']."' ORDER BY id DESC") as $row){
+                                                                        if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0) {
+                                                                            $tienid= $row['sotien'] - ($row['sotien']*$DMH->site('ptgiamgia')/100);
                                                                         } else {
                                                                             $tienid = $row['sotien'];                                                                            
                                                                         }
@@ -97,7 +97,7 @@ CheckLogin();
                                                                                 <span class="badge bg-warning rounded-lg" style="background-color: #FFC436"><?=$row['id_code'];?></span>
                                                                             </a>
                                                                         </td>
-                                                                        <?php $check2 = $TUANORI->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$row['id_code']."' "); ?>
+                                                                        <?php $check2 = $DMH->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$row['id_code']."' "); ?>
                                                                         <td class="ant-table-cell"><?=sotienmua($tienid);?></td>
                                                                         <td class="ant-table-cell"><a href="<?=$check2['img']?>" class="glightbox">
                                                                             <img style="height: 100px; width: 500px" src="/images/svg/spinner.svg" data-src="<?=$check2['img']?>" class="lazyload" alt="<?=$check2['title'];?>" />
@@ -178,6 +178,6 @@ CheckLogin();
     }
 </script>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

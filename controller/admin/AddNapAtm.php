@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -17,17 +17,17 @@
         if($money <= 0) {
             msg("error", "Số tiền nạp không hợp lệ"); 
         }
-        $check = $TUANORI->get_row(" SELECT * FROM `users` WHERE `id` = '$id_user'");
+        $check = $DMH->get_row(" SELECT * FROM `users` WHERE `id` = '$id_user'");
         if(!$check) {
             msg("error", "Thành viên nạp tiền không hợp lệ");
         }
         if($check['banned'] == 'OFF') {
             msg("error", "Thành viên này đã bị khóa"); 
         }
-        if($TUANORI->get_row(" SELECT * FROM `napatm` WHERE `hinhthuc` = '$nameatm' AND `magd` = '$magd' ")) {
+        if($DMH->get_row(" SELECT * FROM `napatm` WHERE `hinhthuc` = '$nameatm' AND `magd` = '$magd' ")) {
             msg("error", "Thông tin nạp tiền này đã có trong hệ thống"); 
         }
-        $cr1 = $TUANORI->insert("biendongsodu", [
+        $cr1 = $DMH->insert("biendongsodu", [
             'username'      => $check['username'],
             'truoc'         => $check['money'],
             'sau'           => $check['money'] + $money,
@@ -35,13 +35,13 @@
             'note'          => "Nạp ".format_cash($money)."đ vào tài khoản qua $nameatm",
             'time'          => gettime()
         ]);
-        $cr2 = $TUANORI->insert("napatm", [
+        $cr2 = $DMH->insert("napatm", [
             'username'       => $check['username'],
             'hinhthuc'       => $nameatm,
             'magd'           => $magd,
             'sotien'         => $money,
             'thoigian'       => gettime(),
-            'ndnaptien'      => $TUANORI->site('nd_bank').' '.$id_user
+            'ndnaptien'      => $DMH->site('nd_bank').' '.$id_user
         ]);
         if($cr1 && $cr2) {
             msg("success", "Đã thêm thông tin nạp tiền thành công.", "/Admin/LichsunaptienATM", 2000); 

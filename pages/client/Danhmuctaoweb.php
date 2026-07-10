@@ -1,6 +1,6 @@
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -32,7 +32,7 @@ require_once("../../pages/client/Header.php");
                                 </div>
                             </div>
                             <div class="ant-row css-eq3tly" style="margin-left: -9px; margin-right: -9px;">
-                                <?php foreach($TUANORI->get_list(" SELECT * FROM `danhmuctaoweb` WHERE `status` = 'SHOW' ") as $row){ ?>
+                                <?php foreach($DMH->get_list(" SELECT * FROM `danhmuctaoweb` WHERE `status` = 'SHOW' ") as $row){ ?>
                                     <div class="ant-col ant-col-xs-24 ant-col-md-8 ant-col-lg-6 mb-2 mt-2 cursor-pointer css-eq3tly" style="padding-left: 9px; padding-right: 9px;">
                                         <div class="ant-ribbon-wrapper css-eq3tly">
                                             <div class="ant-ribbon-wrapper css-eq3tly">
@@ -63,7 +63,7 @@ require_once("../../pages/client/Header.php");
                                                         </div>
                                                         <div class="text-center grid grid-cols-2 gap-3">
                                                             <div class="col-span-2">
-                                                                <div class="border border-red-500 rounded-lg p-1 font-bold">Hiện có <span class="text-green-600"><?=number_format($TUANORI->num_rows(" SELECT * FROM `danhsachtaoweb` WHERE `id_danhmuc` = '".$row['id']."'"));?></span> mẫu</span>
+                                                                <div class="border border-red-500 rounded-lg p-1 font-bold">Hiện có <span class="text-green-600"><?=number_format($DMH->num_rows(" SELECT * FROM `danhsachtaoweb` WHERE `id_danhmuc` = '".$row['id']."'"));?></span> mẫu</span>
                                                                 </div>
                                                             </div>
                                                             <div class="col-span-2">
@@ -79,7 +79,7 @@ require_once("../../pages/client/Header.php");
                                                 </div>
                                             </div>
 
-                                            <?php if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('ptgiamgia') > 0) { ?>
+                                            <?php if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0) { ?>
                                             <div class="ant-ribbon ant-ribbon-placement-start ant-ribbon-color-green css-eq3tly"><span class="ant-ribbon-text">ĐANG GIẢM GIÁ</span>
                                                 <div class="ant-ribbon-corner"></div>
                                             </div>
@@ -101,6 +101,6 @@ require_once("../../pages/client/Header.php");
 </div>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

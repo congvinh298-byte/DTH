@@ -11,7 +11,7 @@ CheckAdmin();
 if(isset($_GET['id']) && $getUser['level'] == 'admin')
 {
     $id = check_string($_GET['id']);
-    $row = $TUANORI->get_row(" SELECT * FROM `upload_hoso` WHERE `id` = '".$_GET['id']."'");
+    $row = $DMH->get_row(" SELECT * FROM `upload_hoso` WHERE `id` = '".$_GET['id']."'");
     if(!$row) {
         echo msg_admin("error","Mã nguồn không tồn tại",BASE_URL('Admin/HosoXacMinh'), 1000); die;
     }
@@ -128,7 +128,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin')
 </div>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

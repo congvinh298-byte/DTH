@@ -10,11 +10,11 @@ CheckAdmin();
 <?php
 if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `partner_code` WHERE `id` = '".$_GET['xoa']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `partner_code` WHERE `id` = '".$_GET['xoa']."'");
     if(!$user2) {
         echo msg_admin("error", "Đơn đăng bán code không tồn tại", BASE_URL('Admin/Par_manguon'), 1000);
     } else {
-        $dele = $TUANORI->remove("partner_code", " `id` = '".$_GET['xoa']."' ");
+        $dele = $DMH->remove("partner_code", " `id` = '".$_GET['xoa']."' ");
         if($dele) {
             echo msg_admin("success","Đã đơn bán code thành công", BASE_URL('Admin/Par_manguon'), 1000);
         } else {
@@ -38,13 +38,13 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
             <th>Thao tác</th>
 		</tr>
 	</thead>
-	<?php $i = 1;  foreach($TUANORI->get_list(" SELECT * FROM `partner_code` ORDER BY id DESC LIMIT 50") as $row){ ?>
+	<?php $i = 1;  foreach($DMH->get_list(" SELECT * FROM `partner_code` ORDER BY id DESC LIMIT 50") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
             <td><a target="_blank" href="/pages/admin/EditDanhmucbancode.php?id=<?=$row['id_danhmuc'];?>"><span class="btn btn-info" style="padding: 4px 8px;"><?=$row['id_danhmuc'];?></span></a></td>
             <td><b style="font-size: 13px; color: black"><?=$row['name'];?></b></td>
             <td style="color: green; font-weight:bold;"><?=sotienmua(format_cash($row['sotien']));?></td>
-            <td style="color: red; font-weight:bold;"><?=number_format($TUANORI->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$row['id_public']."' ")['luottai'] ?? 0);?> lượt</td>
+            <td style="color: red; font-weight:bold;"><?=number_format($DMH->get_row(" SELECT * FROM `danhsachmuacode` WHERE `id` = '".$row['id_public']."' ")['luottai'] ?? 0);?> lượt</td>
             <td> <img class="rounded" src="<?=$row['img'];?>" style="width: 300px; height: 100px"> </td>
             <td><?=hoso($row['status']);?></td>
             <td>
@@ -64,7 +64,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin')
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

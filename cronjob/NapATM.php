@@ -1,30 +1,30 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 /*CRON 1P 1 LẦN*/   
 define("IN_SITE", true);
 require_once("../core/config.php");
 require_once("../core/function.php");
-if(!$TUANORI->site('token_bank') || !$TUANORI->site('stk_bank') || !$TUANORI->site('user_bank') || !$TUANORI->site('mk_bank') || !$TUANORI->site('loaibank')) {
+if(!$DMH->site('token_bank') || !$DMH->site('stk_bank') || !$DMH->site('user_bank') || !$DMH->site('mk_bank') || !$DMH->site('loaibank')) {
     die('Dữ liệu chưa có để api');
 }
-// print("https://api.web2m.com/historyapimb/".$TUANORI->site('mk_bank')."/".$TUANORI->site('stk_bank')."/".$TUANORI->site('token_bank')); die;
-$data = json_decode(curl_get("https://api.web2m.com/historyapimb/".$TUANORI->site('mk_bank')."/".$TUANORI->site('stk_bank')."/".$TUANORI->site('token_bank')), true);
-// $data = json_decode(curl_get("https://tuanori.tech/a.json"), true);
+// print("https://api.web2m.com/historyapimb/".$DMH->site('mk_bank')."/".$DMH->site('stk_bank')."/".$DMH->site('token_bank')); die;
+$data = json_decode(curl_get("https://api.web2m.com/historyapimb/".$DMH->site('mk_bank')."/".$DMH->site('stk_bank')."/".$DMH->site('token_bank')), true);
+// $data = json_decode(curl_get("https://dmh.tech/a.json"), true);
 foreach($data['data'] as $mb) {
     $magd   = explode('\\', $mb['refNo'])[0];
     $sotien = $mb['creditAmount'];
-    if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('khuyenmai') >= 1) $sotien = $sotien + ($sotien * $TUANORI->site('khuyenmai')/ 100);
+    if($DMH->site('sukien') == 'ON' && $DMH->site('khuyenmai') >= 1) $sotien = $sotien + ($sotien * $DMH->site('khuyenmai')/ 100);
     $cmt    = $mb['description'];
     $tien2  = $mb['debitAmount'];
     $id     = get_id_bank($cmt);
     if(!$tien2 && is_numeric($id)) {
-        $check = $TUANORI->get_row(" SELECT * FROM `users` WHERE `id` = '$id'");
-        $check2 = $TUANORI->get_row(" SELECT * FROM `napatm` WHERE `hinhthuc` = 'MBBANK' AND `magd` = '$magd'");
+        $check = $DMH->get_row(" SELECT * FROM `users` WHERE `id` = '$id'");
+        $check2 = $DMH->get_row(" SELECT * FROM `napatm` WHERE `hinhthuc` = 'MBBANK' AND `magd` = '$magd'");
         if($check && !$check2) {
-            $isMoney = $TUANORI->cong("users", "money", $sotien, " `username` = '".$check['username']."'");
-            $isMoney2 = $TUANORI->cong("users", "total_money", $sotien, " `username` = '".$check['username']."'");
+            $isMoney = $DMH->cong("users", "money", $sotien, " `username` = '".$check['username']."'");
+            $isMoney2 = $DMH->cong("users", "total_money", $sotien, " `username` = '".$check['username']."'");
             if($isMoney && $isMoney2) {
-                $create = $TUANORI->insert("napatm", [
+                $create = $DMH->insert("napatm", [
                     'username'       => $check['username'],
                     'hinhthuc'       => 'MBBANK',
                     'magd'           => $magd,
@@ -32,7 +32,7 @@ foreach($data['data'] as $mb) {
                     'thoigian'       => gettime(),
                     'ndnaptien'      => $cmt
                 ]);
-                $TUANORI->insert("biendongsodu", [
+                $DMH->insert("biendongsodu", [
                     'username'  => $check['username'],
                     'truoc'     => $check['money'],
                     'sau'       => $check['money'] + $sotien, 

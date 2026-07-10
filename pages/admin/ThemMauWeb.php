@@ -9,11 +9,11 @@ CheckAdmin();
 ?>
 <?php
 if(isset($_GET['xoa']) && $getUser['level'] == 'admin') {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '".$_GET['xoa']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '".$_GET['xoa']."'");
     if(!$user2) {
         echo msg_admin("error", "Mẫu web này không tồn tại", BASE_URL('Admin/ThemMauWeb'), 1000); die;
     } else {
-        $dele = $TUANORI->remove("danhsachtaoweb", " `id` = '".$_GET['xoa']."' ");
+        $dele = $DMH->remove("danhsachtaoweb", " `id` = '".$_GET['xoa']."' ");
         if($dele) {
             echo msg_admin("success", "Đã xóa mẫu web thành công", BASE_URL('Admin/ThemMauWeb'), 1000);
         } else {
@@ -38,7 +38,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin') {
                         
                         <div class="col-sm-5">
                             <select id="danhmuc" class="selectboxit">
-                                <?php foreach($TUANORI->get_list(" SELECT * FROM `danhmuctaoweb` ORDER BY id DESC") as $row){ ?>
+                                <?php foreach($DMH->get_list(" SELECT * FROM `danhmuctaoweb` ORDER BY id DESC") as $row){ ?>
                                     <option value="<?=$row['id'];?>"><?=$row['title'];?></option>
                                 <?php } ?>
                             </select>
@@ -153,7 +153,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin') {
 		</tr>
 	</thead>
 	<tbody>
-        <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `danhsachtaoweb` ORDER BY id DESC") as $row){ ?>
+        <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `danhsachtaoweb` ORDER BY id DESC") as $row){ ?>
         <tr>
             <td><?=++$i;?></td>
             <td><a target="_blank" href="/pages/admin/EditDanhmuctaoweb.php?id=<?=$row['id_danhmuc'];?>"><span class="btn btn-info" style="padding: 4px 8px;"><?=$row['id_danhmuc'];?></span></a></td>
@@ -179,7 +179,7 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin') {
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

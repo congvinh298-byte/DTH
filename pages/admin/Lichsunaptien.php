@@ -9,20 +9,20 @@ CheckAdmin();
 ?>
 <?php
 if(isset($_GET['status']) && isset($_GET['id']) && $getUser['level'] == 'admin') {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `napcard` WHERE `id` = '".$_GET['id']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `napcard` WHERE `id` = '".$_GET['id']."'");
     if(!$user2) {
         echo msg_admin("error","Thẻ nạp không tồn tại trong hệ thống", BASE_URL('Admin/Lichsunaptien'), 2000); die;
     } else if($user2['status'] == 'thanhcong') {
         echo msg_admin("error","Thẻ này đã được duyệt từ trước.", BASE_URL('Admin/Lichsunaptien'), 2000);
     } else {
         $status = check_string($_GET['status']);
-        $check_user = $TUANORI->getUser($user2['username']);
-        $update = $TUANORI->update("napcard", array(
+        $check_user = $DMH->getUser($user2['username']);
+        $update = $DMH->update("napcard", array(
             'status'        => $status,
             'uptime'        => gettime()
         ), " `id` = '".$_GET['id']."' ");
         if($status == 'thanhcong') {
-            $add = $TUANORI->insert("biendongsodu", [
+            $add = $DMH->insert("biendongsodu", [
                 'username'      => $user2['username'],
                 'truoc'         => $check_user['money'],
                 'sau'           => $check_user['money'] + $user2['thucnhan'],
@@ -30,8 +30,8 @@ if(isset($_GET['status']) && isset($_GET['id']) && $getUser['level'] == 'admin')
                 'tongtien'      => $user2['thucnhan'],
                 'time'          => gettime(),
             ]);
-            $cong = $TUANORI->cong("users", "money", $user2['thucnhan'], " `username` = '".$user2['username']."' ");
-            $cong = $TUANORI->cong("users", "total_money", $user2['thucnhan'], " `username` = '".$user2['username']."' ");
+            $cong = $DMH->cong("users", "money", $user2['thucnhan'], " `username` = '".$user2['username']."' ");
+            $cong = $DMH->cong("users", "total_money", $user2['thucnhan'], " `username` = '".$user2['username']."' ");
         }
         
         echo msg_admin("success","Đã cập nhật trạng thái thẻ thành công", BASE_URL('Admin/Lichsunaptien'), 2000);
@@ -58,10 +58,10 @@ if(isset($_GET['status']) && isset($_GET['id']) && $getUser['level'] == 'admin')
 		</tr>
 	</thead>
 	<tbody>
-    <?php $i = 1; foreach($TUANORI->get_list(" SELECT * FROM `napcard` ORDER BY id DESC LIMIT 100") as $row){ ?>
+    <?php $i = 1; foreach($DMH->get_list(" SELECT * FROM `napcard` ORDER BY id DESC LIMIT 100") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
-            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
+            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
             <td><b style="color: red"><?=$row['loaithe'];?></b></td>
             <td><b style="color: green"><?=format_cash($row['menhgia']);?>đ</b></td>
             <td><b style="color: green"><?=format_cash($row['thucnhan']);?>đ</b></td>
@@ -87,6 +87,6 @@ if(isset($_GET['status']) && isset($_GET['id']) && $getUser['level'] == 'admin')
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>

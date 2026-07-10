@@ -1,7 +1,7 @@
 <?php
   if (!defined('IN_SITE')) die('The Request Not Found');
 ?>
-<body class="page-body  page-fade" data-url="https//tuanori.vn">
+<body class="page-body  page-fade" data-url="https//dmh.vn">
 
 <div class="page-container">
 	
@@ -14,7 +14,7 @@
 				<!-- logo -->
 				<div class="logo">
 					<a href="/Admin">
-						<img src="/images/icon/logo_tuanori.png" width="140px" alt="" />
+						<img src="/images/icon/logo_dmh.png" width="140px" alt="" />
 					</a>
 				</div>
 
@@ -110,10 +110,10 @@
 
 				<li class="has-sub <?=(in_array($_SERVER['REQUEST_URI'], ['/Admin/HistoryChuyentien', '/Admin/HistoryBiendongsodu', '/Admin/Lichsugiahan', '/Admin/Quanlytaoweb', '/Admin/Quanlymuamien', '/Admin/Lichsunaptien', '/Admin/LichsunaptienATM', '/Admin/Lichsumuacode', '/Admin/HosoXacMinh']) ? 'opened active' : ''); ?>">
 					<?php 
-						$xuly_card = $TUANORI->num_rows(" SELECT * FROM `napcard` WHERE `status` = 'xuly' ") ?? 0;
-						$xuly_domain = $TUANORI->num_rows(" SELECT * FROM `lichsumuamien` WHERE `status` = 'xuly' ") ?? 0;
-						$xuly_giahan = $TUANORI->num_rows(" SELECT * FROM `lichsugiahan` WHERE `status` = 'xuly' ") ?? 0;
-						$xuly_hoso = $TUANORI->num_rows(" SELECT * FROM `upload_hoso` WHERE `status` = 'xuly' ") ?? 0;
+						$xuly_card = $DMH->num_rows(" SELECT * FROM `napcard` WHERE `status` = 'xuly' ") ?? 0;
+						$xuly_domain = $DMH->num_rows(" SELECT * FROM `lichsumuamien` WHERE `status` = 'xuly' ") ?? 0;
+						$xuly_giahan = $DMH->num_rows(" SELECT * FROM `lichsugiahan` WHERE `status` = 'xuly' ") ?? 0;
+						$xuly_hoso = $DMH->num_rows(" SELECT * FROM `upload_hoso` WHERE `status` = 'xuly' ") ?? 0;
 					?>
 					<a href="layout-api.html">
 						<i class="entypo-back"></i>
@@ -176,8 +176,8 @@
 
 				<li class="has-sub <?=(in_array($_SERVER['REQUEST_URI'], ['/Admin/Hoadontsr']) ? 'opened active' : ''); ?>">
 				<?php 
-					$tsr = $TUANORI->num_rows(" SELECT * FROM `hoadon_vi` WHERE `status` = 'xuly' ") ?? 0;
-					// $tsr = $TUANORI->num_rows(" SELECT * FROM `hoadon_vi` WHERE `status` = 'xuly' ") ?? 0;
+					$tsr = $DMH->num_rows(" SELECT * FROM `hoadon_vi` WHERE `status` = 'xuly' ") ?? 0;
+					// $tsr = $DMH->num_rows(" SELECT * FROM `hoadon_vi` WHERE `status` = 'xuly' ") ?? 0;
 
 				?>
 					<a href="layout-api.html">
@@ -217,7 +217,7 @@
 				<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Sukien') ? 'active' : ''; ?>">
 					<a href="/Admin/Sukien">
 						<i class="entypo-tag"></i>
-						<span class="title">Tạo sự kiện	<?=($TUANORI->site('sukien') == 'OFF') ? '🔴' : ' 🟢';?></span>
+						<span class="title">Tạo sự kiện	<?=($DMH->site('sukien') == 'OFF') ? '🔴' : ' 🟢';?></span>
 					</a>
 				</li>
 				<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/SettingAdmin') ? 'active' : ''; ?>">
@@ -281,7 +281,7 @@
 		
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown">
 							<img src="/images/logo_tuan.png" alt="" class="img-circle" width="44" />
-							Phạm Hoàng Tuấn
+							Điện Máy Hiếu
 						</a>
 		
 					

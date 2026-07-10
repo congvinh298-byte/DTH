@@ -28,7 +28,7 @@
 </script>
 <div id="thongbao"></div>
 	<footer class="main">
-			&copy; <?=date('Y');?> <strong style="font-weight: bold">Website được vận hành bởi <a href="//tuanori.vn">TUANORI.VN</a></strong>
+			&copy; <?=date('Y');?> <strong style="font-weight: bold">Website được vận hành bởi <a href="//dmh.vn">dienmayhieu.com</a></strong>
 		</footer>
 	</div>
 </div>

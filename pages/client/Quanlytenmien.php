@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -10,13 +10,13 @@ CheckLogin();
 ?>
 <?php
 if(isset($_GET['id'])) {
-    $row = $TUANORI->get_row(" SELECT * FROM `lichsumuamien` WHERE `id` = '".check_string($_GET['id'])."' AND `username` = '".$getUser['username']."' ");
+    $row = $DMH->get_row(" SELECT * FROM `lichsumuamien` WHERE `id` = '".check_string($_GET['id'])."' AND `username` = '".$getUser['username']."' ");
     if(!$row)
     {
         msg_error("Dữ liệu này không hợp lệ", BASE_URL('Mua-mien'), 500);
     }
     $data = explode('.', $row['domain']);
-    $row2 = $TUANORI->get_row(" SELECT * FROM `danhsachmien` WHERE `domain` = '".end($data)."' ");
+    $row2 = $DMH->get_row(" SELECT * FROM `danhsachmien` WHERE `domain` = '".end($data)."' ");
 }
 else {
     msg_error("Liên kết của bạn thiếu Dữ Liệu", BASE_URL('Mua-mien'), 0);
@@ -199,7 +199,7 @@ else {
                                                                 </tr>
                                                             </thead>
                                                             <tbody class="ant-table-tbody">
-                                                                <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `giahanmien` WHERE `username` = '".$getUser['username']."' AND `id_domain` = '".$row['id']."' ORDER BY id DESC") as $row){ ?>
+                                                                <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `giahanmien` WHERE `username` = '".$getUser['username']."' AND `id_domain` = '".$row['id']."' ORDER BY id DESC") as $row){ ?>
                                                                     <tr class="ant-table-row ant-table-row-level-0">
                                                                         <td class="ant-table-cell"><?=++$i;?></td>
                                                                         <td class="ant-table-cell"><a style="color: green; font-weight: bold"><?=$row['tenmien'];?></a></td>
@@ -248,6 +248,6 @@ else {
 </div>
 </div>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

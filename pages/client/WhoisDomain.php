@@ -1,6 +1,6 @@
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -98,7 +98,7 @@ if(isset($_POST['search'])) {
                                     }
                                 ?>
                                     <div class="alert alert-danger" role="alert" style="font-size: 18px">Tên miền này chưa được đăng ký.
-                                    <?php if($TUANORI->get_row(" SELECT * FROM `danhsachmien` WHERE `domain` = '".$duoi."'")) { ?>
+                                    <?php if($DMH->get_row(" SELECT * FROM `danhsachmien` WHERE `domain` = '".$duoi."'")) { ?>
                                         Đăng ký <a style="color: green" href="/Mua-mien?name=<?=$ok[0].'&duoi='.$duoi;?>">tại đây</a> 
                                     <?php } ?>
                                     </div>
@@ -115,6 +115,6 @@ if(isset($_POST['search'])) {
 </div>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

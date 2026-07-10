@@ -1,6 +1,6 @@
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
@@ -26,9 +26,9 @@ CheckLogin();
                                         <div class="card-body">
                                             <p class="text-red-500 text-xl">1. Nạp tiền bằng MOMO, ACB hoặc THESIEURE sẽ được duyệt tự động, nếu bạn chuyển đúng nội dung nạp tiền </p>
                                             <p class="text-red-500 text-xl">2. Trường hợp nếu bạn ghi sai nội dung. Vui lòng liên hệ admin để được giải quyết. Nội dung có Phân Biệt Chữ Hoa, Chữ Thường</p>
-                                            <?php if($TUANORI->site('sukien') == 'ON' && $TUANORI->site('khuyenmai') > 0) { ?>
+                                            <?php if($DMH->site('sukien') == 'ON' && $DMH->site('khuyenmai') > 0) { ?>
                                             <p class="text-xl">
-                                                <i style="color: green" class="fa-solid fa-crown"></i> <b style="color: green">Hệ thống đang khuyến mãi thêm <b style="color: red"><?=$TUANORI->site('khuyenmai');?>%</b> giá trị nạp tiền qua ATM/ MOMO/ THESIEURE.</b>
+                                                <i style="color: green" class="fa-solid fa-crown"></i> <b style="color: green">Hệ thống đang khuyến mãi thêm <b style="color: red"><?=$DMH->site('khuyenmai');?>%</b> giá trị nạp tiền qua ATM/ MOMO/ THESIEURE.</b>
                                             </p>
                                             <br/>
                                             <?php } ?>
@@ -41,7 +41,7 @@ CheckLogin();
                             </div>
                         </div>
                         
-                        <?php foreach($TUANORI->get_list(" SELECT * FROM `listbank` WHERE `status` = 'SHOW' ORDER BY id DESC") as $row){ ?>
+                        <?php foreach($DMH->get_list(" SELECT * FROM `listbank` WHERE `status` = 'SHOW' ORDER BY id DESC") as $row){ ?>
                         <div>
                             <div class="rounded-b-none border border-none bg-transparent p-4">
                                 <img src="<?=$row['img'];?>" alt="<?=$row['bank'];?>"    class="mx-auto w-[90px] cursor-pointer object-cover">
@@ -57,16 +57,16 @@ CheckLogin();
                                 </div>
                                 <div class="flex flex-wrap justify-between">
                                     <span>Nội Dung:</span>
-                                    <span class="coy cursor-pointer" ><?=$TUANORI->site('nd_bank').$getUser['id']; ?></span>
+                                    <span class="coy cursor-pointer" ><?=$DMH->site('nd_bank').$getUser['id']; ?></span>
                                 </div>
                                 <div class="text-center">
                                     Nhập đúng nội dung tiền tự động cộng trong vài phút
                                 </div>
                                 <div>
                                     <?php if($row['bank'] == 'MOMO') { ?>
-                                        <img src="https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=2|99|<?=$row['stk'];?>|||0|0|0|<?=$TUANORI->site('nd_bank').$getUser['id']; ?>|transfer_myqr" class="mx-auto w-full rounded-lg object-fill">
+                                        <img src="https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=2|99|<?=$row['stk'];?>|||0|0|0|<?=$DMH->site('nd_bank').$getUser['id']; ?>|transfer_myqr" class="mx-auto w-full rounded-lg object-fill">
                                         <?php } else if(in_array($row['bank'], ['MBBANK', 'ACB'])) { ?>
-                                            <img src="https://api.vietqr.io/<?=$row['bank'];?>/<?=$row['stk'];?>/0/<?=$TUANORI->site('nd_bank').$getUser['id']; ?>/qronly2.jpg?accountName=<?=$row['name'];?>&bankName=<?=$row['bank'];?>" class="mx-auto w-full rounded-lg object-fill">
+                                            <img src="https://api.vietqr.io/<?=$row['bank'];?>/<?=$row['stk'];?>/0/<?=$DMH->site('nd_bank').$getUser['id']; ?>/qronly2.jpg?accountName=<?=$row['name'];?>&bankName=<?=$row['bank'];?>" class="mx-auto w-full rounded-lg object-fill">
                                     <?php } ?>
                                 </div>
                             </div>
@@ -110,6 +110,6 @@ function totalPrice(){
 }
 </script>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/client/Footer.php");
 ?>

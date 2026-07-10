@@ -3,14 +3,14 @@ include_once __DIR__.'/libs/simple_html_dom.php';
 define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
-/*MÃ NGUỒN ĐƯỢC VIẾT LẠI BỞI TUANORI.COM*/
-$username = $TUANORI->site('tk_tsr');
-$password = $TUANORI->site('mk_tsr');
-if($TUANORI->site('status_tsr') != 'ON')
+/*MÃ NGUỒN ĐƯỢC VIẾT LẠI BỞI dienmayhieu.com*/
+$username = $DMH->site('tk_tsr');
+$password = $DMH->site('mk_tsr');
+if($DMH->site('status_tsr') != 'ON')
 {
     die();
 }
-$token = $TUANORI->site('cookie_thesieure');
+$token = $DMH->site('cookie_thesieure');
 $url = "https://thesieure.com/wallet/transfer";
     $head = array(
         "Host:thesieure.com",

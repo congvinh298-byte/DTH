@@ -9,11 +9,11 @@ CheckAdmin();
 ?>
 <?php
 if(isset($_GET['xoa']) && $getUser['level'] == 'admin') {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `hoadon_vi` WHERE `id` = '".$_GET['xoa']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `hoadon_vi` WHERE `id` = '".$_GET['xoa']."'");
     if(!$user2) {
         echo msg_admin("error","Hóa đơn không tồn tại trong hệ thống", BASE_URL('Admin/Hoadontsr'), 2000); die;
     } else {
-        $dele = $TUANORI->remove("hoadon_vi", " `id` = '".$_GET['xoa']."' ");
+        $dele = $DMH->remove("hoadon_vi", " `id` = '".$_GET['xoa']."' ");
         if($dele) {
             echo msg_admin("success","Đã xóa hóa đơn thành công", BASE_URL('Admin/Hoadontsr'), 2000);
         } else {
@@ -22,22 +22,22 @@ if(isset($_GET['xoa']) && $getUser['level'] == 'admin') {
     }
 }
 if(isset($_GET['duyet']) && $getUser['level'] == 'admin') {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `hoadon_vi` WHERE `id` = '".$_GET['duyet']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `hoadon_vi` WHERE `id` = '".$_GET['duyet']."'");
     if(!$user2) {
         echo msg_admin("error","Hóa đơn không tồn tại trong hệ thống", BASE_URL('Admin/Hoadontsr'), 2000); die;
     } else {
-        $update = $TUANORI->update("hoadon_vi", array(
+        $update = $DMH->update("hoadon_vi", array(
             'status'        => 'thanhcong'
         ), " `id` = '".$_GET['duyet']."' ");
-        $add = $TUANORI->insert("biendongsodu", [
+        $add = $DMH->insert("biendongsodu", [
             'username'      => $user2['username'],
-            'truoc'         => $TUANORI->getUser($user2['username'])['money'],
-            'sau'           => $TUANORI->getUser($user2['username'])['money'] + $user2['sotien'],
+            'truoc'         => $DMH->getUser($user2['username'])['money'],
+            'sau'           => $DMH->getUser($user2['username'])['money'] + $user2['sotien'],
             'note'          => 'Nạp thành công hóa đơn #'.$user2['magd'].' qua TSR',
             'tongtien'      => $user2['sotien'],
             'time'          => gettime()
         ]);
-        $cong = $TUANORI->cong("users", "money", $user2['sotien'], " `username` = '".$user2['username']."' ");
+        $cong = $DMH->cong("users", "money", $user2['sotien'], " `username` = '".$user2['username']."' ");
         if($update && $add && $cong) {
             echo msg_admin("success","Đã duyệt hóa đơn thành công", BASE_URL('Admin/Hoadontsr'), 2000);
         } else {
@@ -46,14 +46,14 @@ if(isset($_GET['duyet']) && $getUser['level'] == 'admin') {
     }
 }
 if(isset($_GET['huy']) && $getUser['level'] == 'admin') {
-    $user2 = $TUANORI->get_row(" SELECT * FROM `hoadon_vi` WHERE `id` = '".$_GET['huy']."'");
+    $user2 = $DMH->get_row(" SELECT * FROM `hoadon_vi` WHERE `id` = '".$_GET['huy']."'");
     if(!$user2) {
         echo msg_admin("error","Hóa đơn không tồn tại trong hệ thống", BASE_URL('Admin/Hoadontsr'), 2000); die;
     } else {
         if($user2['status'] != 'xuly') {
             echo msg_admin("error","Hóa đơn này đã được xử lý!", BASE_URL('Admin/Hoadontsr'), 2000); die;
         }
-        $update = $TUANORI->update("hoadon_vi", array(
+        $update = $DMH->update("hoadon_vi", array(
             'status'        => 'huy'
         ), " `id` = '".$_GET['huy']."' ");
         if($update) {
@@ -79,10 +79,10 @@ if(isset($_GET['huy']) && $getUser['level'] == 'admin') {
 		</tr>
 	</thead>
 	<tbody>
-        <?php $i = 1;  foreach($TUANORI->get_list(" SELECT * FROM `hoadon_vi` ORDER BY id DESC LIMIT 100") as $row){ ?>
+        <?php $i = 1;  foreach($DMH->get_list(" SELECT * FROM `hoadon_vi` ORDER BY id DESC LIMIT 100") as $row){ ?>
         <tr>
             <td><?=$i++;?></td>
-            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
+            <td><a href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['username'])['id'];?>" target="_blank" style="color: #0099CC; font-weight: bold;"><?=$row['username'];?></a></td>
             <td><a style="color: green; font-weight: bold"><?=$row['magd'];?></td>
             <td><b style="color: green">+ <?=format_cash($row['sotien']);?>đ</b> </td>
             <td><b><?=$row['thoigian'];?></b></td>
@@ -108,6 +108,6 @@ if(isset($_GET['huy']) && $getUser['level'] == 'admin') {
 </table>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>

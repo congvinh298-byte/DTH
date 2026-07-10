@@ -11,7 +11,7 @@ CheckAdmin();
 if(isset($_GET['id']) && $getUser['level'] == 'admin')
 {
     $id = check_string($_GET['id']);
-    $row = $TUANORI->get_row(" SELECT * FROM `partner_code` WHERE `id` = '".$_GET['id']."' ");
+    $row = $DMH->get_row(" SELECT * FROM `partner_code` WHERE `id` = '".$_GET['id']."' ");
     if(!$row) {
         echo msg_admin("error","Mã nguồn không tồn tại",BASE_URL('Admin/Par_manguon'), 1000); die;
     }
@@ -35,7 +35,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin')
                         
                         <div class="col-sm-5">
                             <select id="danhmuc" class="selectboxit">
-                                <?php foreach($TUANORI->get_list(" SELECT * FROM `danhmucmuacode` WHERE `status` = 'SHOW' ORDER BY id DESC") as $ok){ ?>
+                                <?php foreach($DMH->get_list(" SELECT * FROM `danhmucmuacode` WHERE `status` = 'SHOW' ORDER BY id DESC") as $ok){ ?>
                                     <option value="<?=$ok['id'];?>" <?=($ok['id'] == $row['id_danhmuc']) ? 'selected': ''; ?>><?=$ok['title'];?></option>
                                 <?php } ?>
                             </select>
@@ -156,7 +156,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin')
 
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

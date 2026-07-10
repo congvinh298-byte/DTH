@@ -9,7 +9,7 @@ CheckAdmin();
 ?>
 <?php
 if($getUser['level'] == 'admin') {
-    $row = $TUANORI->get_row(" SELECT * FROM `domainclf` WHERE `status` = 'ON' LIMIT 1");
+    $row = $DMH->get_row(" SELECT * FROM `domainclf` WHERE `status` = 'ON' LIMIT 1");
 }
 ?>
 <h2>Setting Tài Khoản Cloudfare</h2>
@@ -100,7 +100,7 @@ if($getUser['level'] == 'admin') {
 
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

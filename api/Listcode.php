@@ -6,29 +6,29 @@ if(empty($_GET['token'])) {
     json_code(false, "Thiếu dữ liệu token gửi lên");
 }
 $token = check_string($_GET['token']);
-$check_api = $TUANORI->get_row(" SELECT * FROM `users` WHERE `token_api` = '$token' AND `banned` = 'ON' ");
+$check_api = $DMH->get_row(" SELECT * FROM `users` WHERE `token_api` = '$token' AND `banned` = 'ON' ");
 if(!$check_api || $token !== $check_api['token_api']) {
     json_code(false, "Token không tồn tại hoặc tài khoản đã bị đình chỉ");
 } else {
-    if($TUANORI->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."' ")) {
+    if($DMH->get_row(" SELECT * FROM `blockip` WHERE `ip` = '".myip()."' ")) {
         json_code(false, "Bạn đã bị chặn sử dụng tính năng của chúng tôi vĩnh viễn. Xin cảm ơn");
     }
-    $api_keys = $TUANORI->get_row(" SELECT * FROM `key_apis` WHERE `username` = '".$check_api['username']."'");
+    $api_keys = $DMH->get_row(" SELECT * FROM `key_apis` WHERE `username` = '".$check_api['username']."'");
     if($api_keys) {
         $muc = '';
         if(isset($_GET['danhmuc'])) {
             $id_muc = check_string($_GET['danhmuc']);
-            if(!$TUANORI->get_row(" SELECT * FROM `danhmucmuacode` WHERE `id` = '$id_muc' ")) {
+            if(!$DMH->get_row(" SELECT * FROM `danhmucmuacode` WHERE `id` = '$id_muc' ")) {
                 die(json_code(false, "Danh mục không tồn tại trong hệ thống"));
             }
             $muc = "AND `id_danhmuc` = '".$id_muc."' ";
         }
         /*KÍCH HOẠT THÀNH VIÊN ONLINE*/
-        $TUANORI->update("users", array(
+        $DMH->update("users", array(
             'online'       => 'ONLINE'
         ), " `id` = '$token' ");
         if($api_keys['list_code'] == 'ON') {
-            $get_list = $TUANORI->get_list(" SELECT * FROM `danhsachmuacode` WHERE `hienthi` = 'SHOW' $muc ORDER BY id DESC");
+            $get_list = $DMH->get_list(" SELECT * FROM `danhsachmuacode` WHERE `hienthi` = 'SHOW' $muc ORDER BY id DESC");
             $user = $check_api;
             $list = [];
             foreach($get_list as $row) {

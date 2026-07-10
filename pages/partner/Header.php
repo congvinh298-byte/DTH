@@ -1,7 +1,7 @@
 <?php
   if (!defined('IN_SITE')) die('The Request Not Found');
 ?>
-<body class="page-body  page-fade" data-url="https//tuanori.vn">
+<body class="page-body  page-fade" data-url="https//dmh.vn">
 
 <div class="page-container"><!-- add class "sidebar-collapsed" to close sidebar by default, "chat-visible" to make chat appear always -->
 	
@@ -14,7 +14,7 @@
 				<!-- logo -->
 				<div class="logo">
 					<a href="/Partner">
-					<img src="/images/icon/logo_tuanori.png" width="140px" alt="" />
+					<img src="/images/icon/logo_dmh.png" width="140px" alt="" />
 					</a>
 				</div>
 
@@ -52,7 +52,7 @@
 				</li>
 
 				<?php 
-					$xuly_code = $TUANORI->num_rows(" SELECT * FROM `partner_code` WHERE `status` = 'xuly' AND `username` = '".$getUser['username']."' ") ?? 0;
+					$xuly_code = $DMH->num_rows(" SELECT * FROM `partner_code` WHERE `status` = 'xuly' AND `username` = '".$getUser['username']."' ") ?? 0;
 				?>
 				<li class="<?=($_SERVER['REQUEST_URI'] == '/Partner/HistoryCode') ? 'active' : ''; ?>">
 					<a href="/Partner/HistoryCode">

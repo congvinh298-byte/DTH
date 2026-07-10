@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -21,16 +21,16 @@
     if($getUser['username'] == $user) {
         msg_error2("Không thể tự chuyển cho chính mình");
     }
-    $check = $TUANORI->get_row(" SELECT * FROM `users` WHERE `username` = '$user' AND `banned` = 'ON'");
+    $check = $DMH->get_row(" SELECT * FROM `users` WHERE `username` = '$user' AND `banned` = 'ON'");
     if(!$check)
     {
         msg_error2("Người nhận không tồn tại hoặc người dùng đã bị đình chỉ");
     }
     $job = 'Chuyển '.format_cash($sotien).'đ cho thành viên '.$user.'';
-    $isMoney = $TUANORI->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
+    $isMoney = $DMH->tru("users", "money", $sotien, " `tokenlog` = '".$_COOKIE['token']."'");
     if($isMoney)
     {
-        $data = $TUANORI->insert("chuyentien", [
+        $data = $DMH->insert("chuyentien", [
             'userchuyen'    => $getUser['username'],
             'usernhan'      => $user,
             'sotien'        => $sotien,
@@ -38,7 +38,7 @@
             'ip'            => myip()
         ]);
         if($data) {
-            $TUANORI->insert("biendongsodu", [
+            $DMH->insert("biendongsodu", [
                 'username'      => $getUser['username'],
                 'truoc'         => $my_money,
                 'sau'           => $my_money - $sotien, 
@@ -46,15 +46,15 @@
                 'tongtien'      => $sotien,
                 'time'          => gettime()
             ]);
-            $TUANORI->insert("biendongsodu", [
+            $DMH->insert("biendongsodu", [
                 'username'      => $user,
-                'truoc'         => $TUANORI->getUser($user)['money'],
-                'sau'           => $TUANORI->getUser($user)['money'] + $sotien, 
+                'truoc'         => $DMH->getUser($user)['money'],
+                'sau'           => $DMH->getUser($user)['money'] + $sotien, 
                 'note'          => 'Nhận '.format_cash($sotien).'đ từ thành viên '.$getUser['username'].'',
                 'tongtien'      => $sotien,
                 'time'          => gettime()
             ]);
-            $isMoney2 = $TUANORI->cong("users", "money", $sotien, " `username` = '$user'");
+            $isMoney2 = $DMH->cong("users", "money", $sotien, " `username` = '$user'");
             msg_success("Đã thực hiện chuyển tiền thành công.", "", 1000);
         }
     }

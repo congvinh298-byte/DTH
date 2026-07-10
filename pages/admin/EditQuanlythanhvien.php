@@ -8,7 +8,7 @@ require_once("../../pages/admin/Header.php");
 CheckAdmin();
 if(isset($_GET['id']) && $getUser['level'] == 'admin')
 {
-    $row = $TUANORI->get_row(" SELECT * FROM `users` WHERE `id` = '".$_GET['id']."'");
+    $row = $DMH->get_row(" SELECT * FROM `users` WHERE `id` = '".$_GET['id']."'");
     if(!$row)
     {
         die(msg_admin("error", "Thành viên không tồn tại",BASE_URL('Admin/Quanlythanhvien'), 1000));
@@ -306,10 +306,10 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    <?php $i = 0; foreach($TUANORI->get_list(" SELECT * FROM `biendongsodu` WHERE `username` = '".$row['username']."' ORDER BY id DESC LIMIT 20") as $row){ ?>
+                    <?php $i = 0; foreach($DMH->get_list(" SELECT * FROM `biendongsodu` WHERE `username` = '".$row['username']."' ORDER BY id DESC LIMIT 20") as $row){ ?>
                     <tr>
                         <td><?=++$i;?></td>
-                        <td><a target="_blank" style="color: #007BFF; font-weight: bold" href="/pages/admin/EditQuanlythanhvien.php?id=<?=$TUANORI->getUser($row['username'])['id'];?>"><?=$row['username'];?></a></td>
+                        <td><a target="_blank" style="color: #007BFF; font-weight: bold" href="/pages/admin/EditQuanlythanhvien.php?id=<?=$DMH->getUser($row['username'])['id'];?>"><?=$row['username'];?></a></td>
                         <td><b><?=number_format($row['truoc']);?>đ</b></td>
                         <td>
                             <?php if($row['sau'] > $row['truoc']) {
@@ -370,6 +370,6 @@ else
     });
 </script>
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>

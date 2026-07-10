@@ -10,7 +10,7 @@ CheckAdmin();
 <?php
 if(isset($_GET['id']) && $getUser['level'] == 'admin')
 {
-    $row = $TUANORI->get_row(" SELECT * FROM `lichsumuamien` WHERE `id` = '".$_GET['id']."'");
+    $row = $DMH->get_row(" SELECT * FROM `lichsumuamien` WHERE `id` = '".$_GET['id']."'");
     if(!$row) {
         echo msg_admin("error", "Lịch sử mua miền không tồn tại",BASE_URL('Admin/Quanlymuamien'), 1000); die;
     }
@@ -114,7 +114,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin')
 </div>
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 

@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -12,7 +12,7 @@
         $list_code      = check_string($_POST['list_code']);
         $buy_code       = check_string($_POST['buy_code']);
         $buy_domain     = check_string($_POST['buy_domain']);
-        $update = $TUANORI->update("key_apis", array(
+        $update = $DMH->update("key_apis", array(
             'whois'         => $whois,
             'list_code'     => $list_code,
             'buy_code'      => $buy_code,

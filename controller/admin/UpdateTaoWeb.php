@@ -1,5 +1,5 @@
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
     define("IN_SITE", true);
     require_once("../../core/config.php");
     require_once("../../core/function.php");
@@ -11,8 +11,8 @@
         if(!$id_web) {
             msg("error", "Mã ID không hợp lệ");
         }
-        $rowvn      = $TUANORI->get_row(" SELECT * FROM `lichsutaoweb` WHERE `id` = '$id_web' ");
-        $usertv     = $TUANORI->getUser($rowvn['username']);
+        $rowvn      = $DMH->get_row(" SELECT * FROM `lichsutaoweb` WHERE `id` = '$id_web' ");
+        $usertv     = $DMH->getUser($rowvn['username']);
         if(!$rowvn) {
             msg("error","Bug hả bạn?");
         }
@@ -35,7 +35,7 @@
             if(!$tenmien || !$tk || !$mk || !$id_code ||  !$username ) {
                 msg("error","Vui lòng nhập đủ thông tin");
             }
-            if(!$TUANORI->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '$id_code'")) {
+            if(!$DMH->get_row(" SELECT * FROM `danhsachtaoweb` WHERE `id` = '$id_code'")) {
                 msg("error","Mã web $id_code không tồn tại trong hệ thống");
             }
             if(!$rowvn['ngayduyet'] || !$rowvn['ngayhethan']) {
@@ -62,9 +62,9 @@
             if($tenmien === $rowvn['tenmien']) {
                 // bước 7, hủy đơn hàng
                 if($status == '7') {
-                    $isMoney = $TUANORI->cong("users", "money", $rowvn['tongtien'], " `username` = '".$rowvn['username']."'");
+                    $isMoney = $DMH->cong("users", "money", $rowvn['tongtien'], " `username` = '".$rowvn['username']."'");
                     if($isMoney) {
-                        $TUANORI->insert("biendongsodu", [
+                        $DMH->insert("biendongsodu", [
                             'username'      => $rowvn['username'],
                             'truoc'         => $usertv['money'],
                             'sau'           => $usertv['money'] + $rowvn['tongtien'],
@@ -75,7 +75,7 @@
                     }
                 }
 
-                $update = $TUANORI->update("lichsutaoweb", array(
+                $update = $DMH->update("lichsutaoweb", array(
                     'username'          => $username,
                     'taikhoan'          => $tk,
                     'matkhau'           => $mk,
@@ -98,7 +98,7 @@
                 }
             // xử lý nếu hác tên miền
             } else {
-                $rowV2 = $TUANORI->get_row(" SELECT * FROM `domainclf` WHERE `accountid` IS NOT NULL AND `status` = 'ON' ");
+                $rowV2 = $DMH->get_row(" SELECT * FROM `domainclf` WHERE `accountid` IS NOT NULL AND `status` = 'ON' ");
                 if(!$rowV2) {
                     msg("error","Chưa có tài khoản CLF nào hoạt động. Hãy thêm nào vào DATABASE");
                 }
@@ -109,7 +109,7 @@
                 if(preg_match('/[#@! $%^&*()+=\-\[\]\';,.\/{}|":<>?~\\\\]/', $ten)) {
                     msg("error","Tên miền của bạn không dược chứa kí tự lạ");
                 }
-                $domain      = $TUANORI->get_row(" SELECT * FROM `lichsutaoweb` WHERE `tenmien` = '$tenmien' AND `buoc` = '4'");
+                $domain      = $DMH->get_row(" SELECT * FROM `lichsutaoweb` WHERE `tenmien` = '$tenmien' AND `buoc` = '4'");
                 if(!$domain) {
                     $post_data = [
                         'account' => ['id'=>$rowV2['accountid']],
@@ -140,7 +140,7 @@
                         if($rowvn['success'] == false) {
                             msg("error","Đã xảy ra lỗi trong quá trình thêm tên miền này", "", 5000);
                         } else {
-                            $update = $TUANORI->update("lichsutaoweb", array(
+                            $update = $DMH->update("lichsutaoweb", array(
                                 'domainclf'         => $rowV2['id'],
                                 'tenmien'           => $tenmien,
                                 'id_code'           => $id_code,
@@ -195,8 +195,8 @@
                 if($usertv['money'] < $sotien) {
                     msg("error", "Số tiền của khách không đủ để gia hạn ".$thang." tháng");
                 }
-                $TUANORI->tru("users", "money", $sotien, " `username` = '".$rowvn['username']."' ");
-                $create = $TUANORI->insert("biendongsodu", [
+                $DMH->tru("users", "money", $sotien, " `username` = '".$rowvn['username']."' ");
+                $create = $DMH->insert("biendongsodu", [
                     'username'      => $rowvn['username'],
                     'note'          => 'Gia hạn website '.$rowvn['tenmien'].' thêm '.$thang.' tháng',
                     'truoc'         => $usertv['money'],
@@ -206,7 +206,7 @@
                 ]);
                 // chỉ có bước 4 và 5 mới có thể add gia hạn
                 if(in_array($rowvn['buoc'], [4,5])) {
-                    $TUANORI->insert("lichsugiahan", [
+                    $DMH->insert("lichsugiahan", [
                         'username'  => $rowvn['username'],
                         'id_web'    => $id_web,
                         'tenmien'   => $rowvn['tenmien'],
@@ -217,7 +217,7 @@
                     ]);
                 }
             }
-            $cong = $TUANORI->cong("lichsutaoweb", "ngayhethan", $thang*$onethang, " `username` = '".$rowvn['username']."' ");
+            $cong = $DMH->cong("lichsutaoweb", "ngayhethan", $thang*$onethang, " `username` = '".$rowvn['username']."' ");
             if($cong) {
                 msg("success","Đã cộng thời gian thành công!", "", 2000);
             } else {
@@ -237,7 +237,7 @@
             if($thang % 3 != 0) {
                 msg("error", "Số tháng muốn trừ phải chia hết cho 3");
             }
-            $tru = $TUANORI->tru("lichsutaoweb", "ngayhethan", $thang*$onethang, " `username` = '".$rowvn['username']."' ");
+            $tru = $DMH->tru("lichsutaoweb", "ngayhethan", $thang*$onethang, " `username` = '".$rowvn['username']."' ");
             if($tru) {
                 msg("success","Đã trừ thời gian thành công!", "", 2000);
             } else {

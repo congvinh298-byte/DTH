@@ -10,7 +10,7 @@ CheckAdmin();
 <?php
 if(isset($_GET['id']) && $getUser['level'] == 'admin') {
     $magg = check_string($_GET['id']);
-    $row = $TUANORI->get_row(" SELECT * FROM `magiamgia` WHERE `id` = '$magg'");
+    $row = $DMH->get_row(" SELECT * FROM `magiamgia` WHERE `id` = '$magg'");
     if(!$row) {
         echo msg_admin("error","Đã giảm giá không tồn tại.",BASE_URL('Admin/Magiamgia'), 1000); die;
     }
@@ -127,7 +127,7 @@ if(isset($_GET['id']) && $getUser['level'] == 'admin') {
 <br />
 
 <?php
-/*MÃ NGUỒN NÀY ĐƯỢC PHÁT TRIỂN BỞI TUANORI - ZALO: 0812665001*/
+
 require_once("../../pages/admin/Footer.php");
 ?>
 
