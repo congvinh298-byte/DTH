@@ -15,7 +15,7 @@ class TUANORI
     {
         if (!$this->ketnoi)
         {
-            $this->ketnoi = mysqli_connect('localhost', 'kwkrbcce_baocao', 'SayTHC369@', 'kwkrbcce_Goixelapvo') or die('Bảo trì chống ddos. Hệ thống sẽ tự mở lại sau khi xử lý xong.');
+            $this->ketnoi = mysqli_connect('localhost', 'kwkrbcce_dientuhieu', 'SayTHC369@', 'kwkrbcce_Choxalapvo') or die('Bảo trì chống ddos. Hệ thống sẽ tự mở lại sau khi xử lý xong.');
             mysqli_query($this->ketnoi, "set names 'utf8'");
         }
     }
