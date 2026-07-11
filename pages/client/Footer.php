@@ -47,7 +47,7 @@
             <!-- Company Info (OCD: Aligned perfectly) -->
             <div class="col-span-1 md:col-span-5 flex flex-col items-center md:items-start text-center md:text-left space-y-6">
                 <a href="/">
-                    <img src="<?=$DMH->site('logo');?>" alt="Điện Máy Hiếu" class="max-w-[200px] drop-shadow-xl filter brightness-0 invert">
+                    <img src="/public/assets/logo.png" alt="Điện Máy Hiếu" class="max-w-[200px] drop-shadow-xl filter brightness-0 invert">
                 </a>
                 <p class="text-gray-400 font-medium leading-relaxed max-w-md">
                     Hệ thống bán lẻ và sửa chữa thiết bị Điện Máy, Điện Lạnh, Điện Tử uy tín số 1 tại khu vực miền Tây. Uy Tín - Tận Tâm - Chuyên Nghiệp.

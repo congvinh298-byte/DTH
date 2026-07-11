@@ -15,7 +15,7 @@ require_once(__DIR__."/pages/client/Header.php");
             <section class="relative bg-gradient-to-r from-gray-900 to-black text-white rounded-3xl p-8 md:p-16 shadow-2xl overflow-hidden flex flex-col items-center text-center">
                 <div class="absolute inset-0 bg-blue-600 opacity-20 blur-3xl rounded-full w-96 h-96 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
                 <div class="relative z-10">
-                    <img src="<?=$DMH->site('logo');?>" alt="Điện Máy Hiếu" class="max-h-24 md:max-h-32 mx-auto mb-6 drop-shadow-lg filter brightness-0 invert" />
+                    <img src="/public/assets/logo.png" alt="Điện Máy Hiếu" class="max-h-24 md:max-h-32 mx-auto mb-6 drop-shadow-lg filter brightness-0 invert" />
                     <h1 class="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-200">
                         ĐIỆN MÁY HIẾU
                     </h1>
@@ -81,6 +81,63 @@ require_once(__DIR__."/pages/client/Header.php");
                     </a>
                 </div>
 
+            </div>
+        </div>
+
+        <!-- PRODUCT GRID (Điện Máy) -->
+        <div class="container mx-auto max-w-7xl mt-16 px-4">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-black uppercase text-gray-900 mb-2">Sản Phẩm <span class="text-blue-600">Điện Máy</span></h2>
+                <div class="h-1 w-24 bg-orange-500 mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <?php foreach($DMH->get_list(" SELECT * FROM `danhsachmuacode` WHERE `hienthi` = 'SHOW' AND `money` > 0 ORDER BY id DESC LIMIT 8") as $row){ ?>
+                <div class="group bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col border border-gray-100 relative">
+                    
+                    <?php if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0) { ?>
+                    <div class="absolute top-3 right-3 bg-red-600 text-white text-xs font-black px-2 py-1 rounded-md z-10 shadow-lg">
+                        -<?=$DMH->site('ptgiamgia');?>%
+                    </div>
+                    <?php } ?>
+
+                    <div class="relative h-48 overflow-hidden bg-gray-50 flex items-center justify-center p-4">
+                        <img src="<?=$row['img'];?>" class="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-500" alt="<?=$row['title'];?>" />
+                    </div>
+
+                    <div class="p-5 flex flex-col flex-1">
+                        <a href="/mua-code/<?=$row['id'];?>" class="text-lg font-bold text-gray-900 hover:text-blue-600 line-clamp-2 leading-tight mb-3 flex-1 transition-colors">
+                            <?=$row['title'];?>
+                        </a>
+                        
+                        <div class="flex items-center justify-between mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <span class="text-xs font-bold text-gray-400">MÃ: #<?=$row['id'];?></span>
+                            <div class="text-right">
+                                <?php if($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0 && $row['money'] > 0) { ?>
+                                    <div class="text-xs text-gray-400 line-through"><?=sotienmua($row['money']);?></div>
+                                    <div class="text-lg font-black text-red-600"><?=sotienmua($row['money'] - ($row['money']*$DMH->site('ptgiamgia')/100));?></div>
+                                <?php } else { ?>
+                                    <div class="text-lg font-black text-blue-600"><?=sotienmua($row['money']);?></div>
+                                <?php } ?>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 mt-auto">
+                            <a href="https://zalo.me/<?=$DMH->site('zaloadmin');?>" target="_blank" class="bg-orange-100 hover:bg-orange-500 text-orange-600 hover:text-white text-center font-bold py-2 rounded-xl text-sm w-full transition-colors flex items-center justify-center">
+                                <i class="fa-solid fa-comment-dots mr-1"></i> Tư Vấn
+                            </a>
+                            <a href="/mua-code/<?=$row['id'];?>" class="bg-gray-900 hover:bg-black text-white text-center font-bold py-2 rounded-xl text-sm w-full transition-colors flex items-center justify-center">
+                                Chi Tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <?php } ?>
+            </div>
+            <div class="text-center mt-8">
+                <a href="/dien-may" class="inline-block border-2 border-blue-600 text-blue-600 font-bold px-8 py-3 rounded-full hover:bg-blue-600 hover:text-white transition-colors uppercase">
+                    Xem Tất Cả Sản Phẩm
+                </a>
             </div>
         </div>
 
