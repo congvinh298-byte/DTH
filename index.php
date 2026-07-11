@@ -1,31 +1,5 @@
 <?php
-if (isset($_GET['do_fix_logo'])) {
-    $targetFile = '/home/kwkrbcce/public_html/public/assets/logo.png';
-    $sourceFiles = [
-        '/home/kwkrbcce/public_html/public/logo.png',
-        __DIR__ . '/logo.png',
-        __DIR__ . '/public/assets/logo.png'
-    ];
-    
-    $sourceFile = null;
-    foreach ($sourceFiles as $sf) {
-        if (file_exists($sf)) {
-            $sourceFile = $sf;
-            break;
-        }
-    }
-    
-    echo "<h1>Fixing Logo</h1>";
-    if (file_exists($targetFile)) {
-        echo "Deleting target... " . (unlink($targetFile) ? 'OK' : 'FAIL') . "<br>";
-    }
-    if ($sourceFile) {
-        echo "Copying source ($sourceFile) to target... " . (copy($sourceFile, $targetFile) ? 'OK' : 'FAIL') . "<br>";
-    } else {
-        echo "Source file does not exist in any of the checked paths!<br>";
-    }
-    exit;
-}
+
 define("IN_SITE", true);
 require_once(__DIR__."/core/config.php");
 require_once(__DIR__."/core/function.php");
@@ -55,11 +29,11 @@ $services = array(
     <section class="hero">
         <div class="panel hero-main">
             <h1>Điện Máy Hiếu</h1>
-            <p>Hệ sinh thái Điện Máy Hiếu phục vụ bà con trong xã Lấp Vò và khu vực bán kính 15 km tính từ Chợ Lấp Vò. LH: 0939.354.937</p>
+            <p>Hệ sinh thái bán lẻ và dịch vụ sửa chữa Điện Máy, Điện Lạnh, Điện Tử uy tín số 1 tại khu vực miền Tây. Phục vụ tận tâm bà con trong bán kính 15 km tính từ Chợ Lấp Vò.</p>
             <div class="hero-actions">
-                <a class="btn" href="#products">Xem sản phẩm</a>
-                <a class="btn dark" href="#goi-tho">Đặt lịch gọi thợ</a>
-                <a class="btn" style="background:#0a192f" href="/in-3d.php">Dịch vụ In 3D</a>
+                <a class="btn" href="#products"><i class="fa-solid fa-shopping-cart" style="margin-right: 8px;"></i> Xem sản phẩm</a>
+                <a class="btn dark" href="#goi-tho"><i class="fa-solid fa-tools" style="margin-right: 8px;"></i> Đặt lịch gọi thợ</a>
+                <a class="btn" style="background: rgba(255,255,255,0.15);" href="/in-3d.php"><i class="fa-solid fa-cube" style="margin-right: 8px;"></i> Dịch vụ In 3D</a>
             </div>
         </div>
     </section>
