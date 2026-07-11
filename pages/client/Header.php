@@ -2,75 +2,88 @@
   if (!defined('IN_SITE')) die('The Request Not Found');
 ?>
 <head>
-    <!-- Load OCD-ADHD Core Styles -->
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    <style>
+        /* === CORE STYLES PORTED FROM SUPER APP === */
+        :root{--bg:#f6f7f9;--panel:#fff;--line:#e5e7eb;--text:#111827;--muted:#667085;--brand:#dc2626;--dark:#111827;--ok:#047857}
+        *{box-sizing:border-box}
+        body,button,input,textarea,select{font-family:Arial,Helvetica,sans-serif}
+        body{margin:0;background:var(--bg);color:var(--text);line-height:1.5}
+        a{text-decoration:none;color:inherit}.wrap{width:min(1180px,calc(100% - 32px));margin:0 auto}
+        .top{background:var(--dark);color:#fff;font-size:13px}.top .wrap{min-height:38px;display:flex;justify-content:space-between;align-items:center;gap:12px}.approval-line{background:#fff7ed;color:#9a3412;border-bottom:1px solid #fed7aa;text-align:center;padding:7px 12px;font-size:13px;font-weight:800}
+        header{position:sticky;top:0;z-index:999;background:#fff;border-bottom:1px solid var(--line)}
+        .head{min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+        .logo{font-size:22px;font-weight:900;color:var(--brand); display:flex; align-items:center; gap: 8px;}
+        .logo img{height: 64px; width: auto; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);} /* Tối ưu cho logo dọc */
+        .logo small{display:block;color:var(--muted);font-size:12px; margin-top:2px}
+        .search{display:flex;gap:8px;flex:1;max-width:520px}.search input{width:100%;border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:15px}
+        .btn,button{border:0;border-radius:8px;background:var(--brand);color:#fff;font-weight:800;padding:11px 16px;cursor:pointer}.btn.dark{background:var(--dark)}
+        nav{border-top:1px solid var(--line)}nav .wrap{display:flex;gap:8px;overflow:auto;padding:10px 0}nav button{background:#fff;color:#344054;border:1px solid var(--line);white-space:nowrap}nav button.active{color:var(--brand);border-color:var(--brand);background:#fff5f5}
+        main{padding:24px 0 44px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 24px rgba(15,23,42,.06)}
+        .hero{display:grid;grid-template-columns:1.35fr .9fr;gap:18px}.hero-main{min-height:260px;padding:28px;background:linear-gradient(120deg,#111827,#b42318);color:#fff;display:flex;flex-direction:column;justify-content:center; border-radius: 12px; overflow: hidden; position: relative;}.hero-main h1{font-size:clamp(32px,4vw,50px);line-height:1;margin:0 0 12px}.hero-main p{max-width:640px;color:#f3f4f6;margin:0 0 18px}.hero-actions{display:flex;gap:8px;flex-wrap:wrap}.hero-actions .btn{text-align:center}
+        .qr{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px}.qr-box{border:1px solid var(--line);border-radius:8px;padding:12px}.qr-box h3{margin:0 0 8px;font-size:15px}.qr-box p{margin:0 0 10px;color:var(--muted);font-size:13px}.qr-box img{width:150px;height:150px;object-fit:contain;background:#fff;border:1px solid var(--line);padding:6px}.qr-empty{height:150px;display:grid;place-items:center;background:#fff;border:1px dashed #cbd5e1;border-radius:8px;color:#98a2b3;text-align:center;font-size:13px}
+        .storefront{display:flex;flex-direction:column}.storefront>section:nth-of-type(1){order:0}.storefront>section:nth-of-type(2){order:2}.storefront>section:nth-of-type(3){order:1}.storefront>section:nth-of-type(4){order:3}
+        .section{margin-top:22px}.title{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:12px}.title h2{margin:0;font-size:23px}.muted{color:var(--muted);font-size:14px}
+        .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.product{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}.img{height:145px;display:grid;place-items:center;background:#fff;border-bottom:1px solid var(--line);color:#98a2b3}.img img{max-width:100%;max-height:100%;object-fit:contain;padding:10px}.body{padding:12px}.name{font-weight:900;min-height:42px}.cat{font-size:13px;color:var(--muted)}.price{font-size:17px;color:var(--brand);font-weight:900}.suggest{display:inline-block;color:var(--ok);font-size:12px;font-weight:800}.empty{grid-column:1/-1;background:#fff;border:1px dashed #cbd5e1;border-radius:10px;padding:24px;text-align:center;color:var(--muted)}
+        .booking-shell{padding:18px}.service-head{display:grid;grid-template-columns:minmax(220px,1fr) auto;gap:10px;margin-bottom:10px}.service-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}.service-option{display:grid;grid-template-columns:1fr auto;gap:5px 10px;min-height:64px;padding:10px 12px;text-align:left;background:#fff;color:var(--text);border:1px solid var(--line);border-radius:8px}.service-option:hover,.service-option.selected{border-color:var(--brand);background:#fff7f7}.service-option small{color:var(--muted);font-weight:700}.service-option strong{align-self:center;color:var(--brand);white-space:nowrap}.service-option span{font-size:13px;font-weight:900}.service-option.is-contact strong{color:var(--muted)}
+        .gemini-panel{display:none;margin:0 0 14px;border:1px solid #c7d2fe;background:#f8fafc;border-radius:8px;padding:12px}.gemini-panel.active{display:grid;gap:10px}.gemini-actions{display:flex;gap:8px;flex-wrap:wrap}.gemini-reply{display:none;border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px;white-space:pre-wrap}.gemini-reply.active{display:block}
+        .gemini-message p:last-child { margin-bottom: 0; }
+        .gemini-message pre { background: #f1f5f9; padding: 10px; border-radius: 6px; overflow-x: auto; margin: 10px 0; font-size: 13px; }
+        .gemini-message code { font-family: monospace; }
+        .typing-indicator { display: none; padding: 8px 12px; font-style: italic; color: #64748b; font-size: 13px; }
+        .dth-modal { display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); overflow: auto; }
+        .dth-modal-content { background-color: #fff; margin: 5% auto; padding: 24px; border-radius: 12px; width: 90%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; animation: modalFadeIn 0.3s ease; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .dth-modal-close { position: absolute; top: 15px; right: 20px; font-size: 28px; font-weight: bold; color: #666; cursor: pointer; }
+        .dth-modal-close:hover { color: #dc2626; }
+        .dth-modal-title { font-size: 22px; font-weight: 800; margin-bottom: 20px; color: #111827; border-bottom: 2px solid #dc2626; padding-bottom: 10px; display: inline-block; }
+        .dth-modal-body { font-size: 15px; line-height: 1.6; color: #374151; }
+        .dth-modal-body h4 { margin-top: 15px; margin-bottom: 8px; color: #1f2937; font-size: 16px; }
+        .dth-modal-body ul { padding-left: 20px; margin-top: 5px; margin-bottom: 15px; }
+        .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:6px}.full{grid-column:1/-1}label{font-size:13px;font-weight:800}input,textarea,select{width:100%;border:1px solid var(--line);border-radius:8px;padding:11px 12px;font:inherit;background:#fff}textarea{min-height:100px;resize:vertical}.readonly-price{background:#f8fafc;color:#047857;font-weight:900}.map-actions{display:flex;gap:8px;flex-wrap:wrap}.map-actions .btn{padding:9px 12px}.map-preview{margin-top:4px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#f8fafc}.location-map{width:100%;height:260px}.location-status{padding:8px 10px;background:#f8fafc;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.status{display:none;margin-top:12px;padding:10px 12px;border-radius:8px}.status.ok{display:block;background:#ecfdf3;color:#047857;border:1px solid #a7f3d0}.status.err{display:block;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
+        .legal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.legal-item{background:#fff;border:1px solid var(--line);border-radius:8px;padding:0 12px}.legal-item summary{cursor:pointer;font-weight:900;padding:12px 0}.legal-content{border-top:1px solid var(--line);padding:10px 0 12px;color:#475569;font-size:13px}.legal-content p{margin:0 0 8px}.legal-content p:last-child{margin-bottom:0}
+        footer{background:#111827;color:#d1d5db;padding:24px 0;font-size:13px}.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:18px}.footer-grid h3{margin:0 0 8px;color:#fff;font-size:15px}.footer-grid p{margin:4px 0}.footer-bottom{border-top:1px solid #374151;margin-top:18px;padding-top:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+        @media(max-width:900px){.head,.hero{display:grid;grid-template-columns:1fr}.search{max-width:none}.grid,.qr,.service-list,.legal-grid,.footer-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){header{position:static}.top .wrap{min-height:auto;padding:6px 0;flex-wrap:wrap}.head{padding:12px 0}.title{display:grid;grid-template-columns:1fr;align-items:start;gap:2px}.grid,.qr,.form,.service-head,.service-list,.legal-grid,.footer-grid{grid-template-columns:1fr}.hero-actions .btn{flex:1 1 180px}.full{grid-column:auto}.wrap{width:min(100% - 22px,1180px)}.location-map{height:230px}}
+    </style>
 </head>
-<body class="font-inter bg-gray-50 text-gray-900" id="body_class">
+<body id="body_class">
     
-    <!-- Top Ribbon (Navy Blue) -->
-    <div class="bg-[#0A192F] text-white font-black text-center py-2 px-4 text-sm md:text-base shadow-md z-50 relative uppercase tracking-wider">
-        HOTLINE LẤP VÒ: 0939.354.937 - THỢ CÓ MẶT SAU 30 PHÚT
+    <div class="top">
+        <div class="wrap">
+            <div>Điện Tử Hiếu - Storefront công khai</div>
+            <div id="topBarStatus">
+                <a href="/login.php" style="color: white; font-weight: bold; text-decoration: underline;">Đăng nhập / Đăng ký</a>
+            </div>
+        </div>
     </div>
-
-    <div class="app-wrapper flex flex-col min-h-screen">
+    
+    <div class="approval-line">Website đang chờ duyệt</div>
+    
+    <header>
+        <div class="wrap head">
+            <!-- Tối ưu hiển thị cho LOGO DỌC/VUÔNG: img height 64px, object-fit contain -->
+            <a class="logo" href="/">
+                <img src="/logo.jpg" alt="Logo Điện Máy Hiếu" onerror="this.src='/logo.png'">
+                <div>Điện Máy Hiếu<small>Mua hàng nhanh - Gọi thợ nhanh</small></div>
+            </a>
+            
+            <form class="search" id="searchForm" action="/">
+                <input id="searchInput" name="q" type="search" placeholder="Tìm sản phẩm, dịch vụ...">
+                <button type="submit">Tìm</button>
+            </form>
+            
+            <div style="display: flex; gap: 8px;">
+                <a class="btn dark" href="/#goi-tho">Gọi thợ</a>
+            </div>
+        </div>
         
-        <!-- Header / Navigation -->
-        <header class="sticky top-0 z-[40] w-full bg-white shadow-lg border-b-4 border-black transition-all duration-300">
-            <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
-                <div class="flex items-center justify-between h-20">
-                    
-                    <!-- Logo -->
-                    <a href="/" class="flex-shrink-0 flex items-center gap-3 transform hover:scale-105 transition-transform">
-                        <img src="/logo.png" class="h-10 md:h-12 w-auto drop-shadow-sm" alt="Điện Máy Hiếu">
-                        <span class="text-xl md:text-2xl font-black text-black uppercase tracking-tighter">Điện Máy <span class="text-[#0A192F]">Hiếu</span></span>
-                    </a>
-
-                    <!-- Desktop Menu -->
-                    <nav class="hidden md:flex space-x-8">
-                        <a href="/" class="text-black hover:text-[#0A192F] font-bold uppercase tracking-wide transition-colors">Trang Chủ</a>
-                        <a href="/dien-may" class="text-black hover:text-[#0A192F] font-bold uppercase tracking-wide transition-colors">Điện Máy</a>
-                        <a href="/goi-tho.php" class="text-black hover:text-[#0A192F] font-bold uppercase tracking-wide transition-colors">Gọi Thợ</a>
-                        <a href="/in-3d.php" class="text-black hover:text-[#0A192F] font-bold uppercase tracking-wide transition-colors">In 3D <i class="fa fa-cube"></i></a>
-                        <a href="/lien-he" class="text-black hover:text-[#0A192F] font-bold uppercase tracking-wide transition-colors">Liên Hệ</a>
-                    </nav>
-
-                    <!-- CTA Buttons (Navy Blue / Black) -->
-                    <div class="hidden md:flex items-center space-x-3">
-                        <a href="/in-3d.php" class="border-2 border-black hover:bg-black hover:text-white text-black font-black px-5 py-2.5 rounded-xl uppercase tracking-wide transition-all flex items-center gap-2">
-                            <i class="fa fa-cube"></i> Đặt In 3D
-                        </a>
-                        <a href="/goi-tho.php" class="bg-[#0A192F] hover:bg-black text-white font-black px-5 py-2.5 rounded-xl uppercase tracking-wide shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2">
-                            <i class="fa fa-tools animate-pulse"></i> Gọi Thợ Ngay
-                        </a>
-                    </div>
-
-                    <!-- Mobile Menu Button -->
-                    <div class="md:hidden flex items-center">
-                        <button id="mobile-menu-btn" class="text-black hover:text-[#0A192F] focus:outline-none p-2 bg-gray-100 rounded-lg">
-                            <i class="fa fa-bars text-2xl"></i>
-                        </button>
-                    </div>
-                </div>
+        <nav>
+            <div class="wrap">
+                <button type="button" class="active" onclick="window.location.href='/'">Tất cả</button>
+                <button type="button" onclick="window.location.href='/dien-may'">Điện tử</button>
+                <button type="button" onclick="window.location.href='/dien-may'">Gia dụng</button>
+                <button type="button" onclick="window.location.href='/dien-may'">Lạnh</button>
+                <button type="button" onclick="window.location.href='/in-3d.php'">In 3D</button>
             </div>
-
-            <!-- Mobile Menu -->
-            <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 shadow-inner absolute w-full left-0 z-50">
-                <div class="px-4 pt-2 pb-6 space-y-2 shadow-xl">
-                    <a href="/" class="block px-3 py-3 rounded-md text-base font-bold text-black hover:bg-gray-50 uppercase border-b border-gray-50">Trang Chủ</a>
-                    <a href="/dien-may" class="block px-3 py-3 rounded-md text-base font-bold text-black hover:bg-gray-50 uppercase border-b border-gray-50">Điện Máy & Gia Dụng</a>
-                    <a href="/goi-tho.php" class="block px-3 py-3 rounded-md text-base font-bold text-black hover:bg-gray-50 uppercase border-b border-gray-50">Dịch Vụ Sửa Chữa</a>
-                    <a href="/in-3d.php" class="block px-3 py-3 rounded-md text-base font-bold text-black hover:bg-gray-50 uppercase border-b border-gray-50">Sản Phẩm In 3D</a>
-                    
-                    <a href="/goi-tho.php" class="mt-4 block w-full text-center bg-[#0A192F] hover:bg-black text-white px-4 py-4 rounded-lg font-black uppercase shadow-md transition-colors animate-pulse">
-                        <i class="fa fa-tools mr-2"></i> Gọi Thợ Khẩn Cấp
-                    </a>
-                </div>
-            </div>
-        </header>
-
-        <script>
-            document.getElementById('mobile-menu-btn').addEventListener('click', function() {
-                var menu = document.getElementById('mobile-menu');
-                menu.classList.toggle('hidden');
-            });
-        </script>
+        </nav>
+    </header>
