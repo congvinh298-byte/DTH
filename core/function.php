@@ -175,8 +175,22 @@ function magiamgiav2($data)
 }
 function send_tele($data)
 {
-    $json = json_decode(file_get_contents('https://api.telegram.org/bot5065818486:AAEB6XLQmPbXUorljngJv0Yc_LQCnhqUDjM/sendMessage?chat_id=2118248410&text='.urlencode($data)), true);
-    return $json;
+    $token = "5065818486:AAEB6XLQmPbXUorljngJv0Yc_LQCnhqUDjM";
+    $chat_id = "2118248410";
+    $url = "https://api.telegram.org/bot{$token}/sendMessage";
+    $post_fields = array(
+        'chat_id' => $chat_id,
+        'text' => $data
+    );
+    $ch = curl_init(); 
+    curl_setopt($ch, CURLOPT_URL, $url); 
+    curl_setopt($ch, CURLOPT_POST, 1); 
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields); 
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5); 
+    $output = curl_exec($ch); 
+    curl_close($ch);
+    return json_decode($output, true);
 }
 function token_api($data)
 {
@@ -1104,11 +1118,15 @@ function randomtoken2($length = 15) {
 $onethang = 2592000;
 if(isset($_COOKIE['token']))
 {
-    $DMH->update("users", array(
-        'timeon' => gettime(),
-        'online' => 'ONLINE',
-        'user_agent'    => $_SERVER['HTTP_USER_AGENT']
-    ), "tokenlog = '".$_COOKIE['token']."' ");
+    try {
+        $DMH->update("users", array(
+            'timeon' => gettime(),
+            'online' => 'ONLINE',
+            'user_agent'    => $_SERVER['HTTP_USER_AGENT']
+        ), "tokenlog = '".$_COOKIE['token']."' ");
+    } catch (Throwable $e) {
+        // Silently ignore if columns are missing
+    }
 }
 function logclient()
 {

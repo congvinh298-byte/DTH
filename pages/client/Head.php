@@ -12,8 +12,8 @@
     <title><?=$title ?? 'Điện Máy Hiếu'?></title>
     
     <!-- Favicon -->
-    <link rel="icon" href="/logo.jpg" type="image/jpeg">
-    <link rel="shortcut icon" href="/logo.jpg" type="image/jpeg">
+    <link rel="icon" href="/public/assets/logo.png" type="image/png">
+    <link rel="shortcut icon" href="/public/assets/logo.png" type="image/png">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

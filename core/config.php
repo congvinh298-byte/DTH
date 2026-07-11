@@ -61,7 +61,7 @@ class DMH
     {
         $this->connect();
         $row = $this->ketnoi->query("SELECT * FROM `options` WHERE `key` = '$data' ")->fetch_array();
-        return $row['value'];
+        return $row ? $row['value'] : null;
     }
     function query($sql)
     {

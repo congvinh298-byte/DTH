@@ -1,7 +1,7 @@
 RewriteEngine On
 
-RewriteRule ^dang-nhap$ pages/client/Login.php [L]
-RewriteRule ^dang-ky$ pages/client/Register.php [L]
+RewriteRule ^dang-nhap$ /login.php [L,R=301]
+RewriteRule ^dang-ky$ /login.php [L,R=301]
 RewriteRule ^dang-xuat$ pages/client/Logout.php [L]
 RewriteRule ^Nap-Tien$ pages/client/NapTien.php [L]
 RewriteRule ^Profile/Giaodich$ pages/client/LichsuGd.php [L]
@@ -11,6 +11,8 @@ RewriteRule ^Profile$ pages/client/Profile.php [L]
 RewriteRule ^tao-trang-web$ pages/client/Danhmuctaoweb.php [L]
 RewriteRule ^danh-muc/([0-9-_]+)$ pages/client/Danhsachweb.php?id=$1 [L]
 RewriteRule ^History-tao-web$ pages/client/HistoryTaoweb.php [L]
+
+RewriteRule ^dien-may$ pages/client/DienMay.php [L]
 
 
 RewriteRule ^His-Sellcode$ pages/client/HistorySellcode.php [L]

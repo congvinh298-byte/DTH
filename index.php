@@ -15,22 +15,24 @@ require_once(__DIR__."/pages/client/Head.php");
 require_once(__DIR__."/pages/client/Header.php");
 
 $productError = '';
-$products = $DMH->get_list("SELECT * FROM `danhsachmuacode` WHERE `hienthi` = 'SHOW' AND `money` > 0 ORDER BY id DESC LIMIT 60");
+$products = $DMH->get_list("SELECT * FROM `store_products` WHERE `status` = 'ACTIVE' ORDER BY id DESC LIMIT 60");
 if (!is_array($products)) {
     $products = [];
 }
 
 $services = array(
-    array('group' => 'Thợ điện lạnh', 'name' => 'Vệ sinh máy lạnh', 'base' => 150000, 'note' => 'Giá công khai chưa VAT'),
+    array('group' => 'Thợ điện lạnh', 'name' => 'Vệ sinh máy lạnh', 'base' => 150000, 'note' => 'Trọn gói (Không phí ẩn)'),
     array('group' => 'Thợ điện lạnh', 'name' => 'Lắp đặt máy lạnh 1HP / 1.5HP', 'base' => 400000, 'note' => 'Chưa gồm vật tư phát sinh'),
     array('group' => 'Thợ điện lạnh', 'name' => 'Lắp đặt máy lạnh 2HP / 3HP', 'base' => 500000, 'note' => 'Chưa gồm vật tư phát sinh'),
-    array('group' => 'Thợ điện lạnh', 'name' => 'Máy lạnh âm trần', 'base' => 0, 'note' => 'Hỗ trợ liên hệ hãng'),
-    array('group' => 'Thợ điện lạnh', 'name' => 'Sửa chữa điện lạnh', 'base' => 200000, 'note' => 'Công thợ + linh kiện đặt mua công khai'),
-    array('group' => 'Thợ tivi', 'name' => 'Treo tivi', 'base' => 200000, 'note' => 'Công thợ + khung treo'),
+    array('group' => 'Thợ điện lạnh', 'name' => 'Máy lạnh âm trần', 'base' => 0, 'note' => 'Khảo sát và báo giá riêng'),
+    array('group' => 'Thợ điện lạnh', 'name' => 'Sửa chữa điện lạnh', 'base' => 200000, 'note' => 'Công thợ + linh kiện công khai'),
+    array('group' => 'Thợ tivi', 'name' => 'Treo tivi (32-43")', 'base' => 150000, 'note' => 'Công thợ + giá khung treo công khai'),
+    array('group' => 'Thợ tivi', 'name' => 'Treo tivi (50-55")', 'base' => 200000, 'note' => 'Công thợ + giá khung treo công khai'),
+    array('group' => 'Thợ tivi', 'name' => 'Treo tivi (65-75")', 'base' => 300000, 'note' => 'Công thợ + giá khung treo công khai'),
     array('group' => 'Thợ máy lọc nước', 'name' => 'Lắp máy lọc nước', 'base' => 200000, 'note' => 'Công thợ + phụ kiện'),
     array('group' => 'Thợ gia dụng', 'name' => 'Lắp máy giặt', 'base' => 200000, 'note' => 'Công thợ + phụ kiện'),
-    array('group' => 'Thợ điện thoại', 'name' => 'Kiểm tra / sửa điện thoại', 'base' => 200000, 'note' => 'Công thợ + linh kiện nếu có'),
-    array('group' => 'In 3D', 'name' => 'Đặt in 3D theo mẫu', 'base' => 0, 'note' => 'Báo giá dựa theo khối lượng (500đ/1 gram)'),
+    array('group' => 'Thợ gia dụng', 'name' => 'Sửa điện gia dụng', 'base' => 100000, 'note' => 'Công thợ kiểm tra sửa chữa'),
+    array('group' => 'Thợ điện thoại', 'name' => 'Kiểm tra / sửa điện thoại', 'base' => 100000, 'note' => 'Công thợ + linh kiện nếu có')
 );
 ?>
 
@@ -66,12 +68,12 @@ $services = array(
                 <?php else: ?>
                     <?php foreach ($products as $p): ?>
                         <?php
-                        $name = isset($p['title']) ? (string)$p['title'] : '';
-                        $category = 'Điện Máy & Gia Dụng';
-                        $image = isset($p['img']) ? (string)$p['img'] : '';
-                        $price = isset($p['money']) ? (float)$p['money'] : 0;
+                        $name = isset($p['name']) ? (string)$p['name'] : '';
+                        $category = $p['type'] == '3d' ? 'Mô hình In 3D' : 'Điện Máy & Gia Dụng';
+                        $image = isset($p['image']) ? (string)$p['image'] : '';
+                        $price = isset($p['price']) ? (float)$p['price'] : 0;
                         ?>
-                        <article class="product" data-name="<?= htmlspecialchars(strtolower($name)) ?>" data-category="<?= htmlspecialchars(strtolower($category)) ?>" onclick="window.location.href='/mua-code/<?=$p['id'];?>'">
+                        <article class="product" data-name="<?= htmlspecialchars(strtolower($name)) ?>" data-category="<?= htmlspecialchars(strtolower($category)) ?>">
                             <div class="img">
                                 <?php if ($image !== ''): ?>
                                     <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($name) ?>" onerror="this.parentNode.textContent='Chưa có ảnh'">
@@ -82,8 +84,8 @@ $services = array(
                             <div class="body">
                                 <div class="cat"><?= htmlspecialchars($category) ?></div>
                                 <div class="name" title="<?= htmlspecialchars($name) ?>"><?= htmlspecialchars($name) ?></div>
-                                <div class="price"><?= number_format($price, 0, ',', '.') ?></div>
-                                <a href="/mua-code/<?=$p['id'];?>"><i class="fa-solid fa-eye"></i> Xem chi tiết</a>
+                                <div class="price"><?= number_format($price, 0, ',', '.') ?>đ</div>
+                                <button onclick="addToCart(<?= $p['id'] ?>)" class="btn accent" style="width: 100%; padding: 8px; margin-top: 10px; font-size: 14px;"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
                             </div>
                         </article>
                     <?php endforeach; ?>
@@ -91,11 +93,47 @@ $services = array(
             </div>
         </section>
 
+        <!-- Pricing & Services Section -->
+        <section class="section" id="bang-gia" style="margin-top: 40px;">
+            <div class="title" style="text-align: center; margin-bottom: 40px;">
+                <h2 style="font-size: 32px; font-weight: 900; letter-spacing: -1px; color: var(--brand-accent);">BẢNG GIÁ DỊCH VỤ</h2>
+                <span class="muted" style="display: block; margin-top: 8px; font-size: 16px;">Minh bạch - Trọn gói - Không phí ẩn</span>
+            </div>
+            
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 0 16px;">
+                    <?php 
+                    $colors = [
+                        'Thợ điện lạnh' => '#38bdf8',
+                        'Thợ tivi' => '#fbbf24',
+                        'Thợ máy lọc nước' => '#10b981',
+                        'Thợ gia dụng' => '#f43f5e',
+                        'Thợ điện thoại' => '#a855f7'
+                    ];
+                    
+                    foreach ($services as $item): 
+                        $base = (int)$item['base']; 
+                        $publicPrice = $base > 0 ? number_format($base, 0, ',', '.') . 'đ' : 'Khảo sát';
+                        $c = isset($colors[$item['group']]) ? $colors[$item['group']] : '#38bdf8';
+                    ?>
+                    <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid <?= $c ?>; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; transition: all 0.2s ease; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);" onmouseover="this.style.transform='translateY(-3px)'; this.style.borderColor='<?= $c ?>'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.2)'" onclick="document.getElementById('goi-tho').scrollIntoView({behavior: 'smooth'});">
+                        <div>
+                            <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: <?= $c ?>; margin-bottom: 6px;"><?= htmlspecialchars($item['group']) ?></div>
+                            <div style="font-size: 16px; font-weight: 700; color: #fff; line-height: 1.3;"><?= htmlspecialchars($item['name']) ?></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div style="font-size: 12px; color: #94a3b8; max-width: 60%; line-height: 1.3;"><i class="fa-solid fa-circle-info" style="font-size: 10px; margin-right: 4px; opacity: 0.7;"></i><?= htmlspecialchars($item['note']) ?></div>
+                            <div style="font-size: 17px; font-weight: 900; color: <?= $c ?>; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 6px;"><?= $publicPrice ?></div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+        </section>
+
         <!-- Booking App Section -->
-        <section class="section booking-shell" id="goi-tho">
-            <div class="title">
-                <h2>Dịch Vụ Gọi Thợ Tận Nơi</h2>
-                <span class="muted">Minh bạch giá cả - Gọi là có mặt</span>
+        <section class="section booking-shell" id="goi-tho" style="margin-top: 60px; max-width: 800px; margin-inline: auto;">
+            <div class="title" style="text-align: center; margin-bottom: 30px;">
+                <h2 style="font-size: 32px; font-weight: 900; letter-spacing: -1px;">GỌI THỢ NGAY</h2>
+                <span class="muted" style="display: block; margin-top: 8px;">Điền thông tin - 15 phút thợ có mặt</span>
             </div>
             
             <form id="bookingForm" autocomplete="off">
@@ -104,25 +142,46 @@ $services = array(
                 <div class="form">
                     <div class="field full">
                         <label for="service_selector">1. Bạn cần dịch vụ gì? <span style="color:var(--brand-accent);">*</span></label>
-                        <select id="service_selector" name="service_selector" required style="font-weight: 700; color: #fff;">
-                            <option value="" disabled selected>-- Bấm vào đây để chọn dịch vụ và xem giá --</option>
+                        <div id="custom-service-selector">
                             <?php 
+                            $icons = [
+                                'Vệ sinh máy lạnh' => '❄️',
+                                'Lắp đặt máy lạnh 1HP / 1.5HP' => '🛠️',
+                                'Lắp đặt máy lạnh 2HP / 3HP' => '🛠️',
+                                'Máy lạnh âm trần' => '🏢',
+                                'Sửa chữa điện lạnh' => '🔧',
+                                'Treo tivi (32-43")' => '📺',
+                                'Treo tivi (50-55")' => '📺',
+                                'Treo tivi (65-75")' => '📺',
+                                'Lắp máy lọc nước' => '💧',
+                                'Lắp máy giặt' => '🧺',
+                                'Sửa điện gia dụng' => '🔌',
+                                'Kiểm tra / sửa điện thoại' => '📱'
+                            ];
+                            $colors = ['#38bdf8', '#fbbf24', '#10b981', '#f43f5e', '#a855f7', '#94a3b8'];
+                            $c_idx = -1;
                             $currentGroup = '';
+                            
                             foreach ($services as $svc): 
                                 if ($svc['group'] !== $currentGroup) {
-                                    if ($currentGroup !== '') echo '</optgroup>';
-                                    echo '<optgroup label="' . htmlspecialchars($svc['group']) . '">';
+                                    if ($currentGroup !== '') echo '</div></div>';
+                                    $c_idx++;
+                                    $accent = $colors[$c_idx % count($colors)];
+                                    echo '<div style="margin-bottom: 12px;">';
+                                    echo '<div style="font-size: 13px; font-weight: 800; color: ' . $accent . '; margin-bottom: 6px; text-transform: uppercase;">' . htmlspecialchars($svc['group']) . '</div>';
+                                    echo '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
                                     $currentGroup = $svc['group'];
                                 }
                                 $base = (int)$svc['base']; 
-                                $publicPrice = $base > 0 ? number_format((int)round($base * 1.10),0,',','.') . ' VND' : 'Báo giá sau khi khảo sát';
+                                $publicPrice = $base > 0 ? number_format($base, 0, ',', '.') . ' VND' : 'Báo giá sau khi khảo sát';
+                                $icon = isset($icons[$svc['name']]) ? $icons[$svc['name']] : '✨';
                             ?>
-                                <option value="<?= htmlspecialchars($svc['name']) ?>" data-price="<?= htmlspecialchars($publicPrice) ?>" data-group="<?= htmlspecialchars($svc['group']) ?>" data-note="<?= htmlspecialchars($svc['note']) ?>">
-                                    <?= htmlspecialchars($svc['name']) ?> - <?= $publicPrice ?>
-                                </option>
+                                <button type="button" class="cute-btn" data-val="<?= htmlspecialchars($svc['name']) ?>" data-price="<?= htmlspecialchars($publicPrice) ?>" data-group="<?= htmlspecialchars($svc['group']) ?>" data-note="<?= htmlspecialchars($svc['note']) ?>" style="background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 14px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.background='rgba(255,255,255,0.1)';" onmouseout="if(!this.classList.contains('active')) this.style.background='rgba(255,255,255,0.05)';">
+                                    <span style="font-size: 16px;"><?= $icon ?></span> <?= htmlspecialchars($svc['name']) ?>
+                                </button>
                             <?php endforeach; ?>
-                            <?php if ($currentGroup !== '') echo '</optgroup>'; ?>
-                        </select>
+                            <?php if ($currentGroup !== '') echo '</div></div>'; ?>
+                        </div>
                     </div>
                     
                     <input type="hidden" id="service_type" name="service_type">
@@ -200,15 +259,27 @@ if(searchInput) {
 }
 
 // Service Selector Logic
-const serviceSelector = document.getElementById('service_selector');
-if (serviceSelector) {
-    serviceSelector.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
+const cuteBtns = document.querySelectorAll('.cute-btn');
+cuteBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+        // Remove active class from all
+        cuteBtns.forEach(b => {
+            b.classList.remove('active');
+            b.style.background = 'rgba(255,255,255,0.05)';
+            b.style.borderColor = 'rgba(255,255,255,0.1)';
+            b.style.boxShadow = 'none';
+        });
         
-        const group = selectedOption.dataset.group || '';
-        const serviceName = selectedOption.value || '';
-        const price = selectedOption.dataset.price || 'Liên hệ để báo giá chi tiết';
-        const note = selectedOption.dataset.note || '';
+        // Add active class to clicked
+        this.classList.add('active');
+        this.style.background = 'var(--brand-accent)';
+        this.style.borderColor = 'var(--brand-accent)';
+        this.style.boxShadow = '0 4px 15px rgba(56, 189, 248, 0.4)';
+        
+        const group = this.dataset.group || '';
+        const serviceName = this.dataset.val || '';
+        const price = this.dataset.price || 'Liên hệ để báo giá chi tiết';
+        const note = this.dataset.note || '';
         
         document.getElementById('service_type').value = group;
         document.getElementById('selected_service_name').value = serviceName;
@@ -221,7 +292,7 @@ if (serviceSelector) {
             issueDesc.value = 'Tôi cần ' + serviceName;
         }
     });
-}
+});
 
 // Map Logic
 const addressInput = document.getElementById('address');
@@ -354,6 +425,26 @@ $("#btnDatLich").on("click", function() {
         }
     });
 });
+
+// Giỏ hàng - Add to Cart
+function addToCart(productId) {
+    $.ajax({
+        url: "/controller/client/CartAction.php",
+        method: "POST",
+        data: { action: 'add_to_cart', product_id: productId },
+        success: function(r) {
+            try {
+                let res = JSON.parse(r);
+                if(res.status == 'success') {
+                    showToast('Đã thêm vào giỏ hàng!', 'success');
+                    if(typeof updateCartCount === "function") updateCartCount();
+                } else {
+                    Swal.fire('Thông báo', res.msg, 'warning');
+                }
+            } catch(e) {}
+        }
+    });
+}
 </script>
 
 <div style="text-align: center; margin: 40px 0 20px; position: relative; z-index: 5;">

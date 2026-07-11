@@ -61,6 +61,83 @@
 </div></footer>
 <!-- END: Footer -->
     
+<!-- CHATBOT ANH THIÊN OPENCLAW -->
+<style>
+#openclaw-chatbot { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
+#openclaw-btn { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--c-cyan), var(--c-purple)); color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); transition: transform 0.3s; animation: pulse 2s infinite; }
+#openclaw-btn:hover { transform: scale(1.1); }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(6, 182, 212, 0); } 100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); } }
+#openclaw-window { display: none; width: 350px; height: 500px; background: #1e293b; border-radius: 16px; border: 2px solid var(--c-cyan); box-shadow: 0 10px 25px rgba(0,0,0,0.5); flex-direction: column; overflow: hidden; position: absolute; bottom: 80px; right: 0; }
+#openclaw-header { background: var(--c-cyan); color: #0f172a; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 900; }
+#openclaw-messages { flex-grow: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #0f172a; }
+.msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.4; }
+.msg-bot { background: #334155; color: #fff; align-self: flex-start; border-bottom-left-radius: 0; }
+.msg-user { background: var(--c-purple); color: #fff; align-self: flex-end; border-bottom-right-radius: 0; }
+#openclaw-input-area { display: flex; padding: 10px; background: #1e293b; border-top: 1px solid #334155; }
+#openclaw-input { flex-grow: 1; background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; outline: none; }
+#openclaw-send { background: var(--c-cyan); color: #000; border: none; padding: 10px 15px; margin-left: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+</style>
+
+<div id="openclaw-chatbot">
+    <div id="openclaw-window">
+        <div id="openclaw-header">
+            <span><i class="fa-solid fa-robot"></i> Anh thiên Openclaw</span>
+            <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 18px;" onclick="$('#openclaw-window').hide()"></i>
+        </div>
+        <div id="openclaw-messages">
+            <div class="msg msg-bot">Xin chào! Tui là <b>Anh thiên Openclaw</b>, trợ lý AI của Giám đốc Hiếu. Tui có thể giúp gì cho bạn về Mua sắm Điện Máy, Gọi Thợ hay In 3D?</div>
+        </div>
+        <form id="openclaw-input-area" onsubmit="sendOpenclawMsg(event)">
+            <input type="text" id="openclaw-input" placeholder="Nhập câu hỏi..." autocomplete="off">
+            <button type="submit" id="openclaw-send"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+    </div>
+    <div id="openclaw-btn" onclick="$('#openclaw-window').toggle()">
+        <i class="fa-solid fa-headset"></i>
+    </div>
+</div>
+
+<script>
+function sendOpenclawMsg(e) {
+    e.preventDefault();
+    let text = $('#openclaw-input').val().trim();
+    if(!text) return;
+    
+    // Add user message
+    $('#openclaw-messages').append(`<div class="msg msg-user">${text}</div>`);
+    $('#openclaw-input').val('');
+    scrollToBottom();
+    
+    // Add typing indicator
+    let typingId = 'typing-' + Date.now();
+    $('#openclaw-messages').append(`<div class="msg msg-bot" id="${typingId}">Đang gõ... <i class="fa-solid fa-ellipsis fa-fade"></i></div>`);
+    scrollToBottom();
+    
+    $.ajax({
+        url: "/controller/client/Chatbot.php",
+        method: "POST",
+        data: { message: text },
+        success: function(r) {
+            $('#' + typingId).remove();
+            try {
+                let res = JSON.parse(r);
+                $('#openclaw-messages').append(`<div class="msg msg-bot">${res.reply}</div>`);
+            } catch(e) {
+                $('#openclaw-messages').append(`<div class="msg msg-bot">Xin lỗi, Anh thiên đang bận bảo trì server rùi!</div>`);
+            }
+            scrollToBottom();
+        },
+        error: function() {
+            $('#' + typingId).remove();
+            $('#openclaw-messages').append(`<div class="msg msg-bot">Lỗi kết nối!</div>`);
+        }
+    });
+}
+function scrollToBottom() {
+    let box = document.getElementById('openclaw-messages');
+    box.scrollTop = box.scrollHeight;
+}
+</script>
 
 
     <script>

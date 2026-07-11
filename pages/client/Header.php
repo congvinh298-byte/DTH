@@ -9,8 +9,8 @@
     <div class="top">
         <div class="wrap">
             <div>Điện Tử Hiếu - Storefront công khai</div>
-            <div id="topBarStatus">
-                <a href="/login.php" style="color: white; font-weight: bold; text-decoration: underline;">Đăng nhập / Đăng ký</a>
+            <div id="topBarStatus" style="display: flex; gap: 15px; align-items: center;">
+                <a href="/login.php" style="color: white; font-weight: bold; text-decoration: underline;" id="loginLink">Đăng nhập / Đăng ký</a>
             </div>
         </div>
     </div>
@@ -30,18 +30,56 @@
                 <button type="submit">Tìm</button>
             </form>
             
-            <div style="display: flex; gap: 8px;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <a class="btn dark" href="/dien-may">Cửa hàng</a>
+                <a class="btn dark" href="/in-3d.php">In 3D</a>
                 <a class="btn dark" href="/goi-tho.php">Gọi thợ</a>
+                <a class="btn" href="/GioHang.php" style="background: var(--brand-accent); color: white; position: relative; padding: 10px 15px;">
+                    <i class="fa-solid fa-cart-shopping"></i> Giỏ Hàng
+                    <span id="cartCountBadge" style="position: absolute; top: -8px; right: -8px; background: #f43f5e; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: none;">0</span>
+                </a>
             </div>
         </div>
-        
-        <nav>
-            <div class="wrap">
-                <button type="button" class="active" onclick="window.location.href='/'">Tất cả</button>
-                <button type="button" onclick="window.location.href='/dien-may'">Điện tử</button>
-                <button type="button" onclick="window.location.href='/dien-may'">Gia dụng</button>
-                <button type="button" onclick="window.location.href='/dien-may'">Lạnh</button>
-                <button type="button" onclick="window.location.href='/in-3d.php'">In 3D</button>
-            </div>
-        </nav>
     </header>
+
+    <script>
+    // JS check login status for header
+    function checkLoginStatus() {
+        $.ajax({
+            url: "/controller/client/CartAction.php",
+            method: "POST",
+            data: { action: 'check_login' },
+            success: function(r) {
+                try {
+                    let res = JSON.parse(r);
+                    if(res.logged_in) {
+                        $('#loginLink').html('<i class="fa-solid fa-user"></i> Xin chào, ' + res.username).attr('href', '/profile.php');
+                        updateCartCount();
+                    }
+                } catch(e) {}
+            }
+        });
+    }
+
+    function updateCartCount() {
+        $.ajax({
+            url: "/controller/client/CartAction.php",
+            method: "POST",
+            data: { action: 'cart_count' },
+            success: function(r) {
+                try {
+                    let res = JSON.parse(r);
+                    if(res.count > 0) {
+                        $('#cartCountBadge').text(res.count).show();
+                    } else {
+                        $('#cartCountBadge').hide();
+                    }
+                } catch(e) {}
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        checkLoginStatus();
+    });
+    </script>
