@@ -255,4 +255,8 @@ $("#btnDatLich").on("click", function() {
 });
 </script>
 
+    <div style="text-align: center; margin: 40px 0;">
+        <a href="/login.php" class="btn dark" style="background: rgba(10,25,47,0.5); border: 1px solid rgba(255,255,255,0.1); font-size: 14px;"><i class="fa-solid fa-user-gear"></i> Cổng đăng nhập dành cho thợ</a>
+    </div>
+
 <?php require_once(__DIR__."/pages/client/Footer.php"); ?>
