@@ -63,6 +63,11 @@ if (is_dir($srcDir)) {
     foreach ($iterator as $item) {
         $destPath = str_replace($srcDir, $extractPath, $item->getPathname());
         
+        // Bỏ qua không ghi đè file config.php để tránh mất kết nối Database
+        if (strpos($destPath, 'core/config.php') !== false || strpos($destPath, 'core\config.php') !== false) {
+            continue;
+        }
+        
         if ($item->isDir()) {
             if (!is_dir($destPath)) {
                 mkdir($destPath, 0755, true);
