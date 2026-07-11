@@ -9,7 +9,7 @@
     
     <!-- ADHD Top Ribbon -->
     <div class="bg-red-600 text-white font-black text-center py-2 px-4 text-sm md:text-base shadow-md z-50 relative uppercase tracking-wider">
-        HOTLINE LẤP VÒ: 09xx.xxx.xxx - THỢ CÓ MẶT SAU 30 PHÚT
+        HOTLINE LẤP VÒ: 0939.354.937 - THỢ CÓ MẶT SAU 30 PHÚT
     </div>
 
     <div class="app-wrapper flex flex-col min-h-screen">
@@ -29,15 +29,15 @@
                     <nav class="hidden md:flex space-x-8">
                         <a href="/" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors">Trang Chủ</a>
                         <a href="/dien-may" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors">Điện Máy</a>
-                        <a href="/sua-chua" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors">Gọi Thợ</a>
+                        <a href="#dat-lich" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors">Gọi Thợ</a>
                         <a href="/in-3d" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors text-adhd-alert">In 3D <i class="fa fa-cube"></i></a>
                         <a href="/lien-he" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors">Liên Hệ</a>
                     </nav>
 
                     <!-- CTA Button (ADHD: Bright, bold, popping) -->
                     <div class="hidden md:flex items-center space-x-4">
-                        <a href="tel:09xxxxxxx" class="btn-cta-pulse">
-                            <i class="fa fa-phone-alt"></i> Gọi Khẩn Cấp
+                        <a href="tel:0939354937" class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-black px-6 py-2.5 rounded-xl uppercase tracking-wide shadow-[0_4px_15px_rgba(239,68,68,0.4)] hover:shadow-[0_6px_20px_rgba(239,68,68,0.6)] hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                            <i class="fa fa-phone-alt animate-pulse"></i> Gọi Khẩn Cấp
                         </a>
                     </div>
 
@@ -55,9 +55,9 @@
                 <div class="px-4 pt-2 pb-6 space-y-2 shadow-xl">
                     <a href="/" class="block px-3 py-3 rounded-md text-base font-bold text-gray-900 hover:bg-gray-50 uppercase border-b border-gray-50">Trang Chủ</a>
                     <a href="/dien-may" class="block px-3 py-3 rounded-md text-base font-bold text-gray-900 hover:bg-gray-50 uppercase border-b border-gray-50">Điện Máy & Gia Dụng</a>
-                    <a href="/sua-chua" class="block px-3 py-3 rounded-md text-base font-bold text-gray-900 hover:bg-gray-50 uppercase border-b border-gray-50">Dịch Vụ Sửa Chữa</a>
+                    <a href="#dat-lich" class="block px-3 py-3 rounded-md text-base font-bold text-gray-900 hover:bg-gray-50 uppercase border-b border-gray-50">Dịch Vụ Sửa Chữa</a>
                     <a href="/in-3d" class="block px-3 py-3 rounded-md text-base font-bold text-orange-600 hover:bg-orange-50 uppercase border-b border-gray-50">Sản Phẩm In 3D</a>
-                    <a href="tel:09xxxxxxx" class="mt-4 block w-full text-center bg-orange-500 hover:bg-orange-600 text-white px-4 py-4 rounded-lg font-black uppercase shadow-md transition-colors animate-pulse">
+                    <a href="tel:0939354937" class="mt-4 block w-full text-center bg-orange-500 hover:bg-orange-600 text-white px-4 py-4 rounded-lg font-black uppercase shadow-md transition-colors animate-pulse">
                         <i class="fa fa-phone-alt mr-2"></i> Gọi Thợ Khẩn Cấp
                     </a>
                 </div>
