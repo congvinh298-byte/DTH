@@ -67,7 +67,7 @@ $services = array(
                             <div class="name"><?= htmlspecialchars($name) ?></div>
                             <div class="cat"><?= htmlspecialchars($category) ?></div>
                             <div class="price"><?= number_format($price, 0, ',', '.') ?> VND</div>
-                            <a href="/mua-code/<?=$p['id'];?>" style="display:block; margin-top:8px; text-align:center; padding: 6px; background:#f6f7f9; border-radius:4px; font-size:12px; font-weight:bold;">Xem chi tiết</a>
+                            <a href="/mua-code/<?=$p['id'];?>" style="display:block; margin-block-start:8px; text-align:center; padding: 6px; background:#f6f7f9; border-radius:4px; font-size:12px; font-weight:bold;">Xem chi tiết</a>
                         </div>
                     </article>
                 <?php endforeach; ?>
@@ -107,7 +107,7 @@ $services = array(
             <div class="gemini-reply" id="geminiReply"></div>
         </div>
 
-        <div id="thongbao_datlich" style="margin-bottom: 12px;"></div>
+        <div id="thongbao_datlich" style="margin-block-end: 12px;"></div>
 
         <form id="bookingForm">
             <h3>Thông tin yêu cầu</h3>
@@ -163,8 +163,8 @@ $services = array(
                 </div>
             </div>
             
-            <p class="muted" style="margin-top: 15px;">Giá công khai đã gồm VAT. Vật tư hoặc linh kiện phát sinh (hoặc khối lượng in 3D thực tế) sẽ được báo riêng trước khi làm.</p>
-            <button id="btnDatLich" class="btn" type="button" style="width: 100%; padding: 14px; font-size: 16px;">Gửi yêu cầu gọi thợ / Đặt In</button>
+            <p class="muted" style="margin-block-start: 15px;">Giá công khai đã gồm VAT. Vật tư hoặc linh kiện phát sinh (hoặc khối lượng in 3D thực tế) sẽ được báo riêng trước khi làm.</p>
+            <button id="btnDatLich" class="btn" type="button" style="inline-size: 100%; padding: 14px; font-size: 16px;">Gửi yêu cầu gọi thợ / Đặt In</button>
         </form>
     </section>
 
