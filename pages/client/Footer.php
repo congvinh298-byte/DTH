@@ -40,19 +40,18 @@
     <div class="container mx-auto px-4 max-w-7xl">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
             
-            <!-- Cột 1: Thông Tin Công Ty Pháp Lý -->
+            <!-- Cột 1: Thông Tin Công Ty Pháp Lý (Thực tế từ Giấy ĐKDN) -->
             <div class="space-y-4">
-                <img src="/logo.png" alt="Công ty TNHH MTV Điện Tử Hiếu" class="h-16 rounded-xl bg-white p-1 mb-4">
-                <h3 class="text-xl font-black text-white uppercase tracking-tight">CÔNG TY TNHH MTV ĐIỆN TỬ HIẾU</h3>
-                <p class="text-sm font-medium leading-relaxed text-gray-400">
-                    Đơn vị tiên phong trong lĩnh vực phân phối, sửa chữa thiết bị điện máy, điện lạnh và in 3D công nghệ cao tại Việt Nam.
-                </p>
-                <div class="pt-2 text-xs text-gray-500 space-y-2">
-                    <p><i class="fa fa-id-card w-4 text-center"></i> <strong>Mã số doanh nghiệp:</strong> Đang cập nhật</p>
-                    <p><i class="fa fa-building w-4 text-center"></i> <strong>Ngày cấp:</strong> Đang cập nhật - Nơi cấp: Sở KH&ĐT Tỉnh Đồng Tháp</p>
-                    <p><i class="fa fa-user-tie w-4 text-center"></i> <strong>Đại diện pháp luật:</strong> NGUYỄN VĂN HIẾU</p>
-                    <p><i class="fa fa-map-marker-alt w-4 text-center"></i> <strong>Trụ sở chính:</strong> Lấp Vò, Đồng Tháp, Việt Nam</p>
-                    <p><i class="fa fa-envelope w-4 text-center"></i> <strong>Email:</strong> admin@dienmayhieu.com</p>
+                <a href="/"><img src="/logo.png" alt="Công ty TNHH MTV Điện Tử Hiếu" class="h-16 rounded-xl bg-white p-1 mb-4 hover:opacity-90 transition-opacity"></a>
+                <h3 class="text-lg font-black text-white uppercase tracking-tight leading-tight">CÔNG TY TNHH MTV ĐIỆN TỬ HIẾU</h3>
+                <div class="text-xs text-gray-400 space-y-2 leading-relaxed">
+                    <p class="flex gap-2"><i class="fa fa-id-badge text-blue-400 w-4 text-center mt-0.5 flex-shrink-0"></i><span><strong class="text-gray-300">Mã số DN:</strong> 1402228630</span></p>
+                    <p class="flex gap-2"><i class="fa fa-calendar-check text-blue-400 w-4 text-center mt-0.5 flex-shrink-0"></i><span><strong class="text-gray-300">Đăng ký lần đầu:</strong> 06/04/2026</span></p>
+                    <p class="flex gap-2"><i class="fa fa-university text-blue-400 w-4 text-center mt-0.5 flex-shrink-0"></i><span><strong class="text-gray-300">Nơi cấp:</strong> Sở KH&ĐT Tỉnh Đồng Tháp</span></p>
+                    <p class="flex gap-2"><i class="fa fa-user-tie text-orange-400 w-4 text-center mt-0.5 flex-shrink-0"></i><span><strong class="text-gray-300">Giám đốc:</strong> TRẦN CÔNG VINH</span></p>
+                    <p class="flex gap-2"><i class="fa fa-map-marker-alt text-red-400 w-4 text-center mt-0.5 flex-shrink-0"></i><span><strong class="text-gray-300">Trụ sở:</strong> Số 166 Ấp Bình Thạnh 1, Xã Lấp Vò, Tỉnh Đồng Tháp</span></p>
+                    <p class="flex gap-2"><i class="fa fa-phone text-green-400 w-4 text-center mt-0.5 flex-shrink-0"></i><span><a href="tel:0939354937" class="text-green-400 font-black hover:text-green-300">0939.354.937</a></span></p>
+                    <p class="flex gap-2"><i class="fa fa-piggy-bank text-yellow-400 w-4 text-center mt-0.5 flex-shrink-0"></i><span><strong class="text-gray-300">Vốn điều lệ:</strong> 30.000.000 VNĐ</span></p>
                 </div>
             </div>
             
@@ -89,8 +88,8 @@
                             <i class="fa fa-phone-alt"></i>
                         </div>
                         <div>
-                            <div class="text-xs uppercase font-bold text-gray-400">Hotline Kỹ Thuật (24/7)</div>
-                            <a href="tel:09xxxxxxx" class="text-lg font-black text-white hover:text-orange-400">09xx.xxx.xxx</a>
+                            <div class="text-xs uppercase font-bold text-gray-400">Hotline Kỹ Thuật (6:00 - 22:00)</div>
+                            <a href="tel:0939354937" class="text-lg font-black text-white hover:text-orange-400">0939.354.937</a>
                         </div>
                     </div>
                     
