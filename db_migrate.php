@@ -101,8 +101,9 @@ if ($DMH->query($sql_auth_logs)) {
 echo "</div>";
 
 // --- 5. Fix dat_lich ---
-echo "<div class='box'><h3>5. Chuẩn hóa bảng 'dat_lich'</h3>";
+echo "<div class='box'><h3>5. Fix Bảng dat_lich</h3>";
 add_column_safe($DMH, 'dat_lich', 'tho_id', "int(11) DEFAULT '0'");
+add_column_safe($DMH, 'dat_lich', 'trangthai', "varchar(50) DEFAULT 'CHO_XU_LY'");
 echo "</div>";
 
 // --- 6. DEMO ACCOUNT ---
