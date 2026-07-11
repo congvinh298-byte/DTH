@@ -84,6 +84,67 @@ require_once(__DIR__."/pages/client/Header.php");
             </div>
         </div>
 
+        <!-- ADHD BOOKING FORM (GỌI THỢ) -->
+        <div class="container mx-auto max-w-4xl mt-16 px-4">
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-orange-500 relative">
+                
+                <!-- Background decoration -->
+                <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-orange-100 opacity-50 z-0"></div>
+                <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 rounded-full bg-blue-100 opacity-50 z-0"></div>
+
+                <div class="relative z-10 p-8 md:p-12">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl md:text-4xl font-black uppercase text-gray-900 mb-2">Đặt Lịch Thợ Tại Nhà</h2>
+                        <p class="text-orange-600 font-bold">Khắc phục sự cố siêu tốc khu vực Lấp Vò</p>
+                    </div>
+
+                    <div id="thongbao_datlich"></div>
+
+                    <form id="formDatLich" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-sm font-bold text-gray-700 uppercase tracking-wide">Họ và Tên *</label>
+                                <input type="text" id="dl_ten" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all font-medium" placeholder="Nhập tên của bạn..." required>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-bold text-gray-700 uppercase tracking-wide">Số Điện Thoại *</label>
+                                <input type="tel" id="dl_sdt" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all font-medium" placeholder="09xx.xxx.xxx" required>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-sm font-bold text-gray-700 uppercase tracking-wide">Loại Dịch Vụ *</label>
+                                <select id="dl_dichvu" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all font-medium">
+                                    <option value="Sửa Máy Lạnh">Sửa chữa / Vệ sinh Máy Lạnh</option>
+                                    <option value="Sửa Tủ Lạnh">Sửa chữa Tủ Lạnh</option>
+                                    <option value="Sửa Máy Giặt">Sửa chữa Máy Giặt</option>
+                                    <option value="Sửa Tivi">Sửa chữa Tivi</option>
+                                    <option value="In 3D">Đặt thiết kế / In 3D</option>
+                                    <option value="Khác">Khác...</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-bold text-gray-700 uppercase tracking-wide">Địa Chỉ *</label>
+                                <input type="text" id="dl_diachi" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all font-medium" placeholder="Số nhà, đường, ấp, xã..." required>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-gray-700 uppercase tracking-wide">Mô Tả Sự Cố</label>
+                            <textarea id="dl_yeucau" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all font-medium" placeholder="Tủ lạnh không đông đá, máy lạnh chảy nước..."></textarea>
+                        </div>
+
+                        <div class="pt-4 text-center">
+                            <button type="button" id="btnDatLich" class="btn-cta-pulse w-full md:w-auto md:px-16 text-lg">
+                                <i class="fa fa-paper-plane mr-2"></i> GỬI YÊU CẦU NGAY
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- BRAND PROMISES -->
         <div class="bg-white border-y border-gray-200 mt-16 py-16">
             <div class="container mx-auto max-w-7xl px-4">
@@ -112,7 +173,35 @@ require_once(__DIR__."/pages/client/Header.php");
             </div>
         </div>
         
+        
     </div>
 </div>
+
+<script type="text/javascript">
+    $("#btnDatLich").on("click", function() {
+        $('#btnDatLich').html('<i class="fa fa-spinner fa-spin mr-2"></i> ĐANG XỬ LÝ...').prop('disabled', true);
+        
+        $.ajax({
+            url: "<?=BASE_URL('controller/client/DatLich.php');?>",
+            method: "POST",
+            data: {
+                type: 'DatLich',
+                ten: $("#dl_ten").val(),
+                sdt: $("#dl_sdt").val(),
+                dichvu: $("#dl_dichvu").val(),
+                diachi: $("#dl_diachi").val(),
+                yeucau: $("#dl_yeucau").val()
+            },
+            success: function(response) {
+                $("#thongbao_datlich").html(response);
+                $('#btnDatLich').html('<i class="fa fa-paper-plane mr-2"></i> GỬI YÊU CẦU NGAY').prop('disabled', false);
+            },
+            error: function() {
+                alert("Lỗi kết nối máy chủ!");
+                $('#btnDatLich').html('<i class="fa fa-paper-plane mr-2"></i> GỬI YÊU CẦU NGAY').prop('disabled', false);
+            }
+        });
+    });
+</script>
 
 <?php require_once(__DIR__."/pages/client/Footer.php"); ?>
