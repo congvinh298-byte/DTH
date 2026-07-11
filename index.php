@@ -76,21 +76,83 @@ $services = array(
         </div>
     </section>
 
-    <!-- Booking App Section (Redirects to separate pages) -->
-    <section class="section panel booking-shell" id="goi-tho" style="background-color: #0a192f; border: 1px solid #1a365d;">
+    <!-- Booking App Section -->
+    <section class="section panel booking-shell" id="goi-tho">
         <div class="title">
-            <h2 style="color: #ffffff;">Dịch vụ gọi thợ & In 3D</h2>
-            <span class="muted" style="color: #94a3b8;">Chọn dịch vụ bạn cần để đi tới trang đăng ký</span>
+            <h2>Dịch vụ gọi thợ</h2>
+            <span class="muted">Chọn nhóm dịch vụ và giá trước khi điền thông tin</span>
         </div>
-        
-        <div class="service-list" style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; padding: 20px 0;">
-            <a href="/goi-tho.php" class="btn" style="background-color: #ffffff; color: #0a192f; font-weight: bold; padding: 15px 30px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; border-radius: 8px;">
-                <i class="fa-solid fa-wrench"></i> Đặt lịch gọi thợ
-            </a>
-            <a href="/in-3d.php" class="btn" style="background-color: #2563eb; color: #ffffff; font-weight: bold; padding: 15px 30px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; border-radius: 8px;">
-                <i class="fa-solid fa-cube"></i> Dịch vụ In 3D
-            </a>
-        </div>
+        <form id="bookingForm">
+            <div id="thongbao_datlich" style="margin-block-end: 12px;"></div>
+            <h3>Thông tin yêu cầu</h3>
+            <div class="form">
+                <div class="field full">
+                    <label for="service_selector">Chọn dịch vụ *</label>
+                    <select id="service_selector" name="service_selector" required style="font-weight: bold; color: var(--brand);">
+                        <option value="" disabled selected>-- Bấm vào đây để chọn dịch vụ và xem giá --</option>
+                        <?php 
+                        $currentGroup = '';
+                        foreach ($services as $svc): 
+                            if ($svc['group'] !== $currentGroup) {
+                                if ($currentGroup !== '') echo '</optgroup>';
+                                echo '<optgroup label="' . htmlspecialchars($svc['group']) . '">';
+                                $currentGroup = $svc['group'];
+                            }
+                            $base = (int)$svc['base']; 
+                            $publicPrice = $base > 0 ? number_format((int)round($base * 1.10),0,',','.') . ' VND' : 'Báo giá sau';
+                        ?>
+                            <option value="<?= htmlspecialchars($svc['name']) ?>" data-price="<?= htmlspecialchars($publicPrice) ?>" data-group="<?= htmlspecialchars($svc['group']) ?>" data-note="<?= htmlspecialchars($svc['note']) ?>">
+                                <?= htmlspecialchars($svc['name']) ?> - <?= $publicPrice ?>
+                            </option>
+                        <?php endforeach; ?>
+                        <?php if ($currentGroup !== '') echo '</optgroup>'; ?>
+                    </select>
+                </div>
+                
+                <input type="hidden" id="service_type" name="service_type">
+                <input type="hidden" id="selected_service_name" name="selected_service_name">
+                
+                <div class="field full">
+                    <label for="customer_price_display">Giá tham khảo (Đã gồm VAT)</label>
+                    <input class="readonly-price" id="customer_price_display" type="text" readonly placeholder="Chọn dịch vụ ở trên để xem giá">
+                    <small id="service_note" style="color: var(--muted); display: block; margin-top: 4px;"></small>
+                </div>
+                
+                <div class="field">
+                    <label for="customer_name">Tên khách *</label>
+                    <input id="customer_name" name="customer_name" required maxlength="150" placeholder="Tên của bạn">
+                </div>
+                
+                <div class="field">
+                    <label for="phone">Số điện thoại *</label>
+                    <input id="phone" name="phone" type="tel" inputmode="numeric" pattern="[0-9]{8,15}" required maxlength="15" placeholder="09xxxxxxxx">
+                </div>
+                
+                <div class="field full">
+                    <label for="address">Địa chỉ (Bấm vào bản đồ để chọn tọa độ chính xác)</label>
+                    <input id="address" name="address" required maxlength="500" placeholder="Số nhà, đường, ấp/khu phố...">
+                    <div class="map-actions">
+                        <button class="btn dark" id="useCurrentLocation" type="button">Dùng vị trí GPS hiện tại</button>
+                        <button class="btn" id="clearLocation" type="button">Xóa vị trí</button>
+                    </div>
+                    <input type="hidden" id="map_location" name="map_location">
+                    <input type="hidden" id="map_lat" name="map_lat">
+                    <input type="hidden" id="map_lng" name="map_lng">
+                    <div class="map-preview">
+                        <div class="location-map" id="locationMap" aria-label="Bản đồ chọn vị trí"></div>
+                        <div class="location-status" id="locationStatus">Bấm vào bản đồ hoặc dùng vị trí hiện tại.</div>
+                    </div>
+                </div>
+                
+                <div class="field full">
+                    <label for="issue_description">Mô tả chi tiết sự cố *</label>
+                    <textarea id="issue_description" name="issue_description" required maxlength="2000" placeholder="VD: Máy lạnh không mát..."></textarea>
+                </div>
+            </div>
+            
+            <p class="muted" style="margin-block-start: 15px;">Giá công khai đã gồm VAT. Vật tư hoặc linh kiện phát sinh sẽ được báo riêng trước khi làm.</p>
+            <button id="btnDatLich" class="btn" type="button" style="inline-size: 100%; padding: 14px; font-size: 16px;">Gửi yêu cầu gọi thợ</button>
+        </form>
     </section>
 
 </div></main>
@@ -117,33 +179,28 @@ if(searchInput) {
     searchInput.addEventListener('input', filterProducts);
 }
 
-const serviceSearchInput = document.getElementById('serviceSearchInput');
-if (serviceSearchInput) {
-    serviceSearchInput.addEventListener('input', () => {
-        const q = normalize(serviceSearchInput.value);
-        document.querySelectorAll('.service-option').forEach(option => {
-            option.style.display = !q || normalize(option.textContent).indexOf(q) !== -1 ? '' : 'none';
-        });
-    });
-}
-
-document.querySelectorAll('.choose-service').forEach(button => {
-    button.addEventListener('click', () => {
-        document.querySelectorAll('.choose-service').forEach(item => item.classList.remove('selected'));
-        button.classList.add('selected');
+const serviceSelector = document.getElementById('service_selector');
+if (serviceSelector) {
+    serviceSelector.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
         
-        const base = Number(button.dataset.base || 0);
-        document.getElementById('service_type').value = button.dataset.group || 'Thợ điện lạnh';
-        document.getElementById('issue_description').value = button.dataset.service || '';
-        document.getElementById('selected_service_name').value = button.dataset.service || '';
+        const group = selectedOption.dataset.group || '';
+        const serviceName = selectedOption.value || '';
+        const price = selectedOption.dataset.price || 'Liên hệ để báo giá chi tiết';
+        const note = selectedOption.dataset.note || '';
         
-        if (base > 0) {
-            document.getElementById('customer_price_display').value = new Intl.NumberFormat('vi-VN').format(Math.round(base * 1.10)) + ' VND - đã gồm VAT';
-        } else {
-            document.getElementById('customer_price_display').value = 'Liên hệ để báo giá chi tiết';
+        document.getElementById('service_type').value = group;
+        document.getElementById('selected_service_name').value = serviceName;
+        document.getElementById('customer_price_display').value = price;
+        document.getElementById('service_note').textContent = note;
+        
+        // Auto-fill issue description if it's empty
+        const issueDesc = document.getElementById('issue_description');
+        if (!issueDesc.value || issueDesc.value.length < 5) {
+            issueDesc.value = 'Tôi cần ' + serviceName;
         }
     });
-});
+}
 
 /* Map Logic */
 const addressInput = document.getElementById('address');
