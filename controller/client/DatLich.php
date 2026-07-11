@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['type']) && $_POST['typ
     $yeucau = check_string($_POST['yeucau']);
     $dichvu = check_string($_POST['dichvu']);
 
-    if(empty($ten) || empty($sdt) || empty($diachi) || empty($yeucau) || empty($dichvu)) {
+    if(empty($ten) || empty($sdt) || empty($diachi) || empty($dichvu)) {
         msg_error2("Vui lòng điền đầy đủ các thông tin bắt buộc!");
     }
 
@@ -38,6 +38,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['type']) && $_POST['typ
 
     if($create) {
         $_SESSION['last_book'] = time();
+        
+        // Gửi thông báo đến Telegram Bot cho thợ
+        $text = "🚨 ĐƠN GỌI THỢ MỚI 🚨\n";
+        $text .= "Khách hàng: ".$ten."\n";
+        $text .= "Số ĐT: ".$sdt."\n";
+        $text .= "Dịch vụ: ".$dichvu."\n";
+        $text .= "Địa chỉ/Tọa độ: ".$diachi."\n";
+        $text .= "Tình trạng: ".($yeucau ? $yeucau : "Không có ghi chú")."\n";
+        $text .= "Trạng thái: CHỜ XỬ LÝ";
+        send_tele($text);
+
         msg_success('Yêu cầu đã được gửi thành công! Kỹ thuật viên sẽ gọi lại cho bạn trong ít phút.', '', 3000);
     } else {
         msg_error2("Hệ thống đang bận, vui lòng thử lại sau!");
