@@ -2,12 +2,9 @@
 define("IN_SITE", true);
 require_once(__DIR__."/core/config.php");
 require_once(__DIR__."/core/function.php");
-$title = "Điện Máy Hiếu - Marketplace & Gọi Thợ";
+$title = "Đặt Lịch Gọi Thợ | Điện Máy Hiếu";
 require_once(__DIR__."/pages/client/Head.php");
 require_once(__DIR__."/pages/client/Header.php");
-
-$productError = '';
-$products = $DMH->get_list("SELECT * FROM `danhsachmuacode` WHERE `hienthi` = 'SHOW' AND `money` > 0 ORDER BY id DESC LIMIT 60");
 
 $services = array(
     array('group' => 'Thợ điện lạnh', 'name' => 'Vệ sinh máy lạnh', 'base' => 150000, 'note' => 'Giá công khai chưa VAT'),
@@ -18,110 +15,112 @@ $services = array(
     array('group' => 'Thợ tivi', 'name' => 'Treo tivi', 'base' => 200000, 'note' => 'Công thợ + khung treo'),
     array('group' => 'Thợ máy lọc nước', 'name' => 'Lắp máy lọc nước', 'base' => 200000, 'note' => 'Công thợ + phụ kiện'),
     array('group' => 'Thợ gia dụng', 'name' => 'Lắp máy giặt', 'base' => 200000, 'note' => 'Công thợ + phụ kiện'),
-    array('group' => 'Thợ điện thoại', 'name' => 'Kiểm tra / sửa điện thoại', 'base' => 200000, 'note' => 'Công thợ + linh kiện nếu có'),
-    array('group' => 'In 3D', 'name' => 'Đặt in 3D theo mẫu', 'base' => 0, 'note' => 'Báo giá dựa theo khối lượng (500đ/1 gram)'),
+    array('group' => 'Thợ điện thoại', 'name' => 'Kiểm tra / sửa điện thoại', 'base' => 200000, 'note' => 'Công thợ + linh kiện nếu có')
 );
 ?>
-
 <main><div class="wrap storefront">
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="panel hero-main">
-            <h1>Điện Máy Hiếu</h1>
-            <p>Hệ sinh thái Điện Máy Hiếu phục vụ bà con trong xã Lấp Vò và khu vực bán kính 15 km tính từ Chợ Lấp Vò. LH: 0939.354.937</p>
-            <div class="hero-actions">
-                <a class="btn" href="#products">Xem sản phẩm</a>
-                <a class="btn dark" href="#goi-tho">Đặt lịch gọi thợ</a>
-                <a class="btn" style="background:#0a192f" href="/in-3d.php">Dịch vụ In 3D</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Products Section -->
-    <section class="section" id="products">
+    <!-- Booking App Section -->
+    <section class="section panel booking-shell" id="goi-tho">
         <div class="title">
-            <h2>Sản phẩm nổi bật</h2>
-            <span class="muted"><?= count($products) ?> sản phẩm</span>
+            <h2>Dịch vụ gọi thợ</h2>
+            <span class="muted">Chọn nhóm dịch vụ và giá trước khi điền thông tin</span>
         </div>
-        <div class="grid" id="productGrid">
-            <?php if (empty($products)): ?>
-                <div class="empty">Hiện chưa có sản phẩm</div>
-            <?php else: ?>
-                <?php foreach ($products as $p): ?>
-                    <?php
-                    $name = $p['title'];
-                    $category = 'Điện Máy & Gia Dụng';
-                    $image = $p['img'];
-                    $price = $p['money'];
-                    $suggested = false;
-                    ?>
-                    <article class="product" data-name="<?= htmlspecialchars(strtolower($name)) ?>" data-category="<?= htmlspecialchars(strtolower($category)) ?>">
-                        <div class="img">
-                            <?php if ($image !== ''): ?>
-                                <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($name) ?>" onerror="this.parentNode.textContent='Chưa có ảnh'">
-                            <?php else: ?>
-                                Chưa có ảnh
-                            <?php endif; ?>
-                        </div>
-                        <div class="body">
-                            <div class="name"><?= htmlspecialchars($name) ?></div>
-                            <div class="cat"><?= htmlspecialchars($category) ?></div>
-                            <div class="price"><?= number_format($price, 0, ',', '.') ?> VND</div>
-                            <a href="/mua-code/<?=$p['id'];?>" style="display:block; margin-block-start:8px; text-align:center; padding: 6px; background:#f6f7f9; border-radius:4px; font-size:12px; font-weight:bold;">Xem chi tiết</a>
-                        </div>
-                    </article>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-    </section>
-
-    <!-- Booking App Section (Redirects to separate pages) -->
-    <section class="section panel booking-shell" id="goi-tho" style="background-color: #0a192f; border: 1px solid #1a365d;">
-        <div class="title">
-            <h2 style="color: #ffffff;">Dịch vụ gọi thợ & In 3D</h2>
-            <span class="muted" style="color: #94a3b8;">Chọn dịch vụ bạn cần để đi tới trang đăng ký</span>
+        <div class="service-head">
+            <input id="serviceSearchInput" type="search" placeholder="Tìm dịch vụ hoặc nhóm thợ">
+            <button class="btn dark" id="geminiQuoteButton" type="button">Trợ lí AI Gemini</button>
         </div>
         
-        <div class="service-list" style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; padding: 20px 0;">
-            <a href="/goi-tho.php" class="btn" style="background-color: #ffffff; color: #0a192f; font-weight: bold; padding: 15px 30px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; border-radius: 8px;">
-                <i class="fa-solid fa-wrench"></i> Đặt lịch gọi thợ
-            </a>
-            <a href="/in-3d.php" class="btn" style="background-color: #2563eb; color: #ffffff; font-weight: bold; padding: 15px 30px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; border-radius: 8px;">
-                <i class="fa-solid fa-cube"></i> Dịch vụ In 3D
-            </a>
+        <div class="service-list" id="serviceList">
+            <?php foreach ($services as $svc): ?>
+                <?php $base = (int)$svc['base']; $publicPrice = $base > 0 ? (int)round($base * 1.10) : 0; ?>
+                <button class="service-option choose-service<?= $base <= 0 ? ' is-contact' : '' ?>" type="button" data-group="<?= htmlspecialchars($svc['group']) ?>" data-service="<?= htmlspecialchars($svc['name']) ?>" data-base="<?= htmlspecialchars($base) ?>">
+                    <small><?= htmlspecialchars($svc['group']) ?></small>
+                    <strong><?= $publicPrice > 0 ? number_format($publicPrice,0,',','.') . ' VND' : 'Báo giá sau' ?></strong>
+                    <span><?= htmlspecialchars($svc['name']) ?></span>
+                    <small><?= htmlspecialchars($svc['note']) ?></small>
+                </button>
+            <?php endforeach; ?>
         </div>
-    </section>
 
+        <div class="gemini-panel" id="geminiPanel">
+            <textarea id="geminiQuestion" rows="3" maxlength="1000" placeholder="Nhập nhu cầu, ví dụ: vệ sinh máy lạnh 1HP ở Lấp Vò"></textarea>
+            <div class="gemini-actions">
+                <button class="btn" id="askGeminiButton" type="button">Tư vấn báo giá</button>
+                <button class="btn dark" id="closeGeminiButton" type="button">Đóng</button>
+            </div>
+            <div class="gemini-reply" id="geminiReply"></div>
+        </div>
+
+        <div id="thongbao_datlich" style="margin-block-end: 12px;"></div>
+
+        <form id="bookingForm">
+            <h3>Thông tin yêu cầu</h3>
+            <div class="form">
+                <div class="field">
+                    <label for="service_type">Nhóm dịch vụ</label>
+                    <select id="service_type" name="service_type">
+                        <option>Thợ điện lạnh</option>
+                        <option>Thợ máy lọc nước</option>
+                        <option>Thợ tivi</option>
+                        <option>Thợ điện thoại</option>
+                        <option>Thợ gia dụng</option>
+                    </select>
+                </div>
+                
+                <div class="field">
+                    <label for="customer_price_display">Giá tham khảo đã gồm VAT</label>
+                    <input class="readonly-price" id="customer_price_display" type="text" readonly placeholder="Chọn dịch vụ ở danh sách phía trên">
+                </div>
+                
+                <input id="selected_service_name" name="selected_service_name" type="hidden">
+                
+                <div class="field">
+                    <label for="customer_name">Tên khách *</label>
+                    <input id="customer_name" name="customer_name" required maxlength="150" placeholder="Tên của bạn">
+                </div>
+                
+                <div class="field">
+                    <label for="phone">Số điện thoại *</label>
+                    <input id="phone" name="phone" type="tel" inputmode="numeric" pattern="[0-9]{8,15}" required maxlength="15" placeholder="09xxxxxxxx">
+                </div>
+                
+                <div class="field full">
+                    <label for="address">Địa chỉ (Bấm vào bản đồ để chọn tọa độ chính xác)</label>
+                    <input id="address" name="address" required maxlength="500" placeholder="Số nhà, đường, ấp/khu phố...">
+                    <div class="map-actions">
+                        <button class="btn dark" id="useCurrentLocation" type="button">Dùng vị trí GPS hiện tại</button>
+                        <button class="btn" id="clearLocation" type="button">Xóa vị trí</button>
+                    </div>
+                    <input type="hidden" id="map_location" name="map_location">
+                    <input type="hidden" id="map_lat" name="map_lat">
+                    <input type="hidden" id="map_lng" name="map_lng">
+                    <div class="map-preview">
+                        <div class="location-map" id="locationMap" aria-label="Bản đồ chọn vị trí"></div>
+                        <div class="location-status" id="locationStatus">Bấm vào bản đồ hoặc dùng vị trí hiện tại.</div>
+                    </div>
+                </div>
+                
+                <div class="field full">
+                    <label for="issue_description">Mô tả chi tiết sự cố *</label>
+                    <textarea id="issue_description" name="issue_description" required maxlength="2000" placeholder="VD: Máy lạnh không mát..."></textarea>
+                </div>
+            </div>
+            
+            <p class="muted" style="margin-block-start: 15px;">Giá công khai đã gồm VAT. Vật tư hoặc linh kiện phát sinh sẽ được báo riêng trước khi làm.</p>
+            <button id="btnDatLich" class="btn" type="button" style="inline-size: 100%; padding: 14px; font-size: 16px;">Gửi yêu cầu gọi thợ</button>
+        </form>
+    </section>
 </div></main>
 
 <script>
 'use strict';
 
-const cards = Array.from(document.querySelectorAll('.product'));
-const searchInput = document.getElementById('searchInput');
-
-function normalize(value) {
-    return String(value || '').toLowerCase();
-}
-
-function filterProducts() {
-    const q = normalize(searchInput.value);
-    cards.forEach(card => {
-        const okSearch = !q || card.dataset.name.indexOf(q) !== -1 || card.dataset.category.indexOf(q) !== -1;
-        card.style.display = okSearch ? '' : 'none';
-    });
-}
-
-if(searchInput) {
-    searchInput.addEventListener('input', filterProducts);
-}
-
 const serviceSearchInput = document.getElementById('serviceSearchInput');
 if (serviceSearchInput) {
     serviceSearchInput.addEventListener('input', () => {
-        const q = normalize(serviceSearchInput.value);
+        const q = String(serviceSearchInput.value || '').toLowerCase();
         document.querySelectorAll('.service-option').forEach(option => {
-            option.style.display = !q || normalize(option.textContent).indexOf(q) !== -1 ? '' : 'none';
+            option.style.display = !q || String(option.textContent || '').toLowerCase().indexOf(q) !== -1 ? '' : 'none';
         });
     });
 }
@@ -217,7 +216,7 @@ document.getElementById('clearLocation')?.addEventListener('click', () => {
     }
 });
 
-/* AJAX Submit for Booking/In 3D */
+/* AJAX Submit for Booking */
 $("#btnDatLich").on("click", function() {
     var ten = $("#customer_name").val().trim();
     var sdt = $("#phone").val().trim();
@@ -248,7 +247,7 @@ $("#btnDatLich").on("click", function() {
         },
         error: function() {
             alert("Lỗi hệ thống! Gọi trực tiếp 0939.354.937");
-            $('#btnDatLich').html('Gửi yêu cầu gọi thợ / Đặt In').prop('disabled',false).css('opacity','1');
+            $('#btnDatLich').html('Gửi yêu cầu gọi thợ').prop('disabled',false).css('opacity','1');
         }
     });
 });
