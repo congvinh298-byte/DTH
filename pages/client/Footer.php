@@ -35,64 +35,90 @@
 </svg>
 </button>
 
-<!-- BEGIN: Footer -->
-<footer class="bg-gray-900 text-white pt-16 pb-8 border-t-[8px] border-orange-500 mt-20 relative overflow-hidden">
-    <!-- Background Decor -->
-    <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full blur-[100px] opacity-20 -mr-20 -mt-20"></div>
-    <div class="absolute bottom-0 left-0 w-96 h-96 bg-orange-600 rounded-full blur-[150px] opacity-20 -ml-20 -mb-20"></div>
-
-    <div class="container mx-auto px-4 max-w-7xl relative z-10">
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-12 mb-12">
+<!-- BEGIN: Footer (Chuẩn Pháp Lý - Bộ Công Thương) -->
+<footer class="bg-gray-900 text-gray-300 pt-16 pb-8 border-t-[8px] border-blue-600">
+    <div class="container mx-auto px-4 max-w-7xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
             
-            <!-- Company Info (OCD: Aligned perfectly) -->
-            <div class="col-span-1 md:col-span-5 flex flex-col items-center md:items-start text-center md:text-left space-y-6">
-                <a href="/">
-                    <img src="/logo.png" alt="Điện Máy Hiếu" class="max-w-[200px] drop-shadow-xl filter brightness-0 invert">
-                </a>
-                <p class="text-gray-400 font-medium leading-relaxed max-w-md">
-                    Hệ thống bán lẻ và sửa chữa thiết bị Điện Máy, Điện Lạnh, Điện Tử uy tín số 1 tại khu vực miền Tây. Uy Tín - Tận Tâm - Chuyên Nghiệp.
+            <!-- Cột 1: Thông Tin Công Ty Pháp Lý -->
+            <div class="space-y-4">
+                <img src="/logo.png" alt="Công ty TNHH MTV Điện Tử Hiếu" class="h-16 rounded-xl bg-white p-1 mb-4">
+                <h3 class="text-xl font-black text-white uppercase tracking-tight">CÔNG TY TNHH MTV ĐIỆN TỬ HIẾU</h3>
+                <p class="text-sm font-medium leading-relaxed text-gray-400">
+                    Đơn vị tiên phong trong lĩnh vực phân phối, sửa chữa thiết bị điện máy, điện lạnh và in 3D công nghệ cao tại Việt Nam.
                 </p>
+                <div class="pt-2 text-xs text-gray-500 space-y-2">
+                    <p><i class="fa fa-id-card w-4 text-center"></i> <strong>Mã số doanh nghiệp:</strong> Đang cập nhật</p>
+                    <p><i class="fa fa-building w-4 text-center"></i> <strong>Ngày cấp:</strong> Đang cập nhật - Nơi cấp: Sở KH&ĐT Tỉnh Đồng Tháp</p>
+                    <p><i class="fa fa-user-tie w-4 text-center"></i> <strong>Đại diện pháp luật:</strong> NGUYỄN VĂN HIẾU</p>
+                    <p><i class="fa fa-map-marker-alt w-4 text-center"></i> <strong>Trụ sở chính:</strong> Lấp Vò, Đồng Tháp, Việt Nam</p>
+                    <p><i class="fa fa-envelope w-4 text-center"></i> <strong>Email:</strong> admin@dienmayhieu.com</p>
+                </div>
             </div>
             
-            <!-- Contact (ADHD: Big typography) -->
-            <div class="col-span-1 md:col-span-4 space-y-6">
-                <h3 class="text-2xl font-black uppercase text-orange-400 border-b-2 border-gray-800 pb-3 inline-block">Liên Hệ Khẩn Cấp</h3>
-                <ul class="space-y-4 font-bold text-gray-300">
-                    <li class="flex items-start gap-4">
-                        <i class="fa fa-map-marker-alt text-orange-500 text-xl mt-1"></i>
-                        <span>Trụ sở chính:<br/><span class="text-white text-lg">Lấp Vò, Đồng Tháp</span></span>
-                    </li>
-                    <li class="flex items-start gap-4">
-                        <i class="fa fa-phone-alt text-orange-500 text-xl mt-1 animate-pulse"></i>
-                        <span>Hotline Hỗ Trợ 24/7:<br/><a href="tel:09xxxxxxx" class="text-orange-400 text-2xl font-black hover:text-white transition-colors">09xx.xxx.xxx</a></span>
-                    </li>
-                    <li class="flex items-start gap-4">
-                        <i class="fa fa-clock text-orange-500 text-xl mt-1"></i>
-                        <span>Giờ phục vụ:<br/><span class="text-white">6:00 - 22:00 (Kể cả Chủ Nhật)</span></span>
-                    </li>
+            <!-- Cột 2: Sản Phẩm & Dịch Vụ -->
+            <div>
+                <h3 class="text-lg font-black uppercase text-white mb-6 border-b-2 border-orange-500 pb-2 inline-block">Sản Phẩm & Dịch Vụ</h3>
+                <ul class="space-y-3 font-bold text-sm">
+                    <li><a href="/dien-may" class="hover:text-blue-400 transition-colors flex items-center"><i class="fa fa-angle-right mr-2 text-orange-500"></i> Phân phối Điện Máy Chính Hãng</a></li>
+                    <li><a href="/sua-chua" class="hover:text-blue-400 transition-colors flex items-center"><i class="fa fa-angle-right mr-2 text-orange-500"></i> Sửa chữa Tủ Lạnh, Máy Lạnh</a></li>
+                    <li><a href="/sua-chua" class="hover:text-blue-400 transition-colors flex items-center"><i class="fa fa-angle-right mr-2 text-orange-500"></i> Dịch vụ Vệ sinh Thiết Bị</a></li>
+                    <li><a href="/in-3d" class="hover:text-blue-400 transition-colors flex items-center"><i class="fa fa-angle-right mr-2 text-orange-500"></i> Dịch vụ In 3D Độc Quyền</a></li>
                 </ul>
             </div>
             
-            <!-- Social / Quick Links -->
-            <div class="col-span-1 md:col-span-3 space-y-6">
-                <h3 class="text-2xl font-black uppercase text-blue-400 border-b-2 border-gray-800 pb-3 inline-block">Kết Nối</h3>
-                <div class="flex gap-4">
-                    <a href="<?=$DMH->site('fbadmin');?>" target="_blank" class="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white text-xl hover:bg-blue-600 transform hover:scale-110 transition-all shadow-lg">
-                        <i class="fa-brands fa-facebook-f"></i>
-                    </a>
-                    <a href="tel:<?=$DMH->site('zaloadmin');?>" class="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white text-xl hover:bg-blue-500 transform hover:scale-110 transition-all shadow-lg">
-                        <i class="fa-solid fa-comment-dots"></i>
-                    </a>
-                    <a href="tel:09xxxxxxx" class="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white text-xl hover:bg-orange-500 transform hover:scale-110 transition-all shadow-lg">
-                        <i class="fa-solid fa-phone"></i>
-                    </a>
+            <!-- Cột 3: Pháp Lý & Chính Sách -->
+            <div>
+                <h3 class="text-lg font-black uppercase text-white mb-6 border-b-2 border-orange-500 pb-2 inline-block">Chính Sách & Quy Chế</h3>
+                <ul class="space-y-3 font-bold text-sm">
+                    <li><a href="#" class="hover:text-blue-400 transition-colors flex items-center"><i class="fa fa-shield-alt mr-2 text-orange-500"></i> Chính sách bảo mật thông tin</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition-colors flex items-center"><i class="fa fa-file-contract mr-2 text-orange-500"></i> Điều khoản sử dụng dịch vụ</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition-colors flex items-center"><i class="fa fa-gavel mr-2 text-orange-500"></i> Quy chế hoạt động Website</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition-colors flex items-center"><i class="fa fa-undo-alt mr-2 text-orange-500"></i> Chính sách bảo hành & đổi trả</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition-colors flex items-center"><i class="fa fa-truck mr-2 text-orange-500"></i> Quy trình giao nhận & thanh toán</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition-colors flex items-center"><i class="fa fa-book mr-2 text-orange-500"></i> Đề án kinh doanh</a></li>
+                </ul>
+            </div>
+
+            <!-- Cột 4: Liên Hệ & Chứng Nhận -->
+            <div>
+                <h3 class="text-lg font-black uppercase text-white mb-6 border-b-2 border-orange-500 pb-2 inline-block">Tổng Đài Hỗ Trợ</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4 bg-gray-800 p-3 rounded-xl border border-gray-700">
+                        <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold animate-pulse shadow-[0_0_15px_rgba(255,94,0,0.5)]">
+                            <i class="fa fa-phone-alt"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs uppercase font-bold text-gray-400">Hotline Kỹ Thuật (24/7)</div>
+                            <a href="tel:09xxxxxxx" class="text-lg font-black text-white hover:text-orange-400">09xx.xxx.xxx</a>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 bg-gray-800 p-3 rounded-xl border border-gray-700">
+                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                            <i class="fa fa-comment-dots"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs uppercase font-bold text-gray-400">Zalo CSKH & Đặt Hàng</div>
+                            <a href="https://zalo.me/<?=$DMH->site('zaloadmin');?>" target="_blank" class="text-lg font-black text-white hover:text-blue-400"><?=$DMH->site('zaloadmin');?></a>
+                        </div>
+                    </div>
+                    
+                    <!-- BCT Mockup -->
+                    <div class="pt-4 flex gap-4 items-center">
+                        <a href="http://online.gov.vn" target="_blank" title="Đã thông báo Bộ Công Thương">
+                            <img src="https://i.imgur.com/B9B1z2L.png" alt="Đã thông báo Bộ Công Thương" class="h-10 opacity-80 hover:opacity-100 transition-opacity drop-shadow-md">
+                        </a>
+                        <img src="https://images.dmca.com/Badges/dmca-badge-w150-5x1-07.png?ID=dummy" alt="DMCA.com Protection Status" class="h-6 opacity-80 hover:opacity-100 transition-opacity">
+                    </div>
                 </div>
             </div>
+
         </div>
 
-        <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between text-gray-500 font-medium">
-            <p>&copy; 2026 Điện Máy Hiếu. All rights reserved.</p>
-            <p class="mt-2 md:mt-0">Thiết kế chuẩn mực OCD-ADHD.</p>
+        <div class="border-t border-gray-800 pt-6 flex flex-col md:flex-row items-center justify-between text-xs font-medium text-gray-500">
+            <p>&copy; <?=date('Y');?> Bản quyền thuộc về <strong>CÔNG TY TNHH MTV ĐIỆN TỬ HIẾU</strong>. Bảo lưu mọi quyền lợi.</p>
+            <p class="mt-2 md:mt-0">Thiết kế & Vận hành bởi <span class="text-blue-500 font-bold">Hệ Sinh Thái DTH</span>.</p>
         </div>
     </div>
 </footer>
