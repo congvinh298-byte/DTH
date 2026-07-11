@@ -1,5 +1,21 @@
 <?php
 if (!defined('IN_SITE')) die('The Request Not Found');
+
+// Load .env
+if (file_exists(__DIR__.'/../.env')) {
+    $lines = file(__DIR__.'/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        $parts = explode('=', $line, 2);
+        if(count($parts) == 2) {
+            $key = trim($parts[0]);
+            $val = trim($parts[1]);
+            $val = trim($val, '"\'');
+            $_ENV[$key] = $val;
+        }
+    }
+}
+
 session_start();
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 $base_url = 'https://'.$_SERVER['SERVER_NAME'].'/'; // Thay url web bạn
@@ -15,8 +31,17 @@ class DMH
     {
         if (!$this->ketnoi)
         {
-            $this->ketnoi = mysqli_connect('localhost', 'kwkrbcce_dientuhieu', 'SayTHC369@', 'kwkrbcce_dienmayhieulapvo') or die('Bảo trì chống ddos. Hệ thống sẽ tự mở lại sau khi xử lý xong.');
-            mysqli_query($this->ketnoi, "set names 'utf8'");
+            $db_host = $_ENV['DB_HOST'] ?? 'localhost';
+            $db_user = $_ENV['DB_USER'] ?? 'kwkrbcce_dientuhieu';
+            $db_pass = $_ENV['DB_PASS'] ?? 'SayTHC369@';
+            $db_name = $_ENV['DB_NAME'] ?? 'kwkrbcce_dienmayhieulapvo';
+            
+            try {
+                $this->ketnoi = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
+                mysqli_query($this->ketnoi, "set names 'utf8'");
+            } catch (Throwable $e) {
+                die('Hệ thống đang bảo trì hoặc mất kết nối CSDL. Vui lòng quay lại sau.');
+            }
         }
     }
     function dis_connect()
