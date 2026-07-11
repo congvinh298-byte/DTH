@@ -1,4 +1,31 @@
 <?php
+if (isset($_GET['do_fix_logo'])) {
+    $targetFile = '/home/kwkrbcce/public_html/public/assets/logo.png';
+    $sourceFiles = [
+        '/home/kwkrbcce/public_html/public/logo.png',
+        __DIR__ . '/logo.png',
+        __DIR__ . '/public/assets/logo.png'
+    ];
+    
+    $sourceFile = null;
+    foreach ($sourceFiles as $sf) {
+        if (file_exists($sf)) {
+            $sourceFile = $sf;
+            break;
+        }
+    }
+    
+    echo "<h1>Fixing Logo</h1>";
+    if (file_exists($targetFile)) {
+        echo "Deleting target... " . (unlink($targetFile) ? 'OK' : 'FAIL') . "<br>";
+    }
+    if ($sourceFile) {
+        echo "Copying source ($sourceFile) to target... " . (copy($sourceFile, $targetFile) ? 'OK' : 'FAIL') . "<br>";
+    } else {
+        echo "Source file does not exist in any of the checked paths!<br>";
+    }
+    exit;
+}
 define("IN_SITE", true);
 require_once(__DIR__."/core/config.php");
 require_once(__DIR__."/core/function.php");
