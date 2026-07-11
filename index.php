@@ -3,12 +3,20 @@
 define("IN_SITE", true);
 require_once(__DIR__."/core/config.php");
 require_once(__DIR__."/core/function.php");
+
+if (!isset($DMH)) {
+    $DMH = new DMH();
+}
+
 $title = "Điện Máy Hiếu - Marketplace & Gọi Thợ";
 require_once(__DIR__."/pages/client/Head.php");
 require_once(__DIR__."/pages/client/Header.php");
 
 $productError = '';
 $products = $DMH->get_list("SELECT * FROM `danhsachmuacode` WHERE `hienthi` = 'SHOW' AND `money` > 0 ORDER BY id DESC LIMIT 60");
+if (!is_array($products)) {
+    $products = [];
+}
 
 $services = array(
     array('group' => 'Thợ điện lạnh', 'name' => 'Vệ sinh máy lạnh', 'base' => 150000, 'note' => 'Giá công khai chưa VAT'),
@@ -56,10 +64,10 @@ $services = array(
                 <?php else: ?>
                     <?php foreach ($products as $p): ?>
                         <?php
-                        $name = $p['title'];
+                        $name = isset($p['title']) ? (string)$p['title'] : '';
                         $category = 'Điện Máy & Gia Dụng';
-                        $image = $p['img'];
-                        $price = $p['money'];
+                        $image = isset($p['img']) ? (string)$p['img'] : '';
+                        $price = isset($p['money']) ? (float)$p['money'] : 0;
                         ?>
                         <article class="product" data-name="<?= htmlspecialchars(strtolower($name)) ?>" data-category="<?= htmlspecialchars(strtolower($category)) ?>" onclick="window.location.href='/mua-code/<?=$p['id'];?>'">
                             <div class="img">
