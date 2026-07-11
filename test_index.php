@@ -1,5 +1,1 @@
-<?php
-opcache_reset();
-header("X-LiteSpeed-Purge: *");
-echo "OPCACHE_CLEARED_SUCCESSFULLY_123";
-?>
+﻿<?php ini_set('display_errors', 1); error_reporting(E_ALL); require_once('index.php'); ?>

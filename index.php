@@ -24,142 +24,152 @@ $services = array(
 );
 ?>
 
-<main><div class="wrap storefront">
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="panel hero-main">
-            <h1>Điện Máy Hiếu</h1>
-            <p>Hệ sinh thái bán lẻ và dịch vụ sửa chữa Điện Máy, Điện Lạnh, Điện Tử uy tín số 1 tại khu vực miền Tây. Phục vụ tận tâm bà con trong bán kính 15 km tính từ Chợ Lấp Vò.</p>
-            <div class="hero-actions">
-                <a class="btn" href="#products"><i class="fa-solid fa-shopping-cart" style="margin-right: 8px;"></i> Xem sản phẩm</a>
-                <a class="btn dark" href="/goi-tho.php"><i class="fa-solid fa-tools" style="margin-right: 8px;"></i> Đặt lịch gọi thợ</a>
-                <a class="btn" style="background: rgba(255,255,255,0.15);" href="/in-3d.php"><i class="fa-solid fa-cube" style="margin-right: 8px;"></i> Dịch vụ In 3D</a>
+<main>
+    <div class="wrap storefront fade-in">
+        
+        <!-- Premium Hero Section -->
+        <section class="hero">
+            <div class="hero-main">
+                <div class="blob"></div>
+                <h1>Điện Máy Hiếu</h1>
+                <p>Hệ sinh thái bán lẻ và dịch vụ sửa chữa Điện Máy, Điện Lạnh, Điện Tử uy tín số 1 tại khu vực miền Tây. Phục vụ tận tâm, nhanh chóng trong bán kính 15 km tính từ Chợ Lấp Vò.</p>
+                <div class="hero-actions">
+                    <a class="btn light" href="#products"><i class="fa-solid fa-shopping-cart"></i> Khám phá Sản phẩm</a>
+                    <a class="btn accent" href="#goi-tho"><i class="fa-solid fa-tools"></i> Đặt lịch Gọi Thợ</a>
+                    <a class="btn outline" href="/in-3d.php"><i class="fa-solid fa-cube"></i> Dịch vụ In 3D</a>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Products Section -->
-    <section class="section" id="products">
-        <div class="title">
-            <h2>Sản phẩm nổi bật</h2>
-            <span class="muted"><?= count($products) ?> sản phẩm</span>
-        </div>
-        <div class="grid" id="productGrid">
-            <?php if (empty($products)): ?>
-                <div class="empty">Hiện chưa có sản phẩm</div>
-            <?php else: ?>
-                <?php foreach ($products as $p): ?>
-                    <?php
-                    $name = $p['title'];
-                    $category = 'Điện Máy & Gia Dụng';
-                    $image = $p['img'];
-                    $price = $p['money'];
-                    $suggested = false;
-                    ?>
-                    <article class="product" data-name="<?= htmlspecialchars(strtolower($name)) ?>" data-category="<?= htmlspecialchars(strtolower($category)) ?>">
-                        <div class="img">
-                            <?php if ($image !== ''): ?>
-                                <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($name) ?>" onerror="this.parentNode.textContent='Chưa có ảnh'">
-                            <?php else: ?>
-                                Chưa có ảnh
-                            <?php endif; ?>
-                        </div>
-                        <div class="body">
-                            <div class="name"><?= htmlspecialchars($name) ?></div>
-                            <div class="cat"><?= htmlspecialchars($category) ?></div>
-                            <div class="price"><?= number_format($price, 0, ',', '.') ?> VND</div>
-                            <a href="/mua-code/<?=$p['id'];?>" style="display:block; margin-block-start:8px; text-align:center; padding: 6px; background:#f6f7f9; border-radius:4px; font-size:12px; font-weight:bold;">Xem chi tiết</a>
-                        </div>
-                    </article>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-    </section>
-
-    <!-- Booking App Section -->
-    <section class="section panel booking-shell" id="goi-tho">
-        <div class="title">
-            <h2>Dịch vụ gọi thợ</h2>
-            <span class="muted">Chọn nhóm dịch vụ và giá trước khi điền thông tin</span>
-        </div>
-        <form id="bookingForm">
-            <div id="thongbao_datlich" style="margin-block-end: 12px;"></div>
-            <h3>Thông tin yêu cầu</h3>
-            <div class="form">
-                <div class="field full">
-                    <label for="service_selector">Chọn dịch vụ *</label>
-                    <select id="service_selector" name="service_selector" required style="font-weight: bold; color: var(--brand);">
-                        <option value="" disabled selected>-- Bấm vào đây để chọn dịch vụ và xem giá --</option>
-                        <?php 
-                        $currentGroup = '';
-                        foreach ($services as $svc): 
-                            if ($svc['group'] !== $currentGroup) {
-                                if ($currentGroup !== '') echo '</optgroup>';
-                                echo '<optgroup label="' . htmlspecialchars($svc['group']) . '">';
-                                $currentGroup = $svc['group'];
-                            }
-                            $base = (int)$svc['base']; 
-                            $publicPrice = $base > 0 ? number_format((int)round($base * 1.10),0,',','.') . ' VND' : 'Báo giá sau';
+        <!-- Products Section -->
+        <section class="section" id="products">
+            <div class="title">
+                <h2>Sản phẩm Nổi bật</h2>
+                <span class="muted"><?= count($products) ?> sản phẩm</span>
+            </div>
+            <div class="grid" id="productGrid">
+                <?php if (empty($products)): ?>
+                    <div class="empty">
+                        <i class="fa-solid fa-box-open"></i>
+                        Hiện chưa có sản phẩm nào
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($products as $p): ?>
+                        <?php
+                        $name = $p['title'];
+                        $category = 'Điện Máy & Gia Dụng';
+                        $image = $p['img'];
+                        $price = $p['money'];
                         ?>
-                            <option value="<?= htmlspecialchars($svc['name']) ?>" data-price="<?= htmlspecialchars($publicPrice) ?>" data-group="<?= htmlspecialchars($svc['group']) ?>" data-note="<?= htmlspecialchars($svc['note']) ?>">
-                                <?= htmlspecialchars($svc['name']) ?> - <?= $publicPrice ?>
-                            </option>
-                        <?php endforeach; ?>
-                        <?php if ($currentGroup !== '') echo '</optgroup>'; ?>
-                    </select>
-                </div>
-                
-                <input type="hidden" id="service_type" name="service_type">
-                <input type="hidden" id="selected_service_name" name="selected_service_name">
-                
-                <div class="field full">
-                    <label for="customer_price_display">Giá tham khảo (Đã gồm VAT)</label>
-                    <input class="readonly-price" id="customer_price_display" type="text" readonly placeholder="Chọn dịch vụ ở trên để xem giá">
-                    <small id="service_note" style="color: var(--muted); display: block; margin-top: 4px;"></small>
-                </div>
-                
-                <div class="field">
-                    <label for="customer_name">Tên khách *</label>
-                    <input id="customer_name" name="customer_name" required maxlength="150" placeholder="Tên của bạn">
-                </div>
-                
-                <div class="field">
-                    <label for="phone">Số điện thoại *</label>
-                    <input id="phone" name="phone" type="tel" inputmode="numeric" pattern="[0-9]{8,15}" required maxlength="15" placeholder="09xxxxxxxx">
-                </div>
-                
-                <div class="field full">
-                    <label for="address">Địa chỉ (Bấm vào bản đồ để chọn tọa độ chính xác)</label>
-                    <input id="address" name="address" required maxlength="500" placeholder="Số nhà, đường, ấp/khu phố...">
-                    <div class="map-actions">
-                        <button class="btn dark" id="useCurrentLocation" type="button">Dùng vị trí GPS hiện tại</button>
-                        <button class="btn" id="clearLocation" type="button">Xóa vị trí</button>
-                    </div>
-                    <input type="hidden" id="map_location" name="map_location">
-                    <input type="hidden" id="map_lat" name="map_lat">
-                    <input type="hidden" id="map_lng" name="map_lng">
-                    <div class="map-preview">
-                        <div class="location-map" id="locationMap" aria-label="Bản đồ chọn vị trí"></div>
-                        <div class="location-status" id="locationStatus">Bấm vào bản đồ hoặc dùng vị trí hiện tại.</div>
-                    </div>
-                </div>
-                
-                <div class="field full">
-                    <label for="issue_description">Mô tả chi tiết sự cố *</label>
-                    <textarea id="issue_description" name="issue_description" required maxlength="2000" placeholder="VD: Máy lạnh không mát..."></textarea>
-                </div>
+                        <article class="product" data-name="<?= htmlspecialchars(strtolower($name)) ?>" data-category="<?= htmlspecialchars(strtolower($category)) ?>" onclick="window.location.href='/mua-code/<?=$p['id'];?>'">
+                            <div class="img">
+                                <?php if ($image !== ''): ?>
+                                    <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($name) ?>" onerror="this.parentNode.textContent='Chưa có ảnh'">
+                                <?php else: ?>
+                                    <div style="color: var(--muted); font-size: 13px;">Chưa có ảnh</div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="body">
+                                <div class="cat"><?= htmlspecialchars($category) ?></div>
+                                <div class="name" title="<?= htmlspecialchars($name) ?>"><?= htmlspecialchars($name) ?></div>
+                                <div class="price"><?= number_format($price, 0, ',', '.') ?></div>
+                                <a href="/mua-code/<?=$p['id'];?>"><i class="fa-solid fa-eye"></i> Xem chi tiết</a>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </section>
+
+        <!-- Booking App Section -->
+        <section class="section booking-shell" id="goi-tho">
+            <div class="title">
+                <h2>Dịch Vụ Gọi Thợ Tận Nơi</h2>
+                <span class="muted">Minh bạch giá cả - Gọi là có mặt</span>
             </div>
             
-            <p class="muted" style="margin-block-start: 15px;">Giá công khai đã gồm VAT. Vật tư hoặc linh kiện phát sinh sẽ được báo riêng trước khi làm.</p>
-            <button id="btnDatLich" class="btn" type="button" style="inline-size: 100%; padding: 14px; font-size: 16px;">Gửi yêu cầu gọi thợ</button>
-        </form>
-    </section>
+            <form id="bookingForm" autocomplete="off">
+                <div id="thongbao_datlich" style="margin-block-end: 24px;"></div>
+                <h3>Thông tin Yêu cầu Dịch vụ</h3>
+                <div class="form">
+                    <div class="field full">
+                        <label for="service_selector">1. Bạn cần dịch vụ gì? <span style="color:var(--brand-accent);">*</span></label>
+                        <select id="service_selector" name="service_selector" required style="font-weight: 700; color: #fff;">
+                            <option value="" disabled selected>-- Bấm vào đây để chọn dịch vụ và xem giá --</option>
+                            <?php 
+                            $currentGroup = '';
+                            foreach ($services as $svc): 
+                                if ($svc['group'] !== $currentGroup) {
+                                    if ($currentGroup !== '') echo '</optgroup>';
+                                    echo '<optgroup label="' . htmlspecialchars($svc['group']) . '">';
+                                    $currentGroup = $svc['group'];
+                                }
+                                $base = (int)$svc['base']; 
+                                $publicPrice = $base > 0 ? number_format((int)round($base * 1.10),0,',','.') . ' VND' : 'Báo giá sau khi khảo sát';
+                            ?>
+                                <option value="<?= htmlspecialchars($svc['name']) ?>" data-price="<?= htmlspecialchars($publicPrice) ?>" data-group="<?= htmlspecialchars($svc['group']) ?>" data-note="<?= htmlspecialchars($svc['note']) ?>">
+                                    <?= htmlspecialchars($svc['name']) ?> - <?= $publicPrice ?>
+                                </option>
+                            <?php endforeach; ?>
+                            <?php if ($currentGroup !== '') echo '</optgroup>'; ?>
+                        </select>
+                    </div>
+                    
+                    <input type="hidden" id="service_type" name="service_type">
+                    <input type="hidden" id="selected_service_name" name="selected_service_name">
+                    
+                    <div class="field full">
+                        <label for="customer_price_display">Giá tham khảo (Đã gồm VAT)</label>
+                        <input class="readonly-price" id="customer_price_display" type="text" readonly placeholder="Chọn dịch vụ ở trên để xem giá" style="color: var(--brand-accent); font-weight: bold; background: rgba(0,0,0,0.3);">
+                        <small id="service_note" style="color: #94a3b8; display: block; margin-top: 8px; font-weight: 500;"></small>
+                    </div>
+                    
+                    <div class="field">
+                        <label for="customer_name">2. Tên của bạn <span style="color:var(--brand-accent);">*</span></label>
+                        <input id="customer_name" name="customer_name" required maxlength="150" placeholder="VD: Anh Minh">
+                    </div>
+                    
+                    <div class="field">
+                        <label for="phone">3. Số điện thoại liên hệ <span style="color:var(--brand-accent);">*</span></label>
+                        <input id="phone" name="phone" type="tel" inputmode="numeric" pattern="[0-9]{8,15}" required maxlength="15" placeholder="09xx.xxx.xxx">
+                    </div>
+                    
+                    <div class="field full">
+                        <label for="address">4. Địa chỉ chính xác <span style="color:var(--brand-accent);">*</span></label>
+                        <input id="address" name="address" required maxlength="500" placeholder="Số nhà, tên đường, khu vực...">
+                        <div class="map-actions">
+                            <button class="btn accent" id="useCurrentLocation" type="button" style="padding: 10px 16px; font-size: 13px;"><i class="fa-solid fa-location-crosshairs"></i> Lấy tọa độ GPS hiện tại</button>
+                            <button class="btn" id="clearLocation" type="button" style="padding: 10px 16px; font-size: 13px; background: rgba(255,255,255,0.1);"><i class="fa-solid fa-eraser"></i> Xóa</button>
+                        </div>
+                        <input type="hidden" id="map_location" name="map_location">
+                        <input type="hidden" id="map_lat" name="map_lat">
+                        <input type="hidden" id="map_lng" name="map_lng">
+                        <div class="map-preview">
+                            <div class="location-map" id="locationMap" aria-label="Bản đồ chọn vị trí"></div>
+                            <div class="location-status" id="locationStatus">Bấm vào bản đồ để chọn điểm hoặc dùng nút Lấy GPS phía trên.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="field full">
+                        <label for="issue_description">5. Mô tả chi tiết vấn đề <span style="color:var(--brand-accent);">*</span></label>
+                        <textarea id="issue_description" name="issue_description" required maxlength="2000" placeholder="Máy bị lỗi gì, hiện tượng như thế nào..."></textarea>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;"><i class="fa-solid fa-circle-info"></i> Giá báo trên web là giá công khai. Nếu có phát sinh vật tư linh kiện, thợ sẽ báo giá chi tiết và xin phép bạn trước khi tiến hành sửa chữa.</p>
+                    <button id="btnDatLich" class="btn accent" type="button" style="width: 100%; padding: 18px; font-size: 18px; font-weight: 800; letter-spacing: 0.5px; box-shadow: 0 10px 30px rgba(56,189,248,0.3);"><i class="fa-solid fa-paper-plane"></i> GỬI YÊU CẦU NGAY</button>
+                </div>
+            </form>
+        </section>
 
-</div></main>
+    </div>
+</main>
 
 <script>
 'use strict';
 
+// Product Filtering
 const cards = Array.from(document.querySelectorAll('.product'));
 const searchInput = document.getElementById('searchInput');
 
@@ -179,6 +189,7 @@ if(searchInput) {
     searchInput.addEventListener('input', filterProducts);
 }
 
+// Service Selector Logic
 const serviceSelector = document.getElementById('service_selector');
 if (serviceSelector) {
     serviceSelector.addEventListener('change', function() {
@@ -192,7 +203,7 @@ if (serviceSelector) {
         document.getElementById('service_type').value = group;
         document.getElementById('selected_service_name').value = serviceName;
         document.getElementById('customer_price_display').value = price;
-        document.getElementById('service_note').textContent = note;
+        document.getElementById('service_note').innerHTML = `<i class="fa-solid fa-asterisk" style="font-size: 12px; margin-right: 4px;"></i> ${note}`;
         
         // Auto-fill issue description if it's empty
         const issueDesc = document.getElementById('issue_description');
@@ -202,7 +213,7 @@ if (serviceSelector) {
     });
 }
 
-/* Map Logic */
+// Map Logic
 const addressInput = document.getElementById('address');
 const locationStatus = document.getElementById('locationStatus');
 const defaultLocation = [10.357422, 105.522124];
@@ -235,33 +246,39 @@ function syncSelectedLocation(lat, lng, resolveAddress) {
 
     if (!resolveAddress) return;
 
-    setLocationStatus('Đang lấy địa chỉ...');
+    setLocationStatus('Đang lấy địa chỉ từ GPS...');
     fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=vi&lat=' + latitude + '&lon=' + longitude)
         .then(res => res.json())
         .then(data => {
             if (data.display_name) addressInput.value = data.display_name;
             setLocationStatus('Đã đồng bộ GPS: ' + coords);
         })
-        .catch(() => setLocationStatus('Đã đồng bộ tọa độ.'));
+        .catch(() => setLocationStatus('Đã đồng bộ tọa độ. Vui lòng nhập thủ công phần địa chỉ chi tiết.'));
 }
 
 if (window.L && document.getElementById('locationMap')) {
     locationMap = L.map('locationMap').setView(defaultLocation, 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(locationMap);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(locationMap);
 
     locationMap.on('click', event => syncSelectedLocation(event.latlng.lat, event.latlng.lng, true));
     window.setTimeout(() => locationMap.invalidateSize(), 100);
 }
 
 document.getElementById('useCurrentLocation')?.addEventListener('click', () => {
-    if (!navigator.geolocation) return;
-    setLocationStatus('Đang lấy vị trí GPS...');
+    if (!navigator.geolocation) {
+        Swal.fire('Lỗi', 'Trình duyệt của bạn không hỗ trợ định vị GPS', 'error');
+        return;
+    }
+    setLocationStatus('Đang xác định vị trí của bạn...');
     navigator.geolocation.getCurrentPosition(position => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
         if (locationMap) locationMap.setView([lat, lng], 17);
         syncSelectedLocation(lat, lng, true);
-    }, () => setLocationStatus('Lỗi: Không thể lấy GPS!'));
+    }, () => {
+        Swal.fire('Lỗi', 'Không thể lấy được vị trí GPS. Vui lòng cấp quyền vị trí cho trang web.', 'error');
+        setLocationStatus('Không thể định vị.');
+    });
 });
 
 document.getElementById('clearLocation')?.addEventListener('click', () => {
@@ -269,13 +286,14 @@ document.getElementById('clearLocation')?.addEventListener('click', () => {
     document.getElementById('map_lat').value = '';
     document.getElementById('map_lng').value = '';
     addressInput.value = '';
+    setLocationStatus('Đã xóa dữ liệu vị trí.');
     if (locationMap && locationMarker) {
         locationMap.removeLayer(locationMarker);
         locationMarker = null;
     }
 });
 
-/* AJAX Submit for Booking/In 3D */
+// Booking Submit Logic
 $("#btnDatLich").on("click", function() {
     var ten = $("#customer_name").val().trim();
     var sdt = $("#phone").val().trim();
@@ -285,12 +303,18 @@ $("#btnDatLich").on("click", function() {
     var lat = $("#map_lat").val();
     var lng = $("#map_lng").val();
     
-    if (!ten || !sdt || !diachi || !yeucau) {
-        alert("Vui lòng điền đầy đủ Tên, SĐT, Địa chỉ và Mô tả!");
+    if (!$("#service_type").val()) {
+        Swal.fire('Thiếu thông tin', 'Vui lòng chọn một dịch vụ!', 'warning');
         return;
     }
     
-    $(this).html('ĐANG GỬI...').prop('disabled', true).css('opacity','0.7');
+    if (!ten || !sdt || !diachi || !yeucau) {
+        Swal.fire('Thiếu thông tin', 'Vui lòng điền đầy đủ Tên, SĐT, Địa chỉ và Mô tả!', 'warning');
+        return;
+    }
+    
+    let originalText = $(this).html();
+    $(this).html('<i class="fa-solid fa-circle-notch fa-spin"></i> ĐANG GỬI...').prop('disabled', true).css('opacity','0.7');
     
     if (lat && lng) {
         diachi += " | GPS: " + lat + "," + lng + " (https://maps.google.com/?q=" + lat + "," + lng + ")";
@@ -302,18 +326,28 @@ $("#btnDatLich").on("click", function() {
         data: { type:'DatLich', ten:ten, sdt:sdt, dichvu:dichvu, diachi:diachi, yeucau:yeucau },
         success: function(r) {
             $("#thongbao_datlich").html(r);
-            $('#btnDatLich').html('Gửi yêu cầu thành công').prop('disabled',false).css('opacity','1');
+            $('#btnDatLich').html('<i class="fa-solid fa-check"></i> Đã Gửi Thành Công').prop('disabled', false).css('opacity','1');
+            
+            // Clear form after 2 seconds
+            setTimeout(() => {
+                $('#bookingForm')[0].reset();
+                $('#btnDatLich').html(originalText);
+                if (locationMap && locationMarker) {
+                    locationMap.removeLayer(locationMarker);
+                    locationMarker = null;
+                }
+            }, 3000);
         },
         error: function() {
-            alert("Lỗi hệ thống! Gọi trực tiếp 0939.354.937");
-            $('#btnDatLich').html('Gửi yêu cầu gọi thợ / Đặt In').prop('disabled',false).css('opacity','1');
+            Swal.fire('Lỗi', 'Không thể kết nối đến máy chủ. Vui lòng gọi trực tiếp!', 'error');
+            $('#btnDatLich').html(originalText).prop('disabled', false).css('opacity','1');
         }
     });
 });
 </script>
 
-    <div style="text-align: center; margin: 40px 0;">
-        <a href="/login.php" class="btn dark" style="background: rgba(10,25,47,0.5); border: 1px solid rgba(255,255,255,0.1); font-size: 14px;"><i class="fa-solid fa-user-gear"></i> Cổng đăng nhập dành cho thợ</a>
-    </div>
+<div style="text-align: center; margin: 40px 0 20px; position: relative; z-index: 5;">
+    <a href="/login.php" class="btn dark" style="padding: 10px 24px; font-size: 14px; border: 1px solid rgba(15,23,42,0.1);"><i class="fa-solid fa-user-gear"></i> Khu Vực Dành Cho Thợ (Portal)</a>
+</div>
 
 <?php require_once(__DIR__."/pages/client/Footer.php"); ?>
