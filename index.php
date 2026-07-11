@@ -195,114 +195,76 @@ require_once(__DIR__."/pages/client/Header.php");
 </section>
 
 <!-- =============== COMPACT PRICE LIST =============== -->
-<!-- =============== ĐỊNH VỊ THƯƠNG HIỆU (BUSINESS PILLARS) =============== -->
-<section class="py-12 bg-white">
-    <div class="container mx-auto px-4 max-w-6xl">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Điện Máy -->
-            <div class="bg-blue-50 rounded-3xl p-8 border-2 border-blue-100 hover:border-blue-500 transition-all group hover:-translate-y-2 cursor-pointer">
-                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-3xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                    <i class="fa fa-tv"></i>
-                </div>
-                <h3 class="text-xl font-black text-blue-900 uppercase mb-3 tracking-tight">Điện Máy & Gia Dụng</h3>
-                <p class="text-blue-700/80 font-medium text-sm mb-6">Tivi, Tủ lạnh, Máy giặt chính hãng. Giá kho, giao hàng tốc hành trong 2h tại Đồng Tháp.</p>
-                <a href="/dien-may" class="inline-flex items-center text-blue-600 font-bold hover:text-blue-800 uppercase text-xs tracking-wider">
-                    Khám phá ngay <i class="fa fa-arrow-right ml-2 transition-transform group-hover:translate-x-2"></i>
-                </a>
-            </div>
-            
-            <!-- Gọi Thợ -->
-            <div class="bg-orange-50 rounded-3xl p-8 border-2 border-orange-100 hover:border-orange-500 transition-all group hover:-translate-y-2 cursor-pointer" onclick="document.getElementById('dat-lich').scrollIntoView({behavior:'smooth'})">
-                <div class="w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl flex items-center justify-center text-white text-3xl mb-6 shadow-lg group-hover:scale-110 transition-transform animate-pulse">
-                    <i class="fa fa-tools"></i>
-                </div>
-                <h3 class="text-xl font-black text-orange-900 uppercase mb-3 tracking-tight">Gọi Thợ & Sửa Chữa</h3>
-                <p class="text-orange-700/80 font-medium text-sm mb-6">Xử lý thần tốc mọi sự cố điện nước, điện lạnh. Báo giá minh bạch, không phí ẩn.</p>
-                <span class="inline-flex items-center text-orange-600 font-bold hover:text-orange-800 uppercase text-xs tracking-wider">
-                    Chốt đơn ngay <i class="fa fa-arrow-right ml-2 transition-transform group-hover:translate-x-2"></i>
-                </span>
-            </div>
-            
-            <!-- In 3D -->
-            <div class="bg-purple-50 rounded-3xl p-8 border-2 border-purple-100 hover:border-purple-500 transition-all group hover:-translate-y-2 cursor-pointer">
-                <div class="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center text-white text-3xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                    <i class="fa fa-cube"></i>
-                </div>
-                <h3 class="text-xl font-black text-purple-900 uppercase mb-3 tracking-tight">Sản Phẩm In 3D</h3>
-                <p class="text-purple-700/80 font-medium text-sm mb-6">Thiết kế và in 3D theo yêu cầu. Chế tạo linh kiện thay thế, mô hình kỹ thuật độ chính xác cao.</p>
-                <a href="/in-3d" class="inline-flex items-center text-purple-600 font-bold hover:text-purple-800 uppercase text-xs tracking-wider">
-                    Xem Portfolio <i class="fa fa-arrow-right ml-2 transition-transform group-hover:translate-x-2"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- =============== ĐIỆN MÁY NỔI BẬT (SHOWCASE) =============== -->
-<section id="bang-gia" class="container mx-auto px-4 max-w-6xl py-16">
-    <div class="flex flex-col md:flex-row justify-between items-end mb-10 border-b-4 border-blue-100 pb-4 gap-4">
+<section id="bang-gia" class="container mx-auto px-4 max-w-5xl py-20">
+    <div class="flex flex-col md:flex-row justify-between items-end mb-8 border-b-4 border-blue-100 pb-4 gap-4">
         <div>
-            <div class="inline-block bg-blue-100 text-blue-700 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest mb-2">Deal Hot Trong Tuần</div>
             <h2 class="text-3xl font-black text-gray-900 uppercase tracking-tight">
-                Điện Máy <span class="text-blue-600">Nổi Bật</span>
+                Bảng Giá <span class="text-blue-600">Sản Phẩm & Dịch Vụ</span>
             </h2>
+            <p class="text-gray-500 mt-1 font-semibold text-sm">Báo giá minh bạch · Không phí ẩn · Cập nhật liên tục</p>
         </div>
-        <a href="/dien-may" class="hidden md:flex items-center gap-1 font-black text-orange-500 hover:text-orange-600 uppercase text-xs tracking-wider border-2 border-orange-500 hover:bg-orange-50 px-4 py-2 rounded-xl transition-colors">
-            Xem Tất Cả Sản Phẩm <i class="fa fa-chevron-right text-[10px]"></i>
+        <a href="/dien-may" class="hidden md:flex items-center gap-1 font-black text-orange-500 hover:text-orange-600 uppercase text-xs tracking-wider">
+            Toàn bộ sản phẩm <i class="fa fa-chevron-right text-[10px]"></i>
         </a>
     </div>
 
-    <!-- Bảng Giá Dạng Grid Thu Gọn (ADHD/OCD) - Mockup cho Điện Máy -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-        
-        <?php
-        // Hardcode mock data để thể hiện đúng Đề án Điện Máy Hiếu, 
-        // Sau này sẽ query từ table `sanpham_dienmay` thay vì `danhsachmuacode`
-        $mock_products = [
-            ['id'=>101, 'title'=>'Smart Tivi Samsung 4K 65 inch 65AU7700', 'img'=>'https://cdn.tgdd.vn/Products/Images/1942/235889/samsung-ua65au7700-1-600x400.jpg', 'price'=>12500000, 'discount'=>15],
-            ['id'=>102, 'title'=>'Máy lạnh Daikin Inverter 1.5 HP ATKF35', 'img'=>'https://cdn.tgdd.vn/Products/Images/2002/272714/daikin-inverter-15-hp-atkf35xvmv-1.jpg', 'price'=>11290000, 'discount'=>10],
-            ['id'=>103, 'title'=>'Tủ lạnh Panasonic Inverter 322 lít', 'img'=>'https://cdn.tgdd.vn/Products/Images/1943/220268/panasonic-nr-bc360qkvn-600x400.jpg', 'price'=>9890000, 'discount'=>5],
-            ['id'=>104, 'title'=>'Máy giặt LG Inverter 9 kg FV1409S4W', 'img'=>'https://cdn.tgdd.vn/Products/Images/1944/227121/lg-inverter-9-kg-fv1409s4w-1-600x400.jpg', 'price'=>8490000, 'discount'=>12]
-        ];
+    <div class="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden">
+        <!-- Header -->
+        <div class="hidden md:grid grid-cols-12 gap-3 bg-blue-600 px-5 py-3 text-xs font-black text-white uppercase tracking-wider">
+            <div class="col-span-1 text-center">#</div>
+            <div class="col-span-2">Ảnh</div>
+            <div class="col-span-5">Tên Sản Phẩm / Dịch Vụ</div>
+            <div class="col-span-2 text-right">Mức Giá</div>
+            <div class="col-span-2 text-center">Đặt Mua</div>
+        </div>
 
-        foreach($mock_products as $row):
-            $price = $row['price'];
-            $discount = $row['discount'];
-            $finalPrice = $price - ($price * $discount / 100);
-        ?>
-        <div class="bg-white rounded-2xl p-4 md:p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col hover:-translate-y-1 hover:shadow-xl transition-all duration-300 relative group overflow-hidden">
-            <!-- Event Badge -->
-            <div class="absolute top-3 left-3 z-10 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-md shadow-sm">
-                GIẢM <?=$discount;?>%
+        <div class="divide-y divide-gray-50">
+            <?php
+            $rows = $DMH->get_list("SELECT * FROM `danhsachmuacode` WHERE `hienthi` = 'SHOW' AND `money` > 0 ORDER BY id DESC LIMIT 8");
+            if(empty($rows)): ?>
+            <div class="p-12 text-center text-gray-400 font-bold">
+                <i class="fa fa-box-open text-5xl mb-4 block"></i>
+                Chưa có sản phẩm nào được đăng.
             </div>
-            
-            <!-- Image (OCD Box) -->
-            <div class="w-full aspect-square bg-gray-50 rounded-xl mb-4 flex items-center justify-center p-4 relative group-hover:bg-blue-50 transition-colors">
-                <img src="<?=$row['img'];?>" class="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110" alt="<?=$row['title'];?>">
-            </div>
-            
-            <!-- Title -->
-            <h4 class="font-black text-gray-800 text-sm md:text-base leading-snug line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors"><?=$row['title'];?></h4>
-            
-            <div class="mt-auto pt-3 border-t border-gray-100">
-                <div class="flex items-end justify-between mb-3">
-                    <div>
-                        <div class="text-[11px] text-gray-400 line-through font-semibold mb-0.5"><?=number_format($price,0,',','.');?>đ</div>
-                        <div class="text-base md:text-xl font-black text-red-600 leading-none"><?=number_format($finalPrice,0,',','.');?>đ</div>
+            <?php else: foreach($rows as $row):
+                $price = $row['money'];
+                $finalPrice = $price;
+                $isEvent = ($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0);
+                if($isEvent) $finalPrice = $price - ($price * $DMH->site('ptgiamgia') / 100);
+            ?>
+            <div class="compact-row grid grid-cols-1 md:grid-cols-12 gap-3 items-center px-4 py-4">
+                <div class="hidden md:flex col-span-1 justify-center text-gray-300 font-black text-sm"><?=$row['id'];?></div>
+                <div class="col-span-12 md:col-span-2 flex justify-center md:justify-start">
+                    <div class="w-16 h-16 bg-gray-50 rounded-xl p-1.5 border border-gray-100 flex items-center justify-center flex-shrink-0">
+                        <img src="<?=$row['img'];?>" class="max-h-full max-w-full object-contain" alt="<?=$row['title'];?>">
                     </div>
                 </div>
-                
-                <a href="#" class="w-full block text-center bg-gray-900 hover:bg-blue-600 text-white text-xs font-black py-3 px-4 rounded-xl transition-colors uppercase tracking-wider flex justify-center items-center gap-2">
-                    <i class="fa fa-shopping-cart"></i> Mua Ngay
-                </a>
+                <div class="col-span-12 md:col-span-5 text-center md:text-left">
+                    <h4 class="font-black text-gray-900 text-sm md:text-base line-clamp-2 leading-snug"><?=$row['title'];?></h4>
+                    <?php if($isEvent): ?>
+                        <span class="inline-block mt-1 bg-red-100 text-red-600 text-[10px] font-black px-2 py-0.5 rounded-full">🔥 GIẢM <?=$DMH->site('ptgiamgia');?>%</span>
+                    <?php endif; ?>
+                </div>
+                <div class="col-span-12 md:col-span-2 text-center md:text-right">
+                    <?php if($price != $finalPrice): ?>
+                        <div class="text-xs text-gray-400 line-through font-semibold"><?=sotienmua($price);?></div>
+                    <?php endif; ?>
+                    <div class="text-base md:text-lg font-black text-blue-600"><?=sotienmua($finalPrice);?></div>
+                </div>
+                <div class="col-span-12 md:col-span-2 flex justify-center gap-2">
+                    <a href="/mua-code/<?=$row['id'];?>"
+                       class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black py-2 px-4 rounded-lg transition-colors flex items-center gap-1">
+                        <i class="fa fa-cart-plus"></i> Mua
+                    </a>
+                </div>
             </div>
+            <?php endforeach; endif; ?>
         </div>
-        <?php endforeach; ?>
     </div>
-    
-    <div class="mt-8 text-center md:hidden">
-        <a href="/dien-may" class="inline-block w-full bg-blue-50 border border-blue-200 text-blue-700 font-black px-6 py-4 rounded-xl uppercase text-sm">
-            Xem Tất Cả Sản Phẩm <i class="fa fa-arrow-right ml-1"></i>
+
+    <div class="mt-6 text-center md:hidden">
+        <a href="/dien-may" class="inline-block bg-blue-50 border border-blue-200 text-blue-700 font-black px-6 py-3 rounded-xl uppercase text-sm">
+            Xem Tất Cả <i class="fa fa-arrow-right ml-1"></i>
         </a>
     </div>
 </section>
