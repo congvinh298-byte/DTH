@@ -25,54 +25,40 @@ $services = array(
             <h2>Dịch vụ gọi thợ</h2>
             <span class="muted">Chọn nhóm dịch vụ và giá trước khi điền thông tin</span>
         </div>
-        <div class="service-head">
-            <input id="serviceSearchInput" type="search" placeholder="Tìm dịch vụ hoặc nhóm thợ">
-            <button class="btn dark" id="geminiQuoteButton" type="button">Trợ lí AI Gemini</button>
-        </div>
-        
-        <div class="service-list" id="serviceList">
-            <?php foreach ($services as $svc): ?>
-                <?php $base = (int)$svc['base']; $publicPrice = $base > 0 ? (int)round($base * 1.10) : 0; ?>
-                <button class="service-option choose-service<?= $base <= 0 ? ' is-contact' : '' ?>" type="button" data-group="<?= htmlspecialchars($svc['group']) ?>" data-service="<?= htmlspecialchars($svc['name']) ?>" data-base="<?= htmlspecialchars($base) ?>">
-                    <small><?= htmlspecialchars($svc['group']) ?></small>
-                    <strong><?= $publicPrice > 0 ? number_format($publicPrice,0,',','.') . ' VND' : 'Báo giá sau' ?></strong>
-                    <span><?= htmlspecialchars($svc['name']) ?></span>
-                    <small><?= htmlspecialchars($svc['note']) ?></small>
-                </button>
-            <?php endforeach; ?>
-        </div>
-
-        <div class="gemini-panel" id="geminiPanel">
-            <textarea id="geminiQuestion" rows="3" maxlength="1000" placeholder="Nhập nhu cầu, ví dụ: vệ sinh máy lạnh 1HP ở Lấp Vò"></textarea>
-            <div class="gemini-actions">
-                <button class="btn" id="askGeminiButton" type="button">Tư vấn báo giá</button>
-                <button class="btn dark" id="closeGeminiButton" type="button">Đóng</button>
-            </div>
-            <div class="gemini-reply" id="geminiReply"></div>
-        </div>
-
-        <div id="thongbao_datlich" style="margin-block-end: 12px;"></div>
-
         <form id="bookingForm">
             <h3>Thông tin yêu cầu</h3>
             <div class="form">
-                <div class="field">
-                    <label for="service_type">Nhóm dịch vụ</label>
-                    <select id="service_type" name="service_type">
-                        <option>Thợ điện lạnh</option>
-                        <option>Thợ máy lọc nước</option>
-                        <option>Thợ tivi</option>
-                        <option>Thợ điện thoại</option>
-                        <option>Thợ gia dụng</option>
+                <div class="field full">
+                    <label for="service_selector">Chọn dịch vụ *</label>
+                    <select id="service_selector" name="service_selector" required style="font-weight: bold; color: var(--brand);">
+                        <option value="" disabled selected>-- Bấm vào đây để chọn dịch vụ và xem giá --</option>
+                        <?php 
+                        $currentGroup = '';
+                        foreach ($services as $svc): 
+                            if ($svc['group'] !== $currentGroup) {
+                                if ($currentGroup !== '') echo '</optgroup>';
+                                echo '<optgroup label="' . htmlspecialchars($svc['group']) . '">';
+                                $currentGroup = $svc['group'];
+                            }
+                            $base = (int)$svc['base']; 
+                            $publicPrice = $base > 0 ? number_format((int)round($base * 1.10),0,',','.') . ' VND' : 'Báo giá sau';
+                        ?>
+                            <option value="<?= htmlspecialchars($svc['name']) ?>" data-price="<?= htmlspecialchars($publicPrice) ?>" data-group="<?= htmlspecialchars($svc['group']) ?>" data-note="<?= htmlspecialchars($svc['note']) ?>">
+                                <?= htmlspecialchars($svc['name']) ?> - <?= $publicPrice ?>
+                            </option>
+                        <?php endforeach; ?>
+                        <?php if ($currentGroup !== '') echo '</optgroup>'; ?>
                     </select>
                 </div>
                 
-                <div class="field">
-                    <label for="customer_price_display">Giá tham khảo đã gồm VAT</label>
-                    <input class="readonly-price" id="customer_price_display" type="text" readonly placeholder="Chọn dịch vụ ở danh sách phía trên">
-                </div>
+                <input type="hidden" id="service_type" name="service_type">
+                <input type="hidden" id="selected_service_name" name="selected_service_name">
                 
-                <input id="selected_service_name" name="selected_service_name" type="hidden">
+                <div class="field full">
+                    <label for="customer_price_display">Giá tham khảo (Đã gồm VAT)</label>
+                    <input class="readonly-price" id="customer_price_display" type="text" readonly placeholder="Chọn dịch vụ ở trên để xem giá">
+                    <small id="service_note" style="color: var(--muted); display: block; margin-top: 4px;"></small>
+                </div>
                 
                 <div class="field">
                     <label for="customer_name">Tên khách *</label>
@@ -115,33 +101,28 @@ $services = array(
 <script>
 'use strict';
 
-const serviceSearchInput = document.getElementById('serviceSearchInput');
-if (serviceSearchInput) {
-    serviceSearchInput.addEventListener('input', () => {
-        const q = String(serviceSearchInput.value || '').toLowerCase();
-        document.querySelectorAll('.service-option').forEach(option => {
-            option.style.display = !q || String(option.textContent || '').toLowerCase().indexOf(q) !== -1 ? '' : 'none';
-        });
-    });
-}
-
-document.querySelectorAll('.choose-service').forEach(button => {
-    button.addEventListener('click', () => {
-        document.querySelectorAll('.choose-service').forEach(item => item.classList.remove('selected'));
-        button.classList.add('selected');
+const serviceSelector = document.getElementById('service_selector');
+if (serviceSelector) {
+    serviceSelector.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
         
-        const base = Number(button.dataset.base || 0);
-        document.getElementById('service_type').value = button.dataset.group || 'Thợ điện lạnh';
-        document.getElementById('issue_description').value = button.dataset.service || '';
-        document.getElementById('selected_service_name').value = button.dataset.service || '';
+        const group = selectedOption.dataset.group || '';
+        const serviceName = selectedOption.value || '';
+        const price = selectedOption.dataset.price || 'Liên hệ để báo giá chi tiết';
+        const note = selectedOption.dataset.note || '';
         
-        if (base > 0) {
-            document.getElementById('customer_price_display').value = new Intl.NumberFormat('vi-VN').format(Math.round(base * 1.10)) + ' VND - đã gồm VAT';
-        } else {
-            document.getElementById('customer_price_display').value = 'Liên hệ để báo giá chi tiết';
+        document.getElementById('service_type').value = group;
+        document.getElementById('selected_service_name').value = serviceName;
+        document.getElementById('customer_price_display').value = price;
+        document.getElementById('service_note').textContent = note;
+        
+        // Auto-fill issue description if it's empty
+        const issueDesc = document.getElementById('issue_description');
+        if (!issueDesc.value || issueDesc.value.length < 5) {
+            issueDesc.value = 'Tôi cần ' + serviceName;
         }
     });
-});
+}
 
 /* Map Logic */
 const addressInput = document.getElementById('address');

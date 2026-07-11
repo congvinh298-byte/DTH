@@ -31,7 +31,7 @@
             </form>
             
             <div style="display: flex; gap: 8px;">
-                <a class="btn dark" href="/#goi-tho">Gọi thợ</a>
+                <a class="btn dark" href="/goi-tho.php">Gọi thợ</a>
             </div>
         </div>
         

@@ -32,7 +32,7 @@ $services = array(
             <p>Hệ sinh thái bán lẻ và dịch vụ sửa chữa Điện Máy, Điện Lạnh, Điện Tử uy tín số 1 tại khu vực miền Tây. Phục vụ tận tâm bà con trong bán kính 15 km tính từ Chợ Lấp Vò.</p>
             <div class="hero-actions">
                 <a class="btn" href="#products"><i class="fa-solid fa-shopping-cart" style="margin-right: 8px;"></i> Xem sản phẩm</a>
-                <a class="btn dark" href="#goi-tho"><i class="fa-solid fa-tools" style="margin-right: 8px;"></i> Đặt lịch gọi thợ</a>
+                <a class="btn dark" href="/goi-tho.php"><i class="fa-solid fa-tools" style="margin-right: 8px;"></i> Đặt lịch gọi thợ</a>
                 <a class="btn" style="background: rgba(255,255,255,0.15);" href="/in-3d.php"><i class="fa-solid fa-cube" style="margin-right: 8px;"></i> Dịch vụ In 3D</a>
             </div>
         </div>
