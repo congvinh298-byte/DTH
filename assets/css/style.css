@@ -1,0 +1,205 @@
+/* 
+    ======================================================================
+    PROJECT: ĐIỆN MÁY HIẾU
+    CORE STYLESHEET - OCD & ADHD PROTOCOL
+    ======================================================================
+*/
+
+/* 
+   --------------------------------------------------
+   [OCD] CSS VARIABLES & NORMALIZATION
+   -------------------------------------------------- 
+*/
+:root {
+    /* Brand Colors */
+    --dmh-blue-primary: #0056b3;
+    --dmh-blue-dark: #003d82;
+    --dmh-orange-warning: #ff6b00;
+    --dmh-orange-hover: #e65c00;
+    --dmh-yellow-neon: #fffb00;
+    --dmh-gray-dark: #1f2937;
+    --dmh-gray-light: #f3f4f6;
+    --dmh-white: #ffffff;
+    --dmh-black: #000000;
+
+    /* Mathematics Spacing (OCD Multiples of 4/8) */
+    --space-2: 0.125rem;  /* 2px */
+    --space-4: 0.25rem;   /* 4px */
+    --space-8: 0.5rem;    /* 8px */
+    --space-16: 1rem;     /* 16px */
+    --space-24: 1.5rem;   /* 24px */
+    --space-32: 2rem;     /* 32px */
+    --space-40: 2.5rem;   /* 40px */
+    --space-48: 3rem;     /* 48px */
+    --space-64: 4rem;     /* 64px */
+
+    /* Typography */
+    --font-heading: 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-body);
+    color: var(--dmh-gray-dark);
+    background-color: var(--dmh-gray-light);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Prevent horizontal scroll OCD */
+}
+
+/* 
+   --------------------------------------------------
+   [OCD] PIXEL-PERFECT UTILITIES
+   -------------------------------------------------- 
+*/
+.grid-3-pillars {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: var(--space-32);
+    margin: var(--space-48) auto;
+    max-width: 1280px;
+    padding: 0 var(--space-16);
+}
+
+@media (min-width: 768px) {
+    .grid-3-pillars {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.pillar-card {
+    background: var(--dmh-white);
+    border-radius: var(--space-16);
+    padding: var(--space-32);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.pillar-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 4px;
+    background: var(--dmh-blue-primary);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+    transform-origin: left;
+}
+
+.pillar-card:hover::before {
+    transform: scaleX(1);
+}
+
+/* 
+   --------------------------------------------------
+   [ADHD] HIGH CONTRAST & ANIMATIONS
+   -------------------------------------------------- 
+*/
+
+/* CTA Button - Pulse */
+.btn-cta-pulse {
+    background: linear-gradient(135deg, var(--dmh-orange-warning), var(--dmh-yellow-neon));
+    color: var(--dmh-black);
+    font-weight: 900;
+    text-transform: uppercase;
+    padding: var(--space-16) var(--space-32);
+    border-radius: 9999px;
+    box-shadow: 0 10px 20px -5px rgba(255, 107, 0, 0.5);
+    transition: all 0.3s ease;
+    animation: pulse-rapid 2s infinite;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-8);
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-cta-pulse:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 15px 25px -5px rgba(255, 107, 0, 0.6);
+    color: var(--dmh-black);
+}
+
+@keyframes pulse-rapid {
+    0% { box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(255, 107, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 107, 0, 0); }
+}
+
+/* Attention Grabber text */
+.text-adhd-alert {
+    color: var(--dmh-orange-warning);
+    font-weight: 900;
+    text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
+}
+
+/* Card Hover ADHD */
+.pillar-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    z-index: 10;
+}
+
+.pillar-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: var(--dmh-gray-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    color: var(--dmh-blue-primary);
+    margin-bottom: var(--space-24);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.pillar-card:hover .pillar-icon-wrapper {
+    background: var(--dmh-blue-primary);
+    color: var(--dmh-white);
+    transform: rotate(10deg) scale(1.1);
+}
+
+/* Section Headings */
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--dmh-gray-dark);
+    text-align: center;
+    margin-bottom: var(--space-16);
+    letter-spacing: -1px;
+}
+
+.section-subtitle {
+    font-size: 1.125rem;
+    color: #6b7280;
+    text-align: center;
+    margin-bottom: var(--space-48);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Ribbons & Banners */
+.adhd-ribbon {
+    background: var(--dmh-orange-warning);
+    color: var(--dmh-white);
+    font-weight: 900;
+    text-align: center;
+    padding: var(--space-8) var(--space-16);
+    font-size: 1.125rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}

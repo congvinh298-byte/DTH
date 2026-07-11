@@ -1,6 +1,10 @@
 <?php
   if (!defined('IN_SITE')) die('The Request Not Found');
 ?>
+<head>
+    <!-- Load OCD-ADHD Core Styles -->
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
 <body class="font-inter bg-gray-50 text-gray-900" id="body_class">
     
     <!-- ADHD Top Ribbon -->
@@ -24,16 +28,16 @@
                     <!-- Desktop Menu -->
                     <nav class="hidden md:flex space-x-8">
                         <a href="/" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors">Trang Chủ</a>
-                        <a href="/dien-lanh" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors">Điện Lạnh</a>
-                        <a href="/dien-tu" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors">Điện Tử</a>
-                        <a href="/gia-dung" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors">Gia Dụng</a>
+                        <a href="/dien-may" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors">Điện Máy</a>
+                        <a href="/sua-chua" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors">Gọi Thợ</a>
+                        <a href="/in-3d" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors text-adhd-alert">In 3D <i class="fa fa-cube"></i></a>
                         <a href="/lien-he" class="text-gray-800 hover:text-blue-600 font-bold uppercase tracking-wide transition-colors">Liên Hệ</a>
                     </nav>
 
                     <!-- CTA Button (ADHD: Bright, bold, popping) -->
                     <div class="hidden md:flex items-center space-x-4">
-                        <a href="tel:09xxxxxxx" class="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white px-6 py-2 rounded-full font-black text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all uppercase flex items-center gap-2">
-                            <i class="fa fa-phone-alt animate-bounce"></i> Gọi Ngay
+                        <a href="tel:09xxxxxxx" class="btn-cta-pulse">
+                            <i class="fa fa-phone-alt"></i> Gọi Khẩn Cấp
                         </a>
                     </div>
 
@@ -50,10 +54,10 @@
             <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 shadow-inner absolute w-full left-0 z-50">
                 <div class="px-4 pt-2 pb-6 space-y-2 shadow-xl">
                     <a href="/" class="block px-3 py-3 rounded-md text-base font-bold text-gray-900 hover:bg-gray-50 uppercase border-b border-gray-50">Trang Chủ</a>
-                    <a href="/dien-lanh" class="block px-3 py-3 rounded-md text-base font-bold text-gray-900 hover:bg-gray-50 uppercase border-b border-gray-50">Điện Lạnh</a>
-                    <a href="/dien-tu" class="block px-3 py-3 rounded-md text-base font-bold text-gray-900 hover:bg-gray-50 uppercase border-b border-gray-50">Điện Tử</a>
-                    <a href="/gia-dung" class="block px-3 py-3 rounded-md text-base font-bold text-gray-900 hover:bg-gray-50 uppercase border-b border-gray-50">Gia Dụng</a>
-                    <a href="tel:09xxxxxxx" class="mt-4 block w-full text-center bg-orange-500 hover:bg-orange-600 text-white px-4 py-4 rounded-lg font-black uppercase shadow-md transition-colors">
+                    <a href="/dien-may" class="block px-3 py-3 rounded-md text-base font-bold text-gray-900 hover:bg-gray-50 uppercase border-b border-gray-50">Điện Máy & Gia Dụng</a>
+                    <a href="/sua-chua" class="block px-3 py-3 rounded-md text-base font-bold text-gray-900 hover:bg-gray-50 uppercase border-b border-gray-50">Dịch Vụ Sửa Chữa</a>
+                    <a href="/in-3d" class="block px-3 py-3 rounded-md text-base font-bold text-orange-600 hover:bg-orange-50 uppercase border-b border-gray-50">Sản Phẩm In 3D</a>
+                    <a href="tel:09xxxxxxx" class="mt-4 block w-full text-center bg-orange-500 hover:bg-orange-600 text-white px-4 py-4 rounded-lg font-black uppercase shadow-md transition-colors animate-pulse">
                         <i class="fa fa-phone-alt mr-2"></i> Gọi Thợ Khẩn Cấp
                     </a>
                 </div>
