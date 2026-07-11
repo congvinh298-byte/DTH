@@ -15,7 +15,7 @@ require_once(__DIR__."/pages/client/Header.php");
             <section class="relative bg-gradient-to-r from-gray-900 to-black text-white rounded-3xl p-8 md:p-16 shadow-2xl overflow-hidden flex flex-col items-center text-center">
                 <div class="absolute inset-0 bg-blue-600 opacity-20 blur-3xl rounded-full w-96 h-96 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
                 <div class="relative z-10">
-                    <img src="/public/assets/logo.png" alt="Điện Máy Hiếu" class="max-h-24 md:max-h-32 mx-auto mb-6 drop-shadow-lg filter brightness-0 invert" />
+                    <img src="/logo.png" alt="Điện Máy Hiếu" class="max-h-24 md:max-h-32 mx-auto mb-6 drop-shadow-lg filter brightness-0 invert" />
                     <h1 class="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-200">
                         ĐIỆN MÁY HIẾU
                     </h1>
@@ -58,7 +58,7 @@ require_once(__DIR__."/pages/client/Header.php");
                     <div class="pillar-icon-wrapper bg-orange-100 text-orange-600 group-hover:bg-orange-600">
                         <i class="fa fa-tools"></i>
                     </div>
-                    <h3 class="text-2xl font-black uppercase text-gray-900 mb-4">Gọi Thợ Tại Nhà</h3>
+                    <h3 class="text-2xl font-black uppercase text-gray-900 mb-4">Dịch Vụ Gọi Thợ Chuyên Nghiệp</h3>
                     <p class="text-gray-600 leading-relaxed mb-8 flex-1">
                         Đội ngũ kỹ thuật viên dày dặn kinh nghiệm. Có mặt sau 30 phút tại khu vực Lấp Vò. Khắc phục triệt để mọi sự cố điện lạnh, điện tử.
                     </p>
@@ -72,7 +72,7 @@ require_once(__DIR__."/pages/client/Header.php");
                     <div class="pillar-icon-wrapper">
                         <i class="fa fa-cube"></i>
                     </div>
-                    <h3 class="text-2xl font-black uppercase text-gray-900 mb-4">Công Nghệ In 3D</h3>
+                    <h3 class="text-2xl font-black uppercase text-gray-900 mb-4">Sản Phẩm In 3D</h3>
                     <p class="text-gray-600 leading-relaxed mb-8 flex-1">
                         Thiết kế, chế tạo chi tiết nhựa, linh kiện thay thế độc bản bằng công nghệ In 3D tiên tiến. Đảm bảo độ bền cao và độ chính xác tuyệt đối.
                     </p>

@@ -21,7 +21,7 @@
                     
                     <!-- Logo -->
                     <a href="/" class="flex-shrink-0 flex items-center gap-3 transform hover:scale-105 transition-transform">
-                        <img src="/public/assets/logo.png" class="h-10 md:h-12 w-auto drop-shadow-sm" alt="Điện Máy Hiếu">
+                        <img src="/logo.png" class="h-10 md:h-12 w-auto drop-shadow-sm" alt="Điện Máy Hiếu">
                         <span class="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tighter">Điện Máy <span class="text-blue-600">Hiếu</span></span>
                     </a>
 
