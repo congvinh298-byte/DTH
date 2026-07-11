@@ -19,20 +19,23 @@ echo "<h1>Đang tiến hành đồng bộ mã nguồn từ Github...</h1>";
 // 1. Download ZIP
 echo "<p>1. Đang tải mã nguồn mới nhất (thông qua cURL)...</p>";
 
+$fp = fopen($zipFile, 'w+');
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $repoUrl);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_FILE, $fp); // Stream directly to file
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
-$zipContent = curl_exec($ch);
+curl_exec($ch);
 $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$error = curl_error($ch);
 curl_close($ch);
+fclose($fp);
 
-if ($zipContent === false || $http_code != 200) {
-    die("<p style='color:red'>LỖI: Không thể tải mã nguồn từ Github (HTTP Code: $http_code). Vui lòng kiểm tra lại cấu hình cURL hoặc kết nối mạng.</p>");
+if ($http_code != 200) {
+    @unlink($zipFile);
+    die("<p style='color:red'>LỖI: Không thể tải mã nguồn từ Github (HTTP Code: $http_code). Chi tiết: $error</p>");
 }
-file_put_contents($zipFile, $zipContent);
 echo "<p style='color:green'>Tải xuống thành công (" . round(filesize($zipFile) / 1024 / 1024, 2) . " MB).</p>";
 
 // 2. Extract ZIP
