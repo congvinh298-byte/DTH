@@ -21,7 +21,7 @@
         <div class="wrap head">
             <!-- Tối ưu hiển thị cho LOGO DỌC/VUÔNG: img height 64px, object-fit contain -->
             <a class="logo" href="/">
-                <img src="/logo.jpg" alt="Logo Điện Máy Hiếu">
+                <img src="/public/assets/logo.png" alt="Logo Điện Máy Hiếu">
                 <div>Điện Máy Hiếu<small>Mua hàng nhanh - Gọi thợ nhanh</small></div>
             </a>
             
