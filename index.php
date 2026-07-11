@@ -208,58 +208,53 @@ require_once(__DIR__."/pages/client/Header.php");
         </a>
     </div>
 
-    <div class="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden">
-        <!-- Header -->
-        <div class="hidden md:grid grid-cols-12 gap-3 bg-blue-600 px-5 py-3 text-xs font-black text-white uppercase tracking-wider">
-            <div class="col-span-1 text-center">#</div>
-            <div class="col-span-2">Ảnh</div>
-            <div class="col-span-5">Tên Sản Phẩm / Dịch Vụ</div>
-            <div class="col-span-2 text-right">Mức Giá</div>
-            <div class="col-span-2 text-center">Đặt Mua</div>
+    <!-- Bảng Giá Dạng Grid Thu Gọn (ADHD/OCD) -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <?php
+        $rows = $DMH->get_list("SELECT * FROM `danhsachmuacode` WHERE `hienthi` = 'SHOW' AND `money` > 0 ORDER BY id DESC LIMIT 8");
+        if(empty($rows)): ?>
+        <div class="col-span-full p-12 text-center text-gray-400 font-bold bg-white rounded-2xl shadow border border-gray-100">
+            <i class="fa fa-box-open text-5xl mb-4 block"></i>
+            Chưa có sản phẩm/dịch vụ nào được đăng.
         </div>
-
-        <div class="divide-y divide-gray-50">
-            <?php
-            $rows = $DMH->get_list("SELECT * FROM `danhsachmuacode` WHERE `hienthi` = 'SHOW' AND `money` > 0 ORDER BY id DESC LIMIT 8");
-            if(empty($rows)): ?>
-            <div class="p-12 text-center text-gray-400 font-bold">
-                <i class="fa fa-box-open text-5xl mb-4 block"></i>
-                Chưa có sản phẩm nào được đăng.
+        <?php else: foreach($rows as $row):
+            $price = $row['money'];
+            $finalPrice = $price;
+            $isEvent = ($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0);
+            if($isEvent) $finalPrice = $price - ($price * $DMH->site('ptgiamgia') / 100);
+        ?>
+        <div class="bg-white rounded-2xl p-4 md:p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col hover:-translate-y-1 hover:shadow-xl transition-all duration-300 relative group overflow-hidden">
+            <!-- Event Badge -->
+            <?php if($isEvent): ?>
+                <div class="absolute top-3 left-3 z-10 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-md shadow-sm">
+                    GIẢM <?=$DMH->site('ptgiamgia');?>%
+                </div>
+            <?php endif; ?>
+            
+            <!-- Image (OCD Box) -->
+            <div class="w-full aspect-square bg-gray-50 rounded-xl mb-4 flex items-center justify-center p-2 relative">
+                <img src="<?=$row['img'];?>" class="max-h-full max-w-full object-contain mix-blend-multiply transition-transform group-hover:scale-105" alt="<?=$row['title'];?>">
             </div>
-            <?php else: foreach($rows as $row):
-                $price = $row['money'];
-                $finalPrice = $price;
-                $isEvent = ($DMH->site('sukien') == 'ON' && $DMH->site('ptgiamgia') > 0);
-                if($isEvent) $finalPrice = $price - ($price * $DMH->site('ptgiamgia') / 100);
-            ?>
-            <div class="compact-row grid grid-cols-1 md:grid-cols-12 gap-3 items-center px-4 py-4">
-                <div class="hidden md:flex col-span-1 justify-center text-gray-300 font-black text-sm"><?=$row['id'];?></div>
-                <div class="col-span-12 md:col-span-2 flex justify-center md:justify-start">
-                    <div class="w-16 h-16 bg-gray-50 rounded-xl p-1.5 border border-gray-100 flex items-center justify-center flex-shrink-0">
-                        <img src="<?=$row['img'];?>" class="max-h-full max-w-full object-contain" alt="<?=$row['title'];?>">
+            
+            <!-- Title -->
+            <h4 class="font-black text-gray-800 text-sm md:text-base leading-snug line-clamp-2 mb-2"><?=$row['title'];?></h4>
+            
+            <div class="mt-auto pt-3 border-t border-gray-100">
+                <div class="flex items-end justify-between mb-3">
+                    <div>
+                        <?php if($price != $finalPrice): ?>
+                            <div class="text-[11px] text-gray-400 line-through font-semibold mb-0.5"><?=sotienmua($price);?></div>
+                        <?php endif; ?>
+                        <div class="text-base md:text-lg font-black text-blue-600 leading-none"><?=sotienmua($finalPrice);?></div>
                     </div>
                 </div>
-                <div class="col-span-12 md:col-span-5 text-center md:text-left">
-                    <h4 class="font-black text-gray-900 text-sm md:text-base line-clamp-2 leading-snug"><?=$row['title'];?></h4>
-                    <?php if($isEvent): ?>
-                        <span class="inline-block mt-1 bg-red-100 text-red-600 text-[10px] font-black px-2 py-0.5 rounded-full">🔥 GIẢM <?=$DMH->site('ptgiamgia');?>%</span>
-                    <?php endif; ?>
-                </div>
-                <div class="col-span-12 md:col-span-2 text-center md:text-right">
-                    <?php if($price != $finalPrice): ?>
-                        <div class="text-xs text-gray-400 line-through font-semibold"><?=sotienmua($price);?></div>
-                    <?php endif; ?>
-                    <div class="text-base md:text-lg font-black text-blue-600"><?=sotienmua($finalPrice);?></div>
-                </div>
-                <div class="col-span-12 md:col-span-2 flex justify-center gap-2">
-                    <a href="/mua-code/<?=$row['id'];?>"
-                       class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black py-2 px-4 rounded-lg transition-colors flex items-center gap-1">
-                        <i class="fa fa-cart-plus"></i> Mua
-                    </a>
-                </div>
+                
+                <a href="/mua-code/<?=$row['id'];?>" class="w-full block text-center bg-gray-900 hover:bg-blue-600 text-white text-xs font-black py-2.5 px-4 rounded-lg transition-colors uppercase tracking-wider">
+                    ĐẶT MUA
+                </a>
             </div>
-            <?php endforeach; endif; ?>
         </div>
+        <?php endforeach; endif; ?>
     </div>
 
     <div class="mt-6 text-center md:hidden">

@@ -2,7 +2,7 @@
 
 ## GIỚI THIỆU
 
-Đây là hệ thống thương mại điện tử chuyên về **mua bán mã nguồn website**, **tên miền** và **dịch vụ tạo website tự động** - được phát triển bởi **Phạm Hoàng Tuấn** từ năm **2021** (lớp 10) với ngôn ngữ **PHP thuần**, tích hợp **MySQL** và **Bootstrap**.
+Đây là hệ thống thương mại điện tử chuyên về **mua bán mã nguồn website**, **tên miền** và **dịch vụ tạo website tự động** - được phát triển bởi **Điện Máy Hiếu** từ năm **2021** với ngôn ngữ **PHP thuần**, tích hợp **MySQL** và **Bootstrap**.
 
 Năm **2023** (lớp 12), hệ thống được nâng cấp lên phiên bản bảo mật cao hơn với các tính năng thanh toán tự động, quản lý API và hệ thống đối tác. Dự án này đã giúp tác giả đạt doanh thu **LÊN TỚI 9 - 10 CHỮ SỐ**, phục vụ **HƠN 20,000 NGƯỜI DÙNG** trên toàn quốc.
 
@@ -352,4 +352,4 @@ Hệ thống sử dụng **30+ bảng MySQL** quản lý toàn bộ nghiệp v�
 
 ---
 
-_Phát triển bởi Phạm Hoàng Tuấn_
+_Phát triển bởi Điện Máy Hiếu_
