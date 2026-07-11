@@ -1,9 +1,10 @@
 <?php
 define("IN_SITE", true);
-require_once("../../core/config.php");
-require_once("../../core/function.php");
+require_once(__DIR__."/../../core/config.php");
+require_once(__DIR__."/../../core/function.php");
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['type']) && $_POST['type'] == 'DatLich') {
+try {
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['type']) && $_POST['type'] == 'DatLich') {
     
     // Security and Anti-Spam Check
     if(isset($_SESSION['last_book'])) {
@@ -53,7 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['type']) && $_POST['typ
     } else {
         msg_error2("Hệ thống đang bận, vui lòng thử lại sau!");
     }
-} else {
-    die('The Request Not Found');
+    } else {
+        die('The Request Not Found');
+    }
+} catch (Throwable $e) {
+    msg_error2("Lỗi hệ thống khi đặt lịch: " . $e->getMessage());
 }
 ?>

@@ -1,11 +1,12 @@
 <?php
 define("IN_SITE", true);
-require_once("../../core/config.php");
-require_once("../../core/function.php");
+require_once(__DIR__."/../../core/config.php");
+require_once(__DIR__."/../../core/function.php");
 
 header('Content-Type: application/json');
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'nhan_don') {
+try {
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'nhan_don') {
     
     // Bắt buộc đăng nhập với quyền thợ
     if(!isset($_COOKIE['token']) || empty($getUser)) {
@@ -37,7 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     } else {
         echo json_encode(['status' => 'error', 'msg' => 'Đơn hàng này không tồn tại hoặc đã có thợ khác nhận mất rồi!']);
     }
-} else {
-    echo json_encode(['status' => 'error', 'msg' => 'Request Not Found']);
+    } else {
+        echo json_encode(['status' => 'error', 'msg' => 'Request Not Found']);
+    }
+} catch (Throwable $e) {
+    echo json_encode(['status' => 'error', 'msg' => 'Lỗi hệ thống: ' . $e->getMessage()]);
 }
 ?>
