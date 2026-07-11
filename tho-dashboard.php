@@ -16,11 +16,26 @@ if($getUser['level'] != 'tho' && $getUser['level'] != 'admin') {
 $my_id = $getUser['id'];
 $tho_name = $getUser['name'] ?? $getUser['username'];
 
+// Tắt report exception của mysqli để không văng 500
+mysqli_report(MYSQLI_REPORT_OFF);
+
 // Lấy danh sách đơn chờ xử lý
-$don_cho_xu_ly = $DMH->get_list("SELECT * FROM `dat_lich` WHERE `trangthai` = 'CHO_XU_LY' ORDER BY `id` DESC");
+$don_cho_xu_ly = [];
+$don_cua_toi = [];
+try {
+    $res_cho = $DMH->get_list("SELECT * FROM `dat_lich` WHERE `trangthai` = 'CHO_XU_LY' ORDER BY `id` DESC");
+    if (is_array($res_cho)) $don_cho_xu_ly = $res_cho;
+} catch (Throwable $e) {
+    die("Lỗi Database khi lấy đơn chờ xử lý: " . $e->getMessage() . ". Có thể thiếu cột 'trangthai' trong bảng 'dat_lich'. Vui lòng báo cho kỹ thuật.");
+}
 
 // Lấy danh sách đơn đang nhận của thợ này
-$don_cua_toi = $DMH->get_list("SELECT * FROM `dat_lich` WHERE `trangthai` = 'DANG_XU_LY' AND `tho_id` = '$my_id' ORDER BY `id` DESC");
+try {
+    $res_toi = $DMH->get_list("SELECT * FROM `dat_lich` WHERE `trangthai` = 'DANG_XU_LY' AND `tho_id` = '$my_id' ORDER BY `id` DESC");
+    if (is_array($res_toi)) $don_cua_toi = $res_toi;
+} catch (Throwable $e) {
+    die("Lỗi Database khi lấy đơn của tôi: " . $e->getMessage());
+}
 
 $title = "Dashboard Thợ | Điện Máy Hiếu";
 require_once(__DIR__."/pages/client/Head.php");
