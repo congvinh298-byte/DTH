@@ -17,8 +17,12 @@ foreach ($sourceFiles as $sf) {
 echo "<h2>Fixing Stubborn Logo</h2>";
 
 if (file_exists($targetFile)) {
-    echo "Target file exists. Attempting chmod...<br>";
-    @chmod($targetFile, 0777);
+    echo "Target file exists. Attempting to fix directory permissions...<br>";
+    $dir = dirname($targetFile);
+    @chmod($dir, 0755); // MUST have write permissions on directory to delete files!
+    
+    echo "Attempting chmod on file...<br>";
+    @chmod($targetFile, 0666);
     
     echo "Attempting to delete target... ";
     if (@unlink($targetFile)) {
