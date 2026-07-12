@@ -75,7 +75,20 @@ $sotien = 0;
                     </div>
                     <div style="margin-bottom: 16px;">
                         <label style="display: block; margin-bottom: 6px; font-weight: 600;">Địa chỉ nhận hàng</label>
-                        <textarea id="c_address" rows="3" style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white;" required><?= htmlspecialchars($getUser['address'] ?? '') ?></textarea>
+                        <div style="display: flex; gap: 10px;">
+                            <textarea id="c_address" rows="3" style="flex-grow: 1; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white;" required><?= htmlspecialchars($getUser['address'] ?? '') ?></textarea>
+                            <button type="button" id="btnGPS" onclick="getGPSLocation()" style="background: #10b981; color: white; border: none; border-radius: 8px; padding: 0 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" title="Lấy định vị tự động">
+                                <i class="fa-solid fa-location-crosshairs" style="font-size: 20px;"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 600;">Phương thức thanh toán</label>
+                        <select id="c_payment" style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                            <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+                            <option value="BANK">Chuyển khoản ngân hàng</option>
+                        </select>
                     </div>
                     
                     <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; background: rgba(56, 189, 248, 0.1); padding: 12px; border-radius: 8px; border: 1px dashed rgba(56, 189, 248, 0.3);">
@@ -114,6 +127,7 @@ $('#btnCheckout').click(function() {
     let phone = $('#c_phone').val().trim();
     let address = $('#c_address').val().trim();
     let note = $('#c_note').val().trim();
+    let payment = $('#c_payment').val();
     let vat = $('#c_vat').is(':checked') ? 1 : 0;
 
     if(!name || !phone || !address) {
@@ -132,6 +146,7 @@ $('#btnCheckout').click(function() {
             phone: phone,
             address: address,
             note: note,
+            payment_method: payment,
             vat_requested: vat
         },
         success: function(r) {
@@ -155,6 +170,48 @@ $('#btnCheckout').click(function() {
         }
     });
 });
+
+function getGPSLocation() {
+    if (navigator.geolocation) {
+        let btn = $('#btnGPS');
+        let oldHtml = btn.html();
+        btn.html('<i class="fa-solid fa-spinner fa-spin"></i>').prop('disabled', true);
+        
+        navigator.geolocation.getCurrentPosition(function(position) {
+            let lat = position.coords.latitude;
+            let lng = position.coords.longitude;
+            let currentAddr = $('#c_address').val().trim();
+            
+            // Dùng Nominatim API để lấy địa chỉ từ tọa độ
+            $.ajax({
+                url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+                method: 'GET',
+                success: function(data) {
+                    let addr = data.display_name;
+                    let mapLink = `\n[Tọa độ GPS: https://maps.google.com/?q=${lat},${lng}]`;
+                    if (currentAddr && !currentAddr.includes('Tọa độ GPS')) {
+                        $('#c_address').val(currentAddr + '\n' + addr + mapLink);
+                    } else {
+                        $('#c_address').val(addr + mapLink);
+                    }
+                    btn.html(oldHtml).prop('disabled', false);
+                    Swal.fire('Thành công', 'Đã lấy được vị trí của bạn!', 'success');
+                },
+                error: function() {
+                    let mapLink = `[Tọa độ GPS: https://maps.google.com/?q=${lat},${lng}]`;
+                    $('#c_address').val((currentAddr ? currentAddr + '\n' : '') + mapLink);
+                    btn.html(oldHtml).prop('disabled', false);
+                }
+            });
+        }, function(error) {
+            let btn = $('#btnGPS');
+            btn.html('<i class="fa-solid fa-location-crosshairs"></i>').prop('disabled', false);
+            Swal.fire('Lỗi', 'Không thể lấy vị trí. Vui lòng cho phép quyền truy cập vị trí trên trình duyệt!', 'error');
+        }, { timeout: 10000 });
+    } else {
+        Swal.fire('Lỗi', 'Trình duyệt của bạn không hỗ trợ định vị GPS.', 'error');
+    }
+}
 </script>
 
 <style>

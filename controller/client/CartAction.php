@@ -88,7 +88,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         $phone = $_POST['phone'] ?? '';
         $address = $_POST['address'] ?? '';
         $note = $_POST['note'] ?? '';
-
+        $payment_method = $_POST['payment_method'] ?? 'COD';
         $vat_requested = isset($_POST['vat_requested']) ? (int)$_POST['vat_requested'] : 0;
 
         if(empty($name) || empty($phone) || empty($address)) {
@@ -112,6 +112,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             'user_id' => $user_id,
             'total_amount' => $total_amount,
             'status' => 'pending',
+            'payment_method' => $payment_method,
             'customer_name' => $name,
             'phone' => $phone,
             'address' => $address,

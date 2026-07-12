@@ -85,7 +85,10 @@ $services = array(
                                 <div class="cat"><?= htmlspecialchars($category) ?></div>
                                 <div class="name" title="<?= htmlspecialchars($name) ?>"><?= htmlspecialchars($name) ?></div>
                                 <div class="price"><?= number_format($price, 0, ',', '.') ?>đ</div>
-                                <button onclick="addToCart(<?= $p['id'] ?>)" class="btn accent" style="width: 100%; padding: 8px; margin-top: 10px; font-size: 14px;"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+                                    <button onclick="addToCart(<?= $p['id'] ?>)" class="btn outline" style="width: 100%; padding: 8px; font-size: 13px; border-color: rgba(255,255,255,0.2);"><i class="fa-solid fa-cart-plus"></i> Thêm giỏ</button>
+                                    <button onclick="buyNow(<?= $p['id'] ?>)" class="btn accent" style="width: 100%; padding: 8px; font-size: 13px;"><i class="fa-solid fa-bolt"></i> Mua Ngay</button>
+                                </div>
                             </div>
                         </article>
                     <?php endforeach; ?>
