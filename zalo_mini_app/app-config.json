@@ -12,7 +12,7 @@
     "index.html"
   ],
   "pages": [
-    "/"
+    "index"
   ],
   "networkTimeout": {
     "request": 30000,
