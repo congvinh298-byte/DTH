@@ -95,7 +95,14 @@ function loadCart() {
                                 <div style="flex-grow: 1;">
                                     <h4 style="margin: 0 0 5px;">${item.name}</h4>
                                     <div style="color: var(--c-yellow); font-weight: bold; margin-bottom: 5px;">${priceFormat}đ</div>
-                                    <div style="font-size: 13px; color: #94a3b8;">Số lượng: ${item.quantity}</div>
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                                        <span style="font-size: 13px; color: #94a3b8;">Số lượng:</span>
+                                        <div style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden;">
+                                            <button onclick="updateQty(${item.id}, ${item.quantity - 1})" style="background: transparent; color: white; border: none; padding: 4px 10px; cursor: pointer;">-</button>
+                                            <span style="padding: 4px 10px; font-weight: bold; border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); font-size: 13px;">${item.quantity}</span>
+                                            <button onclick="updateQty(${item.id}, ${item.quantity + 1})" style="background: transparent; color: white; border: none; padding: 4px 10px; cursor: pointer;">+</button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div style="font-weight: 900; color: var(--c-cyan);">
                                     ${new Intl.NumberFormat('vi-VN').format(subTotal)}đ
@@ -109,6 +116,22 @@ function loadCart() {
                     $('#cartTotalPrice').text(new Intl.NumberFormat('vi-VN').format(total) + 'đ');
                 }
             } catch(e) {}
+        }
+    });
+}
+
+function updateQty(id, qty) {
+    if (qty < 1) {
+        removeItem(id);
+        return;
+    }
+    $.ajax({
+        url: '/controller/client/CartAction.php',
+        method: 'POST',
+        data: { action: 'update_qty', id: id, qty: qty },
+        success: function(r) {
+            loadCart();
+            if(typeof updateCartCount === "function") updateCartCount();
         }
     });
 }
