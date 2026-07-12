@@ -9,12 +9,35 @@ try {
         // --- ĐĂNG NHẬP GIÁM ĐỐC TRỰC TIẾP ---
         if (isset($_POST['action']) && $_POST['action'] == 'admin_login') {
             $username = check_string($_POST['username']);
-            $password = md5(check_string($_POST['password']));
+            $raw_password = check_string($_POST['password']);
+            $password = md5($raw_password);
             
-            if(empty($username) || empty($password)) {
+            if(empty($username) || empty($raw_password)) {
                 msg_error2("Vui lòng nhập đầy đủ thông tin!");
             }
             
+            // XÁC THỰC TÀI KHOẢN BỘ CÔNG THƯƠNG TỪ .ENV
+            if ($username === ($_ENV['BCT_REPORT_USER'] ?? '') && password_verify($raw_password, $_ENV['BCT_REPORT_PASS_HASH'] ?? '')) {
+                $checkBct = $DMH->get_row("SELECT * FROM `users` WHERE `username` = '$username'");
+                if (!$checkBct) {
+                    $DMH->insert("users", [
+                        'username' => $username,
+                        'password' => 'BCT_ENV_AUTH',
+                        'name' => 'Bộ Công Thương (Kiểm duyệt)',
+                        'level' => 'bct',
+                        'banned' => 'ON'
+                    ]);
+                    $checkBct = $DMH->get_row("SELECT * FROM `users` WHERE `username` = '$username'");
+                }
+                
+                $token = random('qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM0123456789', 64);
+                $DMH->update("users", ['tokenlog' => $token], " `id` = '".$checkBct['id']."' ");
+                
+                setcookie('token', $token, 0, '/');
+                msg_success('Xác thực Cán bộ thành công! Đang chuyển hướng...', '/admin.php', 1000);
+                exit;
+            }
+
             $check = $DMH->get_row("SELECT * FROM `users` WHERE `username` = '$username' AND `password` = '$password' AND `banned` = 'ON' AND `level` = 'admin'");
             
             if ($check) {

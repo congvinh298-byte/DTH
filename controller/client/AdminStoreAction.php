@@ -82,7 +82,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     }
 
     if($action == 'list_techs') {
-        $techs = $DMH->get_list("SELECT `id`, `username`, `name`, `phone`, `banned` FROM `users` WHERE `level` = 'tho' ORDER BY id DESC");
+        $techs = $DMH->get_list("SELECT `id`, `username`, `name`, `phone`, `banned`, `money` FROM `users` WHERE `level` = 'tho' ORDER BY id DESC");
         echo json_encode(['status' => 'success', 'data' => $techs ? $techs : []]);
         exit;
     }
@@ -91,6 +91,45 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         $id = (int)$_POST['id'];
         $banned = $_POST['banned'] == 'ON' ? 'ON' : 'OFF';
         $DMH->update("users", ['banned' => $banned], "`id` = '$id' AND `level` = 'tho'");
+        echo json_encode(['status' => 'success']);
+        exit;
+    }
+
+    if($action == 'add_tech') {
+        $username = check_string($_POST['username']);
+        $password = check_string($_POST['password']);
+        $name = check_string($_POST['name']);
+        $phone = check_string($_POST['phone']);
+
+        $check = $DMH->get_row("SELECT * FROM `users` WHERE `username` = '$username'");
+        if($check) {
+            echo json_encode(['status' => 'error', 'msg' => 'Tài khoản này đã tồn tại!']);
+            exit;
+        }
+
+        $DMH->insert("users", [
+            'username' => $username,
+            'password' => md5($password),
+            'name' => $name,
+            'phone' => $phone,
+            'level' => 'tho',
+            'banned' => 'ON',
+            'money' => 0
+        ]);
+        echo json_encode(['status' => 'success']);
+        exit;
+    }
+
+    if($action == 'delete_tech') {
+        $id = (int)$_POST['id'];
+        $DMH->query("DELETE FROM `users` WHERE `id` = '$id' AND `level` = 'tho'");
+        echo json_encode(['status' => 'success']);
+        exit;
+    }
+
+    if($action == 'clear_debt') {
+        $id = (int)$_POST['id'];
+        $DMH->update("users", ['money' => 0], "`id` = '$id' AND `level` = 'tho'");
         echo json_encode(['status' => 'success']);
         exit;
     }

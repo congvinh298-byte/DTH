@@ -44,7 +44,7 @@ $services = array(
             <div class="hero-main">
                 <div class="blob"></div>
                 <h1>Điện Máy Hiếu</h1>
-                <p>Hệ sinh thái bán lẻ và dịch vụ sửa chữa Điện Máy, Điện Lạnh, Điện Tử uy tín số 1 tại khu vực miền Tây. Phục vụ tận tâm, nhanh chóng trong bán kính 15 km tính từ Chợ Lấp Vò.</p>
+                <p>Hệ sinh thái bán lẻ, dịch vụ sửa chữa, in mô hình 3D dựa trên nền tảng công nghệ số tư nhân do chính công ty phát hành.</p>
                 <div class="hero-actions">
                     <a class="btn light" href="#products"><i class="fa-solid fa-shopping-cart"></i> Khám phá Sản phẩm</a>
                     <a class="btn accent" href="#goi-tho"><i class="fa-solid fa-tools"></i> Đặt lịch Gọi Thợ</a>
@@ -450,5 +450,268 @@ function addToCart(productId) {
 <div style="text-align: center; margin: 40px 0 20px; position: relative; z-index: 5;">
     <a href="/login.php" class="btn dark" style="padding: 10px 24px; font-size: 14px; border: 1px solid rgba(15,23,42,0.1);"><i class="fa-solid fa-user-gear"></i> Khu Vực Dành Cho Thợ (Portal)</a>
 </div>
+
+<!-- ============================================== -->
+<!-- HỒ SƠ PHÁP LÝ DÀNH CHO BỘ CÔNG THƯƠNG (BCT)     -->
+<!-- ============================================== -->
+<section id="bct-policies" style="background: #0f172a; padding: 80px 20px; border-top: 1px solid rgba(255,255,255,0.05); font-family: 'Inter', sans-serif;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        
+        <div style="text-align: center; margin-bottom: 50px;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: rgba(56, 189, 248, 0.1); border-radius: 50%; color: #38bdf8; font-size: 28px; margin-bottom: 20px;">
+                <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+            <h2 style="font-size: 36px; font-weight: 900; color: #f8fafc; letter-spacing: -1px; margin: 0 0 10px 0;">THÔNG TIN PHÁP LÝ</h2>
+            <p style="color: #94a3b8; font-size: 16px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                Hệ thống Điện Máy Hiếu cam kết tuân thủ đầy đủ quy định của Bộ Công Thương về Thương Mại Điện Tử. Quý khách và Cán bộ có thể tra cứu nhanh các chính sách hoạt động dưới đây.
+            </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 320px 1fr; gap: 40px; align-items: start;">
+            
+            <!-- Left: Tab Buttons -->
+            <div id="bct-tabs" style="display: flex; flex-direction: column; gap: 8px; position: sticky; top: 100px;">
+                <button class="bct-tab-btn active" data-target="pol-1"><i class="fa-solid fa-shield-halved"></i> Chính sách bảo mật</button>
+                <button class="bct-tab-btn" data-target="pol-2"><i class="fa-solid fa-gavel"></i> Giải quyết khiếu nại</button>
+                <button class="bct-tab-btn" data-target="pol-3"><i class="fa-solid fa-tag"></i> Chính sách giá</button>
+                <button class="bct-tab-btn" data-target="pol-4"><i class="fa-solid fa-credit-card"></i> Chính sách thanh toán</button>
+                <button class="bct-tab-btn" data-target="pol-5"><i class="fa-solid fa-ban"></i> Điều kiện & hạn chế</button>
+                <button class="bct-tab-btn" data-target="pol-6"><i class="fa-solid fa-truck-fast"></i> Giao hàng & Đổi trả</button>
+                <button class="bct-tab-btn" data-target="pol-7"><i class="fa-solid fa-headset"></i> Hỗ trợ trực tuyến</button>
+            </div>
+
+            <!-- Right: Tab Contents -->
+            <div id="bct-contents" style="background: #1e293b; border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+                
+                <!-- 1. Bảo Mật -->
+                <div class="bct-pane active" id="pol-1">
+                    <h3>1. Chính Sách Bảo Mật Thông Tin (Theo Nghị định 13/2023/NĐ-CP & NĐ 248/2026/NĐ-CP)</h3>
+                    <p><strong>a. Mục đích thu thập & Định danh:</strong> Việc thu thập dữ liệu trên website Điện Máy Hiếu bao gồm: Tên, email, số điện thoại, địa chỉ khách hàng. Theo quy định mới, các tài khoản Đối tác (Thợ kỹ thuật) bắt buộc phải thực hiện định danh qua hệ thống VNeID hoặc đối chiếu CCCD nhằm đảm bảo an toàn tuyệt đối cho khách hàng khi giao dịch tại nhà.</p>
+                    <p><strong>b. Phạm vi sử dụng:</strong> Hệ thống sử dụng thông tin khách hàng cung cấp để liên hệ xác nhận đơn hàng, điều phối thợ kỹ thuật, gửi thông báo và giải quyết khiếu nại.</p>
+                    <p><strong>c. Quyền của Chủ thể dữ liệu:</strong> Khách hàng có toàn quyền yêu cầu Điện Máy Hiếu cung cấp bản sao dữ liệu cá nhân, yêu cầu chỉnh sửa, hoặc rút lại sự đồng ý thu thập dữ liệu và yêu cầu xóa bỏ hoàn toàn tài khoản bằng cách liên hệ CSKH.</p>
+                    <p><strong>d. Cam kết bảo mật:</strong> Không sử dụng, không chuyển giao hay tiết lộ cho bên thứ 3 khi không có sự cho phép, trừ trường hợp cơ quan pháp luật yêu cầu.</p>
+                </div>
+
+                <!-- 2. Khiếu Nại -->
+                <div class="bct-pane" id="pol-2">
+                    <h3>2. Phương Thức Tiếp Nhận & Giải Quyết Khiếu Nại</h3>
+                    <p>Điện Máy Hiếu hoạt động dưới mô hình "Nền tảng TMĐT tích hợp" và chịu trách nhiệm liên đới trong việc bảo vệ quyền lợi người tiêu dùng theo Luật Bảo vệ quyền lợi người tiêu dùng 2023 và NĐ 248/2026/NĐ-CP.</p>
+                    <div class="bct-box">
+                        <strong>Quy trình 3 bước giải quyết khiếu nại:</strong>
+                        <ul>
+                            <li><strong>Bước 1 (Tiếp nhận):</strong> Khách hàng phản ánh qua Hotline: 0979.553.289 hoặc Chatbot Anh thiên Openclaw trên website.</li>
+                            <li><strong>Bước 2 (Xử lý):</strong> Bộ phận CSKH xác minh trong vòng 24 giờ. Nếu thiệt hại phát sinh do lỗi hàng hóa hoặc hành vi của thợ thuộc hệ thống quản lý, Điện Máy Hiếu cam kết đứng ra bồi thường và xử lý triệt để.</li>
+                            <li><strong>Bước 3 (Khắc phục):</strong> Liên hệ lại khách hàng để đưa ra phương án đền bù, đổi trả hoặc cử thợ khác đến khắc phục hoàn toàn miễn phí (áp dụng trong 48 giờ).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 3. Chính sách Giá -->
+                <div class="bct-pane" id="pol-3">
+                    <h3>3. Chính Sách Giá Cả & Dịch Vụ</h3>
+                    <p>Chúng tôi cam kết tính minh bạch tuyệt đối về giá cả đối với toàn bộ hàng hóa và dịch vụ trên nền tảng.</p>
+                    <ul>
+                        <li><strong>Giá Sản Phẩm (Hàng hóa & In 3D):</strong> Giá niêm yết trên website là giá cuối cùng đã bao gồm Thuế Giá trị gia tăng (VAT). Giá này chưa bao gồm phí vận chuyển (nếu có).</li>
+                        <li><strong>Giá Dịch Vụ Gọi Thợ:</strong> Bảng giá dịch vụ gọi thợ (ví dụ: Vệ sinh máy lạnh 150.000đ) là giá tiền công trọn gói cho một hạng mục cơ bản.</li>
+                        <li><strong>Phát sinh linh kiện:</strong> Trong trường hợp sửa chữa cần thay thế linh kiện, vật tư, Thợ kỹ thuật bắt buộc phải báo giá cụ thể cho khách hàng và chỉ được tiến hành sửa chữa khi khách hàng đồng ý. Khách hàng có quyền từ chối nếu thấy giá vật tư không hợp lý mà không phải trả bất kỳ khoản phí khảo sát nào.</li>
+                    </ul>
+                </div>
+
+                <!-- 4. Thanh toán -->
+                <div class="bct-pane" id="pol-4">
+                    <h3>4. Các Phương Thức Thanh Toán</h3>
+                    <p>Nhằm mang đến sự tiện lợi tối đa cho quý khách, Điện Máy Hiếu áp dụng 2 hình thức thanh toán linh hoạt, an toàn và có đầy đủ chứng từ:</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                        <div class="bct-box" style="margin:0;">
+                            <i class="fa-solid fa-money-bill-wave" style="font-size:24px; color:#10b981; margin-bottom:10px; display:block;"></i>
+                            <strong>Thanh toán Tiền Mặt (COD)</strong>
+                            <p style="font-size:14px; margin-top:5px; color:#94a3b8;">Khách hàng thanh toán trực tiếp cho Thợ Kỹ Thuật sau khi đã nghiệm thu công việc sửa chữa hoàn tất, hoặc thanh toán cho Shipper khi nhận hàng.</p>
+                        </div>
+                        <div class="bct-box" style="margin:0;">
+                            <i class="fa-solid fa-building-columns" style="font-size:24px; color:#3b82f6; margin-bottom:10px; display:block;"></i>
+                            <strong>Chuyển khoản Ngân Hàng (Mã QR)</strong>
+                            <p style="font-size:14px; margin-top:5px; color:#94a3b8;">Chuyển khoản qua mã VietQR hoặc Internet Banking vào tài khoản công ty. Áp dụng cho các đơn hàng lớn hoặc khách hàng thanh toán từ xa.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Điều kiện hạn chế -->
+                <div class="bct-pane" id="pol-5">
+                    <h3>5. Điều Kiện & Hạn Chế Cung Cấp Dịch Vụ</h3>
+                    <p>Để đảm bảo tuân thủ pháp luật và chất lượng dịch vụ, chúng tôi áp dụng các quy định sau:</p>
+                    <ul>
+                        <li><strong>Giới hạn địa lý (Vùng phục vụ):</strong> Dịch vụ Gọi Thợ tận nơi hiện tại chỉ áp dụng trong phạm vi <strong>Bán kính 15km tính từ Chợ Lấp Vò, Tỉnh Đồng Tháp</strong>. Các đơn hàng nằm ngoài khu vực này, hệ thống sẽ tự động từ chối hoặc thỏa thuận phụ thu phí di chuyển.</li>
+                        <li><strong>Tư vấn Tự động (AI Chatbot):</strong> Chatbot "Anh thiên Openclaw" sử dụng trí tuệ nhân tạo để hỗ trợ nhanh 24/7. Các thông tin tư vấn kỹ thuật từ Chatbot mang tính chất tham khảo. Trong trường hợp phức tạp, quyết định cuối cùng phải dựa trên khảo sát thực tế của Thợ có chuyên môn.</li>
+                        <li><strong>Hạn chế độ tuổi:</strong> Người mua hàng và đặt lịch yêu cầu dịch vụ phải từ đủ 15 tuổi trở lên. Trẻ em dưới 15 tuổi cần có sự giám sát của người lớn khi thợ đến làm việc tại nhà.</li>
+                    </ul>
+                </div>
+
+                <!-- 6. Giao hàng Đổi trả -->
+                <div class="bct-pane" id="pol-6">
+                    <h3>6. Chính Sách Giao Hàng, Đổi Trả & Hoàn Tiền</h3>
+                    <p>Chúng tôi luôn nỗ lực mang đến sự an tâm tuyệt đối khi khách hàng sử dụng dịch vụ và mua sắm.</p>
+                    <div class="bct-box">
+                        <strong style="color:#f8fafc;"><i class="fa-solid fa-truck-fast"></i> Giao hàng (Hàng hóa):</strong>
+                        <p style="font-size:14.5px; margin-top:5px;">Thời gian giao hàng chuẩn trong khu vực là 2-4 giờ kể từ lúc chốt đơn. Các sản phẩm In 3D cần thời gian chế tác sẽ được hẹn cụ thể (từ 1-3 ngày). Phí vận chuyển áp dụng biểu phí tiêu chuẩn của các đơn vị GHTK, Viettel Post.</p>
+                    </div>
+                    <div class="bct-box" style="margin-top:15px;">
+                        <strong style="color:#f8fafc;"><i class="fa-solid fa-rotate-left"></i> Đổi Trả & Hoàn Tiền:</strong>
+                        <p style="font-size:14.5px; margin-top:5px;">- <strong>Sản phẩm vật lý:</strong> 1 đổi 1 trong vòng 7 ngày nếu có lỗi do nhà sản xuất. Sản phẩm đổi trả phải còn nguyên tem, mác, không bị rơi vỡ hay vào nước.<br>- <strong>Dịch vụ sửa chữa:</strong> Bảo hành linh kiện thay thế theo tiêu chuẩn của hãng (thường từ 1-6 tháng tùy linh kiện). Hoàn tiền 100% nếu thợ sửa không khắc phục được lỗi như đã cam kết ban đầu.</p>
+                    </div>
+                </div>
+
+                <!-- 7. Hỗ trợ -->
+                <div class="bct-pane" id="pol-7">
+                    <h3>7. Hình Thức Hỗ Trợ Trực Tuyến</h3>
+                    <p>Điện Máy Hiếu ứng dụng công nghệ đa kênh để hỗ trợ khách hàng nhanh nhất có thể:</p>
+                    <ul style="font-size:16px;">
+                        <li style="margin-bottom: 15px;"><strong>Chatbot Trí Tuệ Nhân Tạo (Anh thiên Openclaw):</strong> Hoạt động 24/7 ngay trên góc phải màn hình website, giải đáp các thắc mắc cơ bản về dịch vụ và hướng dẫn sử dụng.</li>
+                        <li style="margin-bottom: 15px;"><strong>Hotline hỗ trợ khẩn cấp:</strong> 0939.354.937 (Hoạt động từ 07:30 đến 18:00). Dành cho các khiếu nại, phản ánh chất lượng hoặc cần điều thợ gấp.</li>
+                        <li style="margin-bottom: 15px;"><strong>Zalo OA / Facebook Messenger:</strong> Tích hợp liên kết tại chân trang, giúp khách hàng gửi hình ảnh, video tình trạng hỏng hóc của thiết bị để thợ chẩn đoán từ xa trước khi đến.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+/* STYLE DÀNH CHO CÁN BỘ BCT (ADHD & OCD FRIENDLY) */
+.bct-tab-btn {
+    width: 100%;
+    text-align: left;
+    padding: 18px 24px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    color: #94a3b8;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.bct-tab-btn i {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+    opacity: 0.7;
+    transition: all 0.3s;
+}
+.bct-tab-btn:hover {
+    background: rgba(255,255,255,0.05);
+    color: #e2e8f0;
+    border-color: rgba(255,255,255,0.1);
+    transform: translateX(4px);
+}
+.bct-tab-btn.active {
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.05) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-left: 4px solid #38bdf8;
+    color: #38bdf8;
+    box-shadow: 0 10px 20px -10px rgba(56,189,248,0.2);
+}
+.bct-tab-btn.active i {
+    opacity: 1;
+    color: #38bdf8;
+}
+
+.bct-pane {
+    display: none;
+    animation: fadeInBCT 0.5s ease forwards;
+}
+.bct-pane.active {
+    display: block;
+}
+@keyframes fadeInBCT {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.bct-pane h3 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #f8fafc;
+    margin: 0 0 24px 0;
+    padding-bottom: 16px;
+    border-bottom: 2px solid rgba(255,255,255,0.05);
+}
+.bct-pane p {
+    font-size: 15.5px;
+    line-height: 1.8;
+    color: #cbd5e1;
+    margin-bottom: 16px;
+}
+.bct-pane ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+.bct-pane ul li {
+    position: relative;
+    padding-left: 24px;
+    font-size: 15.5px;
+    line-height: 1.8;
+    color: #cbd5e1;
+    margin-bottom: 12px;
+}
+.bct-pane ul li::before {
+    content: "•";
+    color: #38bdf8;
+    font-size: 20px;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+    top: -2px;
+}
+
+.bct-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 24px;
+}
+.bct-box strong {
+    color: #f8fafc !important;
+}
+
+@media (max-width: 900px) {
+    #bct-policies > div > div { grid-template-columns: 1fr; }
+    #bct-tabs { flex-direction: row; overflow-x: auto; position: static; padding-bottom: 10px; }
+    .bct-tab-btn { white-space: nowrap; width: auto; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bctBtns = document.querySelectorAll('.bct-tab-btn');
+    const bctPanes = document.querySelectorAll('.bct-pane');
+
+    bctBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            bctBtns.forEach(b => b.classList.remove('active'));
+            bctPanes.forEach(p => p.classList.remove('active'));
+            
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.target).classList.add('active');
+        });
+    });
+
+    // Check URL hash to open specific tab
+    const hash = window.location.hash;
+    if(hash && hash.startsWith('#pol-')) {
+        const targetBtn = document.querySelector(`.bct-tab-btn[data-target="${hash.substring(1)}"]`);
+        if(targetBtn) {
+            targetBtn.click();
+            setTimeout(() => {
+                document.getElementById('bct-policies').scrollIntoView({behavior: 'smooth'});
+            }, 100);
+        }
+    }
+});
+</script>
 
 <?php require_once(__DIR__."/pages/client/Footer.php"); ?>

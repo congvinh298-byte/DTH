@@ -1,0 +1,23 @@
+{
+  "app": {
+    "appId": "1271764499975436667",
+    "title": "Điện Máy Hiếu",
+    "headerTitle": "Điện Máy Hiếu",
+    "headerColor": "#0f172a",
+    "textColor": "#ffffff",
+    "statusBarColor": "#0f172a",
+    "actionBarHidden": true
+  },
+  "list": [
+    "index.html"
+  ],
+  "pages": [
+    "/"
+  ],
+  "networkTimeout": {
+    "request": 30000,
+    "connectSocket": 30000,
+    "uploadFile": 30000,
+    "downloadFile": 30000
+  }
+}

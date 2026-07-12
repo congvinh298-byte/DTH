@@ -222,6 +222,9 @@ require_once(__DIR__."/pages/client/Head.php");
         <div class="menu-item" onclick="switchTab('tab-qr-baohanh', this)">
             <i class="fa-solid fa-shield-halved" style="color: var(--c-green);"></i> QR Bảo Hành
         </div>
+        <div class="menu-item" onclick="switchTab('tab-bct', this)">
+            <i class="fa-solid fa-file-contract" style="color: #60a5fa;"></i> Hồ Sơ BCT
+        </div>
         <div class="menu-item" onclick="switchTab('tab-thongke', this)">
             <i class="fa-solid fa-chart-line" style="color: #cbd5e1;"></i> Thống Kê
         </div>
@@ -330,7 +333,10 @@ require_once(__DIR__."/pages/client/Head.php");
         <!-- TAB: QUẢN LÝ THỢ -->
         <div id="tab-technicians" class="tab-content">
             <div class="card">
-                <div class="card-title"><i class="fa-solid fa-user-gear"></i> Quản Lý Thợ Kỹ Thuật</div>
+                <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div><i class="fa-solid fa-user-gear"></i> Quản Lý Thợ Kỹ Thuật</div>
+                    <button onclick="$('#addTechModal').css('display', 'flex')" class="btn" style="background: var(--c-green); color: white; padding: 8px 15px;"><i class="fa-solid fa-plus"></i> Thêm Thợ</button>
+                </div>
                 <div style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse; color: #fff; text-align: left;">
                         <thead>
@@ -339,12 +345,13 @@ require_once(__DIR__."/pages/client/Head.php");
                                 <th style="padding: 12px;">Tên Thợ</th>
                                 <th style="padding: 12px;">Tài khoản</th>
                                 <th style="padding: 12px;">SĐT / Vùng</th>
-                                <th style="padding: 12px; width: 150px;">Trạng thái</th>
-                                <th style="padding: 12px; width: 120px;">Hành động</th>
+                                <th style="padding: 12px;">Dư nợ (Phí)</th>
+                                <th style="padding: 12px; width: 120px;">Trạng thái</th>
+                                <th style="padding: 12px; width: 180px;">Hành động</th>
                             </tr>
                         </thead>
                         <tbody id="techTableBody">
-                            <tr><td colspan="6" style="padding: 20px; text-align: center; color: var(--admin-muted);">Đang tải dữ liệu...</td></tr>
+                            <tr><td colspan="7" style="padding: 20px; text-align: center; color: var(--admin-muted);">Đang tải dữ liệu...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -512,6 +519,65 @@ require_once(__DIR__."/pages/client/Head.php");
         </div>
         
         <!-- TAB 4: THỐNG KÊ -->
+        <!-- TAB BCT -->
+        <div id="tab-bct" class="tab-content">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div>
+                        <div class="card-title" style="margin-bottom: 5px;"><i class="fa-solid fa-file-contract"></i> Hồ Sơ Đăng Ký Bộ Công Thương</div>
+                        <p style="color: #94a3b8; margin: 0;">Tải về các file chính sách định dạng Word (.doc) để in ra, đóng dấu và nộp cho BCT.</p>
+                    </div>
+                    <a href="/controller/admin/ExportAllPolicies.php" target="_blank" class="btn" style="background: var(--c-purple); color: white; padding: 12px 24px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; font-weight: bold; border-radius: 8px;"><i class="fa-solid fa-print"></i> In Toàn Bộ (7 File)</a>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px; text-align: center;">STT</th>
+                            <th>Tên tài liệu</th>
+                            <th style="width: 150px; text-align: right;">Tệp đính kèm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold;">1</td>
+                            <td>Chính sách bảo mật <span style="color: var(--c-rose);">(*)</span></td>
+                            <td style="text-align: right;"><a href="/controller/admin/ExportPolicy.php?id=1" target="_blank" class="btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; text-decoration: none; display: inline-block;"><i class="fa-solid fa-download"></i> Download</a></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold;">2</td>
+                            <td>Phương thức tiếp nhận và giải quyết phản ánh, yêu cầu, khiếu nại <span style="color: var(--c-rose);">(*)</span></td>
+                            <td style="text-align: right;"><a href="/controller/admin/ExportPolicy.php?id=2" target="_blank" class="btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; text-decoration: none; display: inline-block;"><i class="fa-solid fa-download"></i> Download</a></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold;">3</td>
+                            <td>Chính sách giá <span style="color: var(--c-rose);">(*)</span></td>
+                            <td style="text-align: right;"><a href="/controller/admin/ExportPolicy.php?id=3" target="_blank" class="btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; text-decoration: none; display: inline-block;"><i class="fa-solid fa-download"></i> Download</a></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold;">4</td>
+                            <td>Chính sách về thanh toán <span style="color: var(--c-rose);">(*)</span></td>
+                            <td style="text-align: right;"><a href="/controller/admin/ExportPolicy.php?id=4" target="_blank" class="btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; text-decoration: none; display: inline-block;"><i class="fa-solid fa-download"></i> Download</a></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold;">5</td>
+                            <td>Các điều kiện hoặc hạn chế trong việc cung cấp hàng hóa hoặc dịch vụ trên nền tảng <span style="color: var(--c-rose);">(*)</span></td>
+                            <td style="text-align: right;"><a href="/controller/admin/ExportPolicy.php?id=5" target="_blank" class="btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; text-decoration: none; display: inline-block;"><i class="fa-solid fa-download"></i> Download</a></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold;">6</td>
+                            <td>Chính sách giao hàng, đổi trả và hoàn tiền (áp dụng cho hàng hóa) hoặc phương thức cung cấp dịch vụ, chính sách chấm dứt dịch vụ và hoàn tiền (áp dụng cho dịch vụ) <span style="color: var(--c-rose);">(*)</span></td>
+                            <td style="text-align: right;"><a href="/controller/admin/ExportPolicy.php?id=6" target="_blank" class="btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; text-decoration: none; display: inline-block;"><i class="fa-solid fa-download"></i> Download</a></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold;">7</td>
+                            <td>Hình thức hỗ trợ trực tuyến</td>
+                            <td style="text-align: right;"><a href="/controller/admin/ExportPolicy.php?id=7" target="_blank" class="btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; text-decoration: none; display: inline-block;"><i class="fa-solid fa-download"></i> Download</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <div id="tab-thongke" class="tab-content">
             <div class="card">
                 <div class="card-title"><i class="fa-solid fa-chart-line"></i> Bảng Thống Kê Nhanh</div>
@@ -535,6 +601,38 @@ require_once(__DIR__."/pages/client/Head.php");
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Modal Thêm Thợ -->
+        <div id="addTechModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center;">
+            <form onsubmit="submitAddTech(event)" style="background: #1e293b; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; border: 1px solid var(--admin-border);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; color: #fb923c;">Thêm Thợ Mới</h3>
+                    <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 20px;" onclick="$('#addTechModal').hide()"></i>
+                </div>
+                
+                <div class="field" style="margin-bottom: 15px;">
+                    <label style="display:block; margin-bottom: 5px;">Tên hiển thị (Tên Thợ)</label>
+                    <input type="text" id="tech_name" required style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px;">
+                </div>
+                
+                <div class="field" style="margin-bottom: 15px;">
+                    <label style="display:block; margin-bottom: 5px;">Tên đăng nhập (Tài khoản)</label>
+                    <input type="text" id="tech_username" required style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px;">
+                </div>
+
+                <div class="field" style="margin-bottom: 15px;">
+                    <label style="display:block; margin-bottom: 5px;">Mật khẩu</label>
+                    <input type="text" id="tech_password" required style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px;">
+                </div>
+                
+                <div class="field" style="margin-bottom: 20px;">
+                    <label style="display:block; margin-bottom: 5px;">Số điện thoại</label>
+                    <input type="text" id="tech_phone" required style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px;">
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%; background: #fb923c; color: white; padding: 12px; font-weight: bold; font-size: 16px;">Tạo Tài Khoản</button>
+            </form>
         </div>
 
     </div>
@@ -837,7 +935,7 @@ function updateOrderStatus() {
 
 // --- QUẢN LÝ THỢ & ĐƠN GỌI THỢ ---
 function loadTechnicians() {
-    $('#techTableBody').html('<tr><td colspan="6" style="padding: 20px; text-align: center;">Đang tải dữ liệu...</td></tr>');
+    $('#techTableBody').html('<tr><td colspan="7" style="padding: 20px; text-align: center;">Đang tải dữ liệu...</td></tr>');
     $.ajax({
         url: "/controller/client/AdminStoreAction.php",
         method: "POST",
@@ -848,20 +946,27 @@ function loadTechnicians() {
                 if(res.status == 'success') {
                     let html = '';
                     if(res.data.length === 0) {
-                        html = '<tr><td colspan="6" style="padding: 20px; text-align: center;">Chưa có thợ nào</td></tr>';
+                        html = '<tr><td colspan="7" style="padding: 20px; text-align: center;">Chưa có thợ nào</td></tr>';
                     } else {
                         res.data.forEach(t => {
                             let banBadge = t.banned == 'ON' ? '<span style="color:var(--c-green); font-weight:bold;">Đang làm việc</span>' : '<span style="color:var(--c-rose); font-weight:bold;">Bị khóa</span>';
+                            let money = parseInt(t.money);
+                            let debtStr = money < 0 ? `<span style="color:var(--c-rose); font-weight:bold;">Nợ ${new Intl.NumberFormat('vi-VN').format(Math.abs(money))}đ</span> <button onclick="clearDebt(${t.id})" style="background:var(--c-green); border:none; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px; cursor:pointer; margin-left:5px;">Xóa nợ</button>` : `<span style="color:var(--c-green);">${new Intl.NumberFormat('vi-VN').format(money)}đ</span>`;
+
                             html += `
                             <tr style="border-bottom: 1px solid var(--admin-border);">
                                 <td style="padding: 12px; color:#fb923c; font-weight:bold;">#${t.id}</td>
                                 <td style="padding: 12px; font-weight:bold;">${t.name}</td>
                                 <td style="padding: 12px; color:var(--admin-muted);">${t.username}</td>
                                 <td style="padding: 12px;">${t.phone || 'Chưa cập nhật'}</td>
+                                <td style="padding: 12px;">${debtStr}</td>
                                 <td style="padding: 12px;">${banBadge}</td>
-                                <td style="padding: 12px;">
+                                <td style="padding: 12px; display: flex; gap: 5px;">
                                     <button onclick="toggleBanTech(${t.id}, '${t.banned}')" style="background:${t.banned == 'ON' ? 'var(--c-rose)' : 'var(--c-green)'}; border:none; color:#fff; font-weight:bold; padding:6px 12px; border-radius:6px; cursor:pointer;">
-                                        ${t.banned == 'ON' ? 'Khóa' : 'Mở khóa'}
+                                        ${t.banned == 'ON' ? 'Khóa' : 'Mở'}
+                                    </button>
+                                    <button onclick="deleteTech(${t.id})" style="background:#dc2626; border:none; color:#fff; font-weight:bold; padding:6px 12px; border-radius:6px; cursor:pointer;">
+                                        Xóa
                                     </button>
                                 </td>
                             </tr>`;
@@ -872,6 +977,56 @@ function loadTechnicians() {
             } catch(e) {}
         }
     });
+}
+
+function submitAddTech(e) {
+    e.preventDefault();
+    $.ajax({
+        url: "/controller/client/AdminStoreAction.php",
+        method: "POST",
+        data: {
+            action: 'add_tech',
+            name: $('#tech_name').val(),
+            username: $('#tech_username').val(),
+            password: $('#tech_password').val(),
+            phone: $('#tech_phone').val()
+        },
+        success: function(r) {
+            try {
+                let res = JSON.parse(r);
+                if(res.status == 'success') {
+                    showToast('Đã thêm thợ thành công', 'success');
+                    $('#addTechModal').hide();
+                    $('form')[1].reset(); // Reset form in modal 2
+                    loadTechnicians();
+                } else {
+                    Swal.fire('Lỗi', res.msg, 'error');
+                }
+            } catch(e) {}
+        }
+    });
+}
+
+function deleteTech(id) {
+    if(confirm("Xóa vĩnh viễn tài khoản thợ này? Hành động không thể hoàn tác!")) {
+        $.ajax({
+            url: "/controller/client/AdminStoreAction.php",
+            method: "POST",
+            data: { action: 'delete_tech', id: id },
+            success: function(r) { loadTechnicians(); showToast('Đã xóa thợ', 'success'); }
+        });
+    }
+}
+
+function clearDebt(id) {
+    if(confirm("Xác nhận thợ đã thanh toán tiền và xóa nợ?")) {
+        $.ajax({
+            url: "/controller/client/AdminStoreAction.php",
+            method: "POST",
+            data: { action: 'clear_debt', id: id },
+            success: function(r) { loadTechnicians(); showToast('Đã xóa nợ thành công', 'success'); }
+        });
+    }
 }
 
 function toggleBanTech(id, currentStatus) {

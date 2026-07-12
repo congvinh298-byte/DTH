@@ -21,6 +21,11 @@ try {
     $id = (int)$_POST['id'];
     $my_id = $getUser['id'];
 
+    if ((int)$getUser['money'] < 0) {
+        echo json_encode(['status' => 'error', 'msg' => 'Bạn đang nợ phí nền tảng! Vui lòng thanh toán cho Giám đốc để nhận đơn mới.']);
+        exit;
+    }
+
     // Kiểm tra đơn hàng có tồn tại và đang ở trạng thái CHO_XU_LY không
     $check = $DMH->get_row("SELECT * FROM `dat_lich` WHERE `id` = '$id' AND `trangthai` = 'CHO_XU_LY'");
     

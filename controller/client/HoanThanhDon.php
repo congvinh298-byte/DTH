@@ -33,7 +33,9 @@ try {
             ], " `id` = '$id' ");
             
             if($update) {
-                echo json_encode(['status' => 'success', 'msg' => 'Tuyệt vời! Bạn đã hoàn thành đơn hàng này.']);
+                // Trừ phí nền tảng 20,000 VND
+                $DMH->tru("users", "money", 20000, " `id` = '$my_id' ");
+                echo json_encode(['status' => 'success', 'msg' => 'Tuyệt vời! Bạn đã hoàn thành đơn hàng này. Trừ 20,000đ phí nền tảng.']);
             } else {
                 echo json_encode(['status' => 'error', 'msg' => 'Có lỗi khi cập nhật CSDL, vui lòng thử lại!']);
             }

@@ -40,14 +40,19 @@
         </div>
         <div>
             <h3>Liên hệ</h3>
-            <p>Hotline: 0939.354.937</p>
+            <p>Hotline: 0979.553.289</p>
+            <p>Email: congvinh298@gmail.com</p>
             <p>Mua hàng và gọi thợ kỹ thuật, đặt in 3D</p>
         </div>
         <div>
             <h3>Thông tin pháp lý</h3>
-            <p><a href="/quy-che">Quy chế hoạt động</a></p>
-            <p><a href="/de-an">Đề án hoạt động</a></p>
-            <p><a href="/bao-mat">Chính sách bảo mật</a></p>
+            <p><a href="/#pol-1">Chính sách bảo mật</a></p>
+            <p><a href="/#pol-2">Giải quyết khiếu nại</a></p>
+            <p><a href="/#pol-3">Chính sách giá</a></p>
+            <p><a href="/#pol-4">Chính sách thanh toán</a></p>
+            <p><a href="/#pol-5">Điều kiện & hạn chế</a></p>
+            <p><a href="/#pol-6">Giao hàng & Đổi trả</a></p>
+            <p><a href="/#pol-7">Hỗ trợ trực tuyến</a></p>
         </div>
         <div>
             <h3>Truy cập nhanh</h3>
@@ -63,19 +68,23 @@
     
 <!-- CHATBOT ANH THIÊN OPENCLAW -->
 <style>
+:root {
+    --chat-cyan: #06b6d4;
+    --chat-purple: #a855f7;
+}
 #openclaw-chatbot { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
-#openclaw-btn { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--c-cyan), var(--c-purple)); color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); transition: transform 0.3s; animation: pulse 2s infinite; }
+#openclaw-btn { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--chat-cyan), var(--chat-purple)); color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); transition: transform 0.3s; animation: pulse 2s infinite; }
 #openclaw-btn:hover { transform: scale(1.1); }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(6, 182, 212, 0); } 100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); } }
-#openclaw-window { display: none; width: 350px; height: 500px; background: #1e293b; border-radius: 16px; border: 2px solid var(--c-cyan); box-shadow: 0 10px 25px rgba(0,0,0,0.5); flex-direction: column; overflow: hidden; position: absolute; bottom: 80px; right: 0; }
-#openclaw-header { background: var(--c-cyan); color: #0f172a; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 900; }
+#openclaw-window { display: none; width: 350px; height: 500px; background: #1e293b; border-radius: 16px; border: 2px solid var(--chat-cyan); box-shadow: 0 10px 25px rgba(0,0,0,0.5); flex-direction: column; overflow: hidden; position: absolute; bottom: 80px; right: 0; }
+#openclaw-header { background: var(--chat-cyan); color: #0f172a; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 900; }
 #openclaw-messages { flex-grow: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #0f172a; }
 .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.4; }
 .msg-bot { background: #334155; color: #fff; align-self: flex-start; border-bottom-left-radius: 0; }
-.msg-user { background: var(--c-purple); color: #fff; align-self: flex-end; border-bottom-right-radius: 0; }
+.msg-user { background: var(--chat-purple); color: #fff; align-self: flex-end; border-bottom-right-radius: 0; }
 #openclaw-input-area { display: flex; padding: 10px; background: #1e293b; border-top: 1px solid #334155; }
 #openclaw-input { flex-grow: 1; background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; outline: none; }
-#openclaw-send { background: var(--c-cyan); color: #000; border: none; padding: 10px 15px; margin-left: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+#openclaw-send { background: var(--chat-cyan); color: #000; border: none; padding: 10px 15px; margin-left: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
 </style>
 
 <div id="openclaw-chatbot">

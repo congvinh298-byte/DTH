@@ -232,7 +232,7 @@ function CheckVeri()
 function CheckAdmin()
 {
     global $my_level;
-    if($my_level != 'admin')
+    if($my_level != 'admin' && $my_level != 'bct')
     {
         return die('<script type="text/javascript">setTimeout(function(){ location.href = "'.BASE_URL('').'" }, 0);</script>');
     }
