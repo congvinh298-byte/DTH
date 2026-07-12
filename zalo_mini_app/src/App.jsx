@@ -1,20 +1,18 @@
 import React from 'react';
-import { App } from 'zmp-ui';
+import { Route } from 'react-router-dom';
+import { App, ZMPRouter, AnimationRoutes, SnackbarProvider } from 'zmp-ui';
+import HomePage from './pages/index';
 
 const MyApp = () => {
   return (
     <App>
-      <iframe 
-        src="https://dienmayhieu.com" 
-        style={{
-          width: '100vw',
-          height: '100vh',
-          border: 'none',
-          display: 'block'
-        }}
-        title="Điện Máy Hiếu"
-        allow="geolocation; microphone; camera"
-      />
+      <SnackbarProvider>
+        <ZMPRouter>
+          <AnimationRoutes>
+            <Route path="/" element={<HomePage />} />
+          </AnimationRoutes>
+        </ZMPRouter>
+      </SnackbarProvider>
     </App>
   );
 };
