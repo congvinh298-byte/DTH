@@ -1,4 +1,5 @@
 <?php
+error_reporting(0);
 define("IN_SITE", true);
 require_once(__DIR__."/../../core/config.php");
 require_once(__DIR__."/../../core/function.php");
@@ -74,6 +75,17 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         if(!$is_logged_in) exit;
         $id = (int)$_POST['id'];
         $DMH->query("DELETE FROM `store_carts` WHERE `id` = '$id' AND `user_id` = '$user_id'");
+        echo json_encode(['status' => 'success']);
+        exit;
+    }
+
+    if($action == 'update_qty') {
+        if(!$is_logged_in) exit;
+        $id = (int)$_POST['id'];
+        $qty = (int)$_POST['qty'];
+        if ($qty > 0) {
+            $DMH->query("UPDATE `store_carts` SET `quantity` = '$qty' WHERE `id` = '$id' AND `user_id` = '$user_id'");
+        }
         echo json_encode(['status' => 'success']);
         exit;
     }

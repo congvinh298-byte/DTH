@@ -53,7 +53,10 @@
                 try {
                     let res = JSON.parse(r);
                     if(res.logged_in) {
-                        $('#loginLink').html('<i class="fa-solid fa-user"></i> Xin chào, ' + res.username).attr('href', '/profile.php');
+                        $('#topBarStatus').html(`
+                            <a href="/pages/client/Orders.php" style="color: #38bdf8; font-weight: bold; margin-right: 15px;"><i class="fa-solid fa-box"></i> Đơn hàng của tôi</a>
+                            <a href="/profile.php" style="color: white; font-weight: bold;"><i class="fa-solid fa-user"></i> Xin chào, ${res.username}</a>
+                        `);
                         updateCartCount();
                     }
                 } catch(e) {}
@@ -100,7 +103,10 @@
                         if(typeof Swal !== 'undefined') Swal.fire('Thông báo', res.msg, 'warning');
                         else alert(res.msg);
                     }
-                } catch(e) {}
+                } catch(e) {
+                    console.error("Lỗi JSON:", e, r);
+                    if(typeof Swal !== 'undefined') Swal.fire('Lỗi', 'Không thể xử lý dữ liệu máy chủ. Hãy thử lại!', 'error');
+                }
             }
         });
     }
@@ -119,7 +125,10 @@
                         if(typeof Swal !== 'undefined') Swal.fire('Thông báo', res.msg, 'warning');
                         else alert(res.msg);
                     }
-                } catch(e) {}
+                } catch(e) {
+                    console.error("Lỗi JSON:", e, r);
+                    if(typeof Swal !== 'undefined') Swal.fire('Lỗi', 'Không thể xử lý dữ liệu máy chủ. Hãy thử lại!', 'error');
+                }
             }
         });
     }

@@ -77,6 +77,14 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         $id = (int)$_POST['id'];
         $status = $_POST['status'];
         $DMH->update("store_orders", ['status' => $status], "`id` = '$id'");
+        
+        // Gửi thông báo
+        if ($status == 'shipping') {
+            send_tele("📦 Cửa hàng ĐÃ GIAO HÀNG cho đơn #" . $id . ". Khách hàng có thể theo dõi trên web!");
+        } elseif ($status == 'completed') {
+            send_tele("✅ Đơn hàng #" . $id . " đã giao THÀNH CÔNG.");
+        }
+
         echo json_encode(['status' => 'success']);
         exit;
     }
