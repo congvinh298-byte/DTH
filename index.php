@@ -483,93 +483,19 @@ function addToCart(productId) {
             <!-- Right: Tab Contents -->
             <div id="bct-contents" style="background: #1e293b; border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
                 
-                <!-- 1. Bảo Mật -->
-                <div class="bct-pane active" id="pol-1">
-                    <h3>1. Chính Sách Bảo Mật Thông Tin (Theo Nghị định 13/2023/NĐ-CP & NĐ 248/2026/NĐ-CP)</h3>
-                    <p><strong>a. Mục đích thu thập & Định danh:</strong> Việc thu thập dữ liệu trên website Điện Máy Hiếu bao gồm: Tên, email, số điện thoại, địa chỉ khách hàng. Theo quy định mới, các tài khoản Đối tác (Thợ kỹ thuật) bắt buộc phải thực hiện định danh qua hệ thống VNeID hoặc đối chiếu CCCD nhằm đảm bảo an toàn tuyệt đối cho khách hàng khi giao dịch tại nhà.</p>
-                    <p><strong>b. Phạm vi sử dụng:</strong> Hệ thống sử dụng thông tin khách hàng cung cấp để liên hệ xác nhận đơn hàng, điều phối thợ kỹ thuật, gửi thông báo và giải quyết khiếu nại.</p>
-                    <p><strong>c. Quyền của Chủ thể dữ liệu:</strong> Khách hàng có toàn quyền yêu cầu Điện Máy Hiếu cung cấp bản sao dữ liệu cá nhân, yêu cầu chỉnh sửa, hoặc rút lại sự đồng ý thu thập dữ liệu và yêu cầu xóa bỏ hoàn toàn tài khoản bằng cách liên hệ CSKH.</p>
-                    <p><strong>d. Cam kết bảo mật:</strong> Không sử dụng, không chuyển giao hay tiết lộ cho bên thứ 3 khi không có sự cho phép, trừ trường hợp cơ quan pháp luật yêu cầu.</p>
-                </div>
-
-                <!-- 2. Khiếu Nại -->
-                <div class="bct-pane" id="pol-2">
-                    <h3>2. Phương Thức Tiếp Nhận & Giải Quyết Khiếu Nại</h3>
-                    <p>Điện Máy Hiếu hoạt động dưới mô hình "Nền tảng TMĐT tích hợp" và chịu trách nhiệm liên đới trong việc bảo vệ quyền lợi người tiêu dùng theo Luật Bảo vệ quyền lợi người tiêu dùng 2023 và NĐ 248/2026/NĐ-CP.</p>
-                    <div class="bct-box">
-                        <strong>Quy trình 3 bước giải quyết khiếu nại:</strong>
-                        <ul>
-                            <li><strong>Bước 1 (Tiếp nhận):</strong> Khách hàng phản ánh qua Hotline: 0979.553.289 hoặc Chatbot Anh thiên Openclaw trên website.</li>
-                            <li><strong>Bước 2 (Xử lý):</strong> Bộ phận CSKH xác minh trong vòng 24 giờ. Nếu thiệt hại phát sinh do lỗi hàng hóa hoặc hành vi của thợ thuộc hệ thống quản lý, Điện Máy Hiếu cam kết đứng ra bồi thường và xử lý triệt để.</li>
-                            <li><strong>Bước 3 (Khắc phục):</strong> Liên hệ lại khách hàng để đưa ra phương án đền bù, đổi trả hoặc cử thợ khác đến khắc phục hoàn toàn miễn phí (áp dụng trong 48 giờ).</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- 3. Chính sách Giá -->
-                <div class="bct-pane" id="pol-3">
-                    <h3>3. Chính Sách Giá Cả & Dịch Vụ</h3>
-                    <p>Chúng tôi cam kết tính minh bạch tuyệt đối về giá cả đối với toàn bộ hàng hóa và dịch vụ trên nền tảng.</p>
-                    <ul>
-                        <li><strong>Giá Sản Phẩm (Hàng hóa & In 3D):</strong> Giá niêm yết trên website là giá cuối cùng đã bao gồm Thuế Giá trị gia tăng (VAT). Giá này chưa bao gồm phí vận chuyển (nếu có).</li>
-                        <li><strong>Giá Dịch Vụ Gọi Thợ:</strong> Bảng giá dịch vụ gọi thợ (ví dụ: Vệ sinh máy lạnh 150.000đ) là giá tiền công trọn gói cho một hạng mục cơ bản.</li>
-                        <li><strong>Phát sinh linh kiện:</strong> Trong trường hợp sửa chữa cần thay thế linh kiện, vật tư, Thợ kỹ thuật bắt buộc phải báo giá cụ thể cho khách hàng và chỉ được tiến hành sửa chữa khi khách hàng đồng ý. Khách hàng có quyền từ chối nếu thấy giá vật tư không hợp lý mà không phải trả bất kỳ khoản phí khảo sát nào.</li>
-                    </ul>
-                </div>
-
-                <!-- 4. Thanh toán -->
-                <div class="bct-pane" id="pol-4">
-                    <h3>4. Các Phương Thức Thanh Toán</h3>
-                    <p>Nhằm mang đến sự tiện lợi tối đa cho quý khách, Điện Máy Hiếu áp dụng 2 hình thức thanh toán linh hoạt, an toàn và có đầy đủ chứng từ:</p>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
-                        <div class="bct-box" style="margin:0;">
-                            <i class="fa-solid fa-money-bill-wave" style="font-size:24px; color:#10b981; margin-bottom:10px; display:block;"></i>
-                            <strong>Thanh toán Tiền Mặt (COD)</strong>
-                            <p style="font-size:14px; margin-top:5px; color:#94a3b8;">Khách hàng thanh toán trực tiếp cho Thợ Kỹ Thuật sau khi đã nghiệm thu công việc sửa chữa hoàn tất, hoặc thanh toán cho Shipper khi nhận hàng.</p>
-                        </div>
-                        <div class="bct-box" style="margin:0;">
-                            <i class="fa-solid fa-building-columns" style="font-size:24px; color:#3b82f6; margin-bottom:10px; display:block;"></i>
-                            <strong>Chuyển khoản Ngân Hàng (Mã QR)</strong>
-                            <p style="font-size:14px; margin-top:5px; color:#94a3b8;">Chuyển khoản qua mã VietQR hoặc Internet Banking vào tài khoản công ty. Áp dụng cho các đơn hàng lớn hoặc khách hàng thanh toán từ xa.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 5. Điều kiện hạn chế -->
-                <div class="bct-pane" id="pol-5">
-                    <h3>5. Điều Kiện & Hạn Chế Cung Cấp Dịch Vụ</h3>
-                    <p>Để đảm bảo tuân thủ pháp luật và chất lượng dịch vụ, chúng tôi áp dụng các quy định sau:</p>
-                    <ul>
-                        <li><strong>Giới hạn địa lý (Vùng phục vụ):</strong> Dịch vụ Gọi Thợ tận nơi hiện tại chỉ áp dụng trong phạm vi <strong>Bán kính 15km tính từ Chợ Lấp Vò, Tỉnh Đồng Tháp</strong>. Các đơn hàng nằm ngoài khu vực này, hệ thống sẽ tự động từ chối hoặc thỏa thuận phụ thu phí di chuyển.</li>
-                        <li><strong>Tư vấn Tự động (AI Chatbot):</strong> Chatbot "Anh thiên Openclaw" sử dụng trí tuệ nhân tạo để hỗ trợ nhanh 24/7. Các thông tin tư vấn kỹ thuật từ Chatbot mang tính chất tham khảo. Trong trường hợp phức tạp, quyết định cuối cùng phải dựa trên khảo sát thực tế của Thợ có chuyên môn.</li>
-                        <li><strong>Hạn chế độ tuổi:</strong> Người mua hàng và đặt lịch yêu cầu dịch vụ phải từ đủ 15 tuổi trở lên. Trẻ em dưới 15 tuổi cần có sự giám sát của người lớn khi thợ đến làm việc tại nhà.</li>
-                    </ul>
-                </div>
-
-                <!-- 6. Giao hàng Đổi trả -->
-                <div class="bct-pane" id="pol-6">
-                    <h3>6. Chính Sách Giao Hàng, Đổi Trả & Hoàn Tiền</h3>
-                    <p>Chúng tôi luôn nỗ lực mang đến sự an tâm tuyệt đối khi khách hàng sử dụng dịch vụ và mua sắm.</p>
-                    <div class="bct-box">
-                        <strong style="color:#f8fafc;"><i class="fa-solid fa-truck-fast"></i> Giao hàng (Hàng hóa):</strong>
-                        <p style="font-size:14.5px; margin-top:5px;">Thời gian giao hàng chuẩn trong khu vực là 2-4 giờ kể từ lúc chốt đơn. Các sản phẩm In 3D cần thời gian chế tác sẽ được hẹn cụ thể (từ 1-3 ngày). Phí vận chuyển áp dụng biểu phí tiêu chuẩn của các đơn vị GHTK, Viettel Post.</p>
-                    </div>
-                    <div class="bct-box" style="margin-top:15px;">
-                        <strong style="color:#f8fafc;"><i class="fa-solid fa-rotate-left"></i> Đổi Trả & Hoàn Tiền:</strong>
-                        <p style="font-size:14.5px; margin-top:5px;">- <strong>Sản phẩm vật lý:</strong> 1 đổi 1 trong vòng 7 ngày nếu có lỗi do nhà sản xuất. Sản phẩm đổi trả phải còn nguyên tem, mác, không bị rơi vỡ hay vào nước.<br>- <strong>Dịch vụ sửa chữa:</strong> Bảo hành linh kiện thay thế theo tiêu chuẩn của hãng (thường từ 1-6 tháng tùy linh kiện). Hoàn tiền 100% nếu thợ sửa không khắc phục được lỗi như đã cam kết ban đầu.</p>
-                    </div>
-                </div>
-
-                <!-- 7. Hỗ trợ -->
-                <div class="bct-pane" id="pol-7">
-                    <h3>7. Hình Thức Hỗ Trợ Trực Tuyến</h3>
-                    <p>Điện Máy Hiếu ứng dụng công nghệ đa kênh để hỗ trợ khách hàng nhanh nhất có thể:</p>
-                    <ul style="font-size:16px;">
-                        <li style="margin-bottom: 15px;"><strong>Chatbot Trí Tuệ Nhân Tạo (Anh thiên Openclaw):</strong> Hoạt động 24/7 ngay trên góc phải màn hình website, giải đáp các thắc mắc cơ bản về dịch vụ và hướng dẫn sử dụng.</li>
-                        <li style="margin-bottom: 15px;"><strong>Hotline hỗ trợ khẩn cấp:</strong> 0939.354.937 (Hoạt động từ 07:30 đến 18:00). Dành cho các khiếu nại, phản ánh chất lượng hoặc cần điều thợ gấp.</li>
-                        <li style="margin-bottom: 15px;"><strong>Zalo OA / Facebook Messenger:</strong> Tích hợp liên kết tại chân trang, giúp khách hàng gửi hình ảnh, video tình trạng hỏng hóc của thiết bị để thợ chẩn đoán từ xa trước khi đến.</li>
-                    </ul>
-                </div>
+                <?php
+                require_once(__DIR__."/core/policies_data.php");
+                for ($i = 1; $i <= 7; $i++) {
+                    $activeClass = ($i == 1) ? ' active' : '';
+                    $cleanTitle = str_replace(" (*)", "", $bct_policies_data[$i]['title']);
+                    echo '<div class="bct-pane' . $activeClass . '" id="pol-' . $i . '">';
+                    echo '<h3 style="margin-bottom: 20px;">' . $i . '. ' . $cleanTitle . '</h3>';
+                    echo '<div style="color: #cbd5e1; line-height: 1.7; font-size: 15px;">';
+                    echo $bct_policies_data[$i]['content'];
+                    echo '</div>';
+                    echo '</div>';
+                }
+                ?>
             </div>
         </div>
     </div>
