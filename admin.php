@@ -659,7 +659,7 @@ function findCustomer() {
         method: "POST",
         data: { action: 'find_customer', phone: phone },
         success: function(r) {
-            let res = JSON.parse(r);
+            let res = typeof r === 'string' ? JSON.parse(r) : r;
             if(res.status == 'success') {
                 $('#customer_error_panel').hide();
                 $('#customer_info_panel').show();
@@ -697,7 +697,7 @@ function addPoints() {
         method: "POST",
         data: { action: 'add_points', phone: currentCustomerPhone, points: points },
         success: function(r) {
-            let res = JSON.parse(r);
+            let res = typeof r === 'string' ? JSON.parse(r) : r;
             if(res.status == 'success') {
                 alert("Cộng thành công " + points + " điểm!");
                 $('#td_amount').val('');
@@ -752,7 +752,7 @@ function loadProducts(type = 'all') {
         data: { action: 'list_products', type: type },
         success: function(r) {
             try {
-                let res = JSON.parse(r);
+                let res = typeof r === 'string' ? JSON.parse(r) : r;
                 if(res.status == 'success') {
                     let html = '';
                     if(res.data.length === 0) {
@@ -797,7 +797,7 @@ function submitProduct(e) {
         method: "POST",
         data: data,
         success: function(r) {
-            let res = JSON.parse(r);
+            let res = typeof r === 'string' ? JSON.parse(r) : r;
             if(res.status == 'success') {
                 alert("Đã thêm sản phẩm thành công!");
                 $('#addProductModal').css('display', 'none');
@@ -817,7 +817,7 @@ function deleteProduct(id) {
             method: "POST",
             data: { action: 'delete_product', id: id },
             success: function(r) {
-                let res = JSON.parse(r);
+                let res = typeof r === 'string' ? JSON.parse(r) : r;
                 if(res.status == 'success') loadProducts('all');
             }
         });
@@ -833,7 +833,7 @@ function loadOrders() {
         data: { action: 'list_orders' },
         success: function(r) {
             try {
-                let res = JSON.parse(r);
+                let res = typeof r === 'string' ? JSON.parse(r) : r;
                 if(res.status == 'success') {
                     let html = '';
                     if(res.data.length === 0) {
@@ -873,7 +873,7 @@ function viewOrder(id) {
         data: { action: 'get_order', id: id },
         success: function(r) {
             try {
-                let res = JSON.parse(r);
+                let res = typeof r === 'string' ? JSON.parse(r) : r;
                 if(res.status == 'success') {
                     let o = res.data.order;
                     $('#v_order_id').text(o.id);
@@ -923,7 +923,7 @@ function updateOrderStatus() {
         method: "POST",
         data: { action: 'update_order_status', id: id, status: status },
         success: function(r) {
-            let res = JSON.parse(r);
+            let res = typeof r === 'string' ? JSON.parse(r) : r;
             if(res.status == 'success') {
                 let statusColor = status == 'pending' ? 'var(--c-rose)' : (status == 'shipping' ? 'var(--c-cyan)' : (status == 'completed' ? 'var(--c-green)' : 'gray'));
                 $('#v_status').css('borderColor', statusColor).css('color', statusColor);
@@ -942,7 +942,7 @@ function loadTechnicians() {
         data: { action: 'list_techs' },
         success: function(r) {
             try {
-                let res = JSON.parse(r);
+                let res = typeof r === 'string' ? JSON.parse(r) : r;
                 if(res.status == 'success') {
                     let html = '';
                     if(res.data.length === 0) {
@@ -993,7 +993,7 @@ function submitAddTech(e) {
         },
         success: function(r) {
             try {
-                let res = JSON.parse(r);
+                let res = typeof r === 'string' ? JSON.parse(r) : r;
                 if(res.status == 'success') {
                     showToast('Đã thêm thợ thành công', 'success');
                     $('#addTechModal').hide();
@@ -1049,7 +1049,7 @@ function loadBookings() {
         data: { action: 'list_bookings' },
         success: function(r) {
             try {
-                let res = JSON.parse(r);
+                let res = typeof r === 'string' ? JSON.parse(r) : r;
                 if(res.status == 'success') {
                     let html = '';
                     if(res.data.length === 0) {
