@@ -19,7 +19,7 @@ require_once(__DIR__."/pages/client/Header.php");
                 ⚡ Xưởng In 3D Số 1 Đồng Tháp
             </div>
             <h1 style="font-size: 56px; font-weight: 900; color: #fff; text-shadow: 4px 4px 0px #0f172a; line-height: 1.1; margin-bottom: 20px; text-transform: uppercase; letter-spacing: -2px;">
-                Biến Ý Tưởng<br>Thành Hiện Thực
+                Giải Pháp In Mô Hình 3D FDM
             </h1>
             <p style="font-size: 20px; font-weight: 700; color: #fff; background: #0f172a; display: inline-block; padding: 10px 20px; border-radius: 12px;">
                 Độ chính xác cao - Vật liệu bền bỉ - Báo giá minh bạch
@@ -80,28 +80,28 @@ require_once(__DIR__."/pages/client/Header.php");
                     <div style="background: #e2e8f0; height: 180px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 70px; border: 2px solid #cbd5e1;">🚀</div>
                     <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 8px; color: #0f172a;">Mô Hình Tên Lửa Mini</h3>
                     <div style="font-size: 24px; font-weight: 900; color: #f43f5e; margin-bottom: 16px; flex-grow: 1;">35.000đ</div>
-                    <button style="width: 100%; background: #fbbf24; border: 3px solid #0f172a; color: #000; font-weight: 900; font-size: 16px; padding: 12px; border-radius: 12px; box-shadow: 3px 3px 0px #0f172a; cursor: pointer; transition: transform 0.1s;" onmousedown="this.style.transform='translate(2px, 2px)'; this.style.boxShadow='1px 1px 0px #0f172a';" onmouseup="this.style.transform='none'; this.style.boxShadow='3px 3px 0px #0f172a';">Mua Ngay</button>
+                    <button onclick="document.getElementById('di_dichvu').value='Mua: Mô Hình Tên Lửa Mini'; document.getElementById('order-form').scrollIntoView({behavior: 'smooth'})" style="width: 100%; background: #fbbf24; border: 3px solid #0f172a; color: #000; font-weight: 900; font-size: 16px; padding: 12px; border-radius: 12px; box-shadow: 3px 3px 0px #0f172a; cursor: pointer; transition: transform 0.1s;" onmousedown="this.style.transform='translate(2px, 2px)'; this.style.boxShadow='1px 1px 0px #0f172a';" onmouseup="this.style.transform='none'; this.style.boxShadow='3px 3px 0px #0f172a';">Mua Ngay</button>
                 </div>
                 <!-- Product Card 2 -->
                 <div style="background: #fff; border: 4px solid #0f172a; border-radius: 20px; padding: 16px; box-shadow: 6px 6px 0px #0f172a; text-align: center; display: flex; flex-direction: column;">
                     <div style="background: #e2e8f0; height: 180px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 70px; border: 2px solid #cbd5e1;">🦖</div>
                     <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 8px; color: #0f172a;">Khủng Long Khớp Động</h3>
                     <div style="font-size: 24px; font-weight: 900; color: #f43f5e; margin-bottom: 16px; flex-grow: 1;">85.000đ</div>
-                    <button style="width: 100%; background: #fbbf24; border: 3px solid #0f172a; color: #000; font-weight: 900; font-size: 16px; padding: 12px; border-radius: 12px; box-shadow: 3px 3px 0px #0f172a; cursor: pointer; transition: transform 0.1s;" onmousedown="this.style.transform='translate(2px, 2px)'; this.style.boxShadow='1px 1px 0px #0f172a';" onmouseup="this.style.transform='none'; this.style.boxShadow='3px 3px 0px #0f172a';">Mua Ngay</button>
+                    <button onclick="document.getElementById('di_dichvu').value='Mua: Khủng Long Khớp Động'; document.getElementById('order-form').scrollIntoView({behavior: 'smooth'})" style="width: 100%; background: #fbbf24; border: 3px solid #0f172a; color: #000; font-weight: 900; font-size: 16px; padding: 12px; border-radius: 12px; box-shadow: 3px 3px 0px #0f172a; cursor: pointer; transition: transform 0.1s;" onmousedown="this.style.transform='translate(2px, 2px)'; this.style.boxShadow='1px 1px 0px #0f172a';" onmouseup="this.style.transform='none'; this.style.boxShadow='3px 3px 0px #0f172a';">Mua Ngay</button>
                 </div>
                 <!-- Product Card 3 -->
                 <div style="background: #fff; border: 4px solid #0f172a; border-radius: 20px; padding: 16px; box-shadow: 6px 6px 0px #0f172a; text-align: center; display: flex; flex-direction: column;">
                     <div style="background: #e2e8f0; height: 180px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 70px; border: 2px solid #cbd5e1;">🪴</div>
                     <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 8px; color: #0f172a;">Chậu Cây Hình Học</h3>
                     <div style="font-size: 24px; font-weight: 900; color: #f43f5e; margin-bottom: 16px; flex-grow: 1;">120.000đ</div>
-                    <button style="width: 100%; background: #fbbf24; border: 3px solid #0f172a; color: #000; font-weight: 900; font-size: 16px; padding: 12px; border-radius: 12px; box-shadow: 3px 3px 0px #0f172a; cursor: pointer; transition: transform 0.1s;" onmousedown="this.style.transform='translate(2px, 2px)'; this.style.boxShadow='1px 1px 0px #0f172a';" onmouseup="this.style.transform='none'; this.style.boxShadow='3px 3px 0px #0f172a';">Mua Ngay</button>
+                    <button onclick="document.getElementById('di_dichvu').value='Mua: Chậu Cây Hình Học'; document.getElementById('order-form').scrollIntoView({behavior: 'smooth'})" style="width: 100%; background: #fbbf24; border: 3px solid #0f172a; color: #000; font-weight: 900; font-size: 16px; padding: 12px; border-radius: 12px; box-shadow: 3px 3px 0px #0f172a; cursor: pointer; transition: transform 0.1s;" onmousedown="this.style.transform='translate(2px, 2px)'; this.style.boxShadow='1px 1px 0px #0f172a';" onmouseup="this.style.transform='none'; this.style.boxShadow='3px 3px 0px #0f172a';">Mua Ngay</button>
                 </div>
                 <!-- Product Card 4 -->
                 <div style="background: #fff; border: 4px solid #0f172a; border-radius: 20px; padding: 16px; box-shadow: 6px 6px 0px #0f172a; text-align: center; display: flex; flex-direction: column;">
                     <div style="background: #e2e8f0; height: 180px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 70px; border: 2px solid #cbd5e1;">⚙️</div>
                     <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 8px; color: #0f172a;">Combo Bánh Răng Puly</h3>
                     <div style="font-size: 24px; font-weight: 900; color: #f43f5e; margin-bottom: 16px; flex-grow: 1;">45.000đ</div>
-                    <button style="width: 100%; background: #fbbf24; border: 3px solid #0f172a; color: #000; font-weight: 900; font-size: 16px; padding: 12px; border-radius: 12px; box-shadow: 3px 3px 0px #0f172a; cursor: pointer; transition: transform 0.1s;" onmousedown="this.style.transform='translate(2px, 2px)'; this.style.boxShadow='1px 1px 0px #0f172a';" onmouseup="this.style.transform='none'; this.style.boxShadow='3px 3px 0px #0f172a';">Mua Ngay</button>
+                    <button onclick="document.getElementById('di_dichvu').value='Mua: Combo Bánh Răng Puly'; document.getElementById('order-form').scrollIntoView({behavior: 'smooth'})" style="width: 100%; background: #fbbf24; border: 3px solid #0f172a; color: #000; font-weight: 900; font-size: 16px; padding: 12px; border-radius: 12px; box-shadow: 3px 3px 0px #0f172a; cursor: pointer; transition: transform 0.1s;" onmousedown="this.style.transform='translate(2px, 2px)'; this.style.boxShadow='1px 1px 0px #0f172a';" onmouseup="this.style.transform='none'; this.style.boxShadow='3px 3px 0px #0f172a';">Mua Ngay</button>
                 </div>
             </div>
             
@@ -129,6 +129,10 @@ require_once(__DIR__."/pages/client/Header.php");
                     <select id="di_dichvu" style="width: 100%; background: #1e293b; border: 3px solid #334155; color: #fff; padding: 16px 20px; border-radius: 16px; font-size: 16px; font-weight: 800; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='#334155'">
                         <option value="In bản mẫu có sẵn (400đ/g)">In bản mẫu có sẵn (400đ/g)</option>
                         <option value="Thiết kế & In (500đ/g)">Thiết kế & In 3D (500đ/g)</option>
+                        <option value="Mua: Mô Hình Tên Lửa Mini">Mua: Mô Hình Tên Lửa Mini (35.000đ)</option>
+                        <option value="Mua: Khủng Long Khớp Động">Mua: Khủng Long Khớp Động (85.000đ)</option>
+                        <option value="Mua: Chậu Cây Hình Học">Mua: Chậu Cây Hình Học (120.000đ)</option>
+                        <option value="Mua: Combo Bánh Răng Puly">Mua: Combo Bánh Răng Puly (45.000đ)</option>
                     </select>
                 </div>
                 <div>
