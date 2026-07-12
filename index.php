@@ -223,6 +223,13 @@ $services = array(
                         <label for="issue_description">5. Mô tả chi tiết vấn đề <span style="color:var(--brand-accent);">*</span></label>
                         <textarea id="issue_description" name="issue_description" required maxlength="2000" placeholder="Máy bị lỗi gì, hiện tượng như thế nào..."></textarea>
                     </div>
+                    
+                    <div class="field full" style="margin-top: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; background: rgba(56, 189, 248, 0.1); padding: 12px; border-radius: 8px; border: 1px dashed rgba(56, 189, 248, 0.3);">
+                            <input type="checkbox" id="vat_request_booking" style="width: 20px; height: 20px; accent-color: #38bdf8; cursor: pointer;">
+                            <label for="vat_request_booking" style="cursor: pointer; font-weight: bold; color: #38bdf8; user-select: none; margin: 0;">Yêu cầu xuất hóa đơn VAT</label>
+                        </div>
+                    </div>
                 </div>
                 
                 <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
@@ -383,6 +390,7 @@ $("#btnDatLich").on("click", function() {
     var yeucau = $("#issue_description").val().trim();
     var lat = $("#map_lat").val();
     var lng = $("#map_lng").val();
+    var vat = $("#vat_request_booking").is(':checked') ? 1 : 0;
     
     if (!$("#service_type").val()) {
         Swal.fire('Thiếu thông tin', 'Vui lòng chọn một dịch vụ!', 'warning');
@@ -404,7 +412,7 @@ $("#btnDatLich").on("click", function() {
     $.ajax({
         url: "/controller/client/DatLich.php",
         method: "POST",
-        data: { type:'DatLich', ten:ten, sdt:sdt, dichvu:dichvu, diachi:diachi, yeucau:yeucau },
+        data: { type:'DatLich', ten:ten, sdt:sdt, dichvu:dichvu, diachi:diachi, yeucau:yeucau, vat_requested:vat },
         success: function(r) {
             $("#thongbao_datlich").html(r);
             $('#btnDatLich').html('<i class="fa-solid fa-check"></i> Đã Gửi Thành Công').prop('disabled', false).css('opacity','1');
@@ -425,26 +433,7 @@ $("#btnDatLich").on("click", function() {
         }
     });
 });
-
-// Giỏ hàng - Add to Cart
-function addToCart(productId) {
-    $.ajax({
-        url: "/controller/client/CartAction.php",
-        method: "POST",
-        data: { action: 'add_to_cart', product_id: productId },
-        success: function(r) {
-            try {
-                let res = JSON.parse(r);
-                if(res.status == 'success') {
-                    showToast('Đã thêm vào giỏ hàng!', 'success');
-                    if(typeof updateCartCount === "function") updateCartCount();
-                } else {
-                    Swal.fire('Thông báo', res.msg, 'warning');
-                }
-            } catch(e) {}
-        }
-    });
-}
+// Form Đặt Lịch
 </script>
 
 <div style="text-align: center; margin: 40px 0 20px; position: relative; z-index: 5;">

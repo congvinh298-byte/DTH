@@ -86,7 +86,7 @@ require_once(__DIR__."/pages/client/Header.php");
                     </div>
                     <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 8px; color: #0f172a;"><?= htmlspecialchars($p['name']) ?></h3>
                     <div style="font-size: 24px; font-weight: 900; color: #f43f5e; margin-bottom: 16px; flex-grow: 1;"><?= number_format($p['price']) ?>đ</div>
-                    <button onclick="document.getElementById('di_dichvu').value='Mua: <?= htmlspecialchars($p['name'], ENT_QUOTES) ?>'; document.getElementById('order-form').scrollIntoView({behavior: 'smooth'})" style="width: 100%; background: #fbbf24; border: 3px solid #0f172a; color: #000; font-weight: 900; font-size: 16px; padding: 12px; border-radius: 12px; box-shadow: 3px 3px 0px #0f172a; cursor: pointer; transition: transform 0.1s;" onmousedown="this.style.transform='translate(2px, 2px)'; this.style.boxShadow='1px 1px 0px #0f172a';" onmouseup="this.style.transform='none'; this.style.boxShadow='3px 3px 0px #0f172a';">Mua Ngay</button>
+                    <button onclick="addToCart(<?= $p['id'] ?>)" style="width: 100%; background: #fbbf24; border: 3px solid #0f172a; color: #000; font-weight: 900; font-size: 16px; padding: 12px; border-radius: 12px; box-shadow: 3px 3px 0px #0f172a; cursor: pointer; transition: transform 0.1s;" onmousedown="this.style.transform='translate(2px, 2px)'; this.style.boxShadow='1px 1px 0px #0f172a';" onmouseup="this.style.transform='none'; this.style.boxShadow='3px 3px 0px #0f172a';">Mua Ngay</button>
                 </div>
                 <?php 
                     endforeach;

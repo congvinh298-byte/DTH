@@ -89,6 +89,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         $address = $_POST['address'] ?? '';
         $note = $_POST['note'] ?? '';
 
+        $vat_requested = isset($_POST['vat_requested']) ? (int)$_POST['vat_requested'] : 0;
+
         if(empty($name) || empty($phone) || empty($address)) {
             echo json_encode(['status' => 'error', 'msg' => 'Vui lòng nhập đủ thông tin giao hàng!']);
             exit;
@@ -113,7 +115,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             'customer_name' => $name,
             'phone' => $phone,
             'address' => $address,
-            'note' => $note
+            'note' => $note,
+            'vat_requested' => $vat_requested
         ]);
 
         // Lấy ID mới nhất vừa insert. PHP MySQLi không trả trực tiếp qua class này, phải ORDER BY id DESC LIMIT 1

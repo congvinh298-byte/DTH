@@ -79,6 +79,32 @@
         });
     }
 
+    function addToCart(productId) {
+        $.ajax({
+            url: "/controller/client/CartAction.php",
+            method: "POST",
+            data: { action: 'add_to_cart', product_id: productId },
+            success: function(r) {
+                try {
+                    let res = JSON.parse(r);
+                    if(res.status == 'success') {
+                        if(typeof showToast === 'function') {
+                            showToast('Đã thêm vào giỏ hàng!', 'success');
+                        } else if(typeof Swal !== 'undefined') {
+                            Swal.fire('Thành công', 'Đã thêm vào giỏ hàng!', 'success');
+                        } else {
+                            alert('Đã thêm vào giỏ hàng!');
+                        }
+                        updateCartCount();
+                    } else {
+                        if(typeof Swal !== 'undefined') Swal.fire('Thông báo', res.msg, 'warning');
+                        else alert(res.msg);
+                    }
+                } catch(e) {}
+            }
+        });
+    }
+
     $(document).ready(function() {
         checkLoginStatus();
     });

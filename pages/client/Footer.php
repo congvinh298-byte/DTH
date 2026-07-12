@@ -87,24 +87,35 @@
 #openclaw-send { background: var(--chat-cyan); color: #000; border: none; padding: 10px 15px; margin-left: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
 </style>
 
-<div id="openclaw-chatbot">
-    <div id="openclaw-window">
+<div id="openclaw-chatbot" style="display: flex; gap: 15px; align-items: flex-end;">
+    <!-- Zalo Button -->
+    <a href="https://zalo.me/0979553289" target="_blank" id="zalo-btn" style="width: 60px; height: 60px; border-radius: 50%; background: #0068ff; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); transition: transform 0.3s; text-decoration: none;">
+        <i class="fa-solid fa-comment-dots"></i>
+    </a>
+    
+    <div id="openclaw-window" style="right: 0; bottom: 80px;">
         <div id="openclaw-header">
-            <span><i class="fa-solid fa-robot"></i> Anh thiên Openclaw</span>
+            <span><i class="fa-solid fa-robot"></i> Dân chơi</span>
             <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 18px;" onclick="$('#openclaw-window').hide()"></i>
         </div>
         <div id="openclaw-messages">
-            <div class="msg msg-bot">Xin chào! Tui là <b>Anh thiên Openclaw</b>, trợ lý AI của Giám đốc Hiếu. Tui có thể giúp gì cho bạn về Mua sắm Điện Máy, Gọi Thợ hay In 3D?</div>
+            <div class="msg msg-bot">Xin chào! Tui là <b>Dân chơi</b>, trợ lý AI của cửa hàng. Tui có thể giúp gì cho bạn về Mua sắm Điện Máy, Gọi Thợ hay In 3D?</div>
         </div>
         <form id="openclaw-input-area" onsubmit="sendOpenclawMsg(event)">
             <input type="text" id="openclaw-input" placeholder="Nhập câu hỏi..." autocomplete="off">
             <button type="submit" id="openclaw-send"><i class="fa-solid fa-paper-plane"></i></button>
         </form>
     </div>
+    
+    <!-- Chatbot Button -->
     <div id="openclaw-btn" onclick="$('#openclaw-window').toggle()">
         <i class="fa-solid fa-headset"></i>
     </div>
 </div>
+
+<style>
+#zalo-btn:hover { transform: scale(1.1); }
+</style>
 
 <script>
 function sendOpenclawMsg(e) {

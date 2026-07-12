@@ -95,7 +95,7 @@ $bct_policies_data = [
         <strong>1.2.</strong> Các yêu cầu vượt ngoài ranh giới này sẽ được xếp vào dạng \"Yêu cầu đặc biệt\", cần sự xác nhận thủ công từ Đối tác Thợ và có thể áp dụng Bảng phụ thu di chuyển đã được niêm yết công khai.</p>
         
         <p><strong>2. QUY CHẾ VẬN HÀNH TRÍ TUỆ NHÂN TẠO (AI CHATBOT)</strong></p>
-        <p><strong>2.1. Bản chất của dịch vụ AI:</strong> Chatbot \"Anh thiên Openclaw\" là hệ thống Trí tuệ Nhân tạo Tự động được huấn luyện chuyên sâu về cơ điện lạnh. Tuy nhiên, mọi thông tin do Chatbot cung cấp mang tính chất \"Chẩn đoán sơ bộ\" và \"Tư vấn tham khảo\".<br>
+        <p><strong>2.1. Bản chất của dịch vụ AI:</strong> Chatbot là hệ thống Trí tuệ Nhân tạo Tự động được huấn luyện chuyên sâu về cơ điện lạnh. Tuy nhiên, mọi thông tin do Chatbot cung cấp mang tính chất \"Chẩn đoán sơ bộ\" và \"Tư vấn tham khảo\".<br>
         <strong>2.2. Miễn trừ trách nhiệm:</strong> Điện Máy Hiếu miễn trừ toàn bộ trách nhiệm pháp lý đối với bất kỳ thiệt hại vật chất, sự cố chập cháy hoặc tai nạn lao động nào phát sinh do Người dùng tự ý thực hiện thao tác tháo lắp, sửa chữa điện máy dựa trên nội dung hội thoại với AI mà không có sự hiện diện của Thợ kỹ thuật có chuyên môn.</p>
         
         <p><strong>3. HẠN CHẾ VỀ NĂNG LỰC HÀNH VI DÂN SỰ</strong></p>

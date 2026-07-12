@@ -27,6 +27,8 @@ try {
         msg_error2("Số điện thoại không hợp lệ!");
     }
 
+    $vat = isset($_POST['vat_requested']) ? (int)$_POST['vat_requested'] : 0;
+
     $create = $DMH->insert("dat_lich", [
         'ten'      => $ten,
         'sdt'      => $sdt,
@@ -34,6 +36,7 @@ try {
         'yeucau'   => $yeucau,
         'dichvu'   => $dichvu,
         'trangthai'=> 'CHO_XU_LY',
+        'vat_requested' => $vat,
         'thoigian' => time()
     ]);
 
@@ -47,6 +50,9 @@ try {
         $text .= "Dịch vụ: ".$dichvu."\n";
         $text .= "Địa chỉ/Tọa độ: ".$diachi."\n";
         $text .= "Tình trạng: ".($yeucau ? $yeucau : "Không có ghi chú")."\n";
+        if($vat) {
+            $text .= "Lưu ý: [YÊU CẦU XUẤT HÓA ĐƠN VAT]\n";
+        }
         $text .= "Trạng thái: CHỜ XỬ LÝ";
         send_tele($text);
 

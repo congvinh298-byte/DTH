@@ -117,6 +117,7 @@ echo "</div>";
 echo "<div class='box'><h3>5. Fix Bảng dat_lich</h3>";
 add_column_safe($DMH, 'dat_lich', 'tho_id', "int(11) DEFAULT '0'");
 add_column_safe($DMH, 'dat_lich', 'trangthai', "varchar(50) DEFAULT 'CHO_XU_LY'");
+add_column_safe($DMH, 'dat_lich', 'vat_requested', "TINYINT(1) DEFAULT '0'");
 echo "</div>";
 
 // --- 6. DEMO ACCOUNT ---
@@ -202,12 +203,14 @@ $sql_orders = "CREATE TABLE IF NOT EXISTS `store_orders` (
   `phone` varchar(20) DEFAULT NULL,
   `address` text,
   `note` text,
+  `vat_requested` TINYINT(1) DEFAULT '0',
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 if ($DMH->query($sql_orders)) {
     echo "<div class='ok'>✔ Bảng store_orders đã sẵn sàng.</div>";
 }
+add_column_safe($DMH, 'store_orders', 'vat_requested', "TINYINT(1) DEFAULT '0'");
 echo "</div>";
 
 // --- 11. STORE_ORDER_ITEMS Table ---
