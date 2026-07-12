@@ -81,7 +81,7 @@ $("#btnContinue").on("click", function() {
             method: "POST",
             data: { action: 'check_phone', phone: phone },
             success: function(r) {
-                let res = JSON.parse(r);
+                let res = typeof r === 'string' ? JSON.parse(r) : r;
                 $("#btnContinue").html('Đăng Nhập').prop('disabled', false);
                 
                 if (res.status == 'exists') {

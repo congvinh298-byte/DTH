@@ -83,7 +83,7 @@ function confirmReceived(id) {
                 data: { action: 'confirm_received', id: id },
                 success: function(r) {
                     try {
-                        let res = JSON.parse(r);
+                        let res = typeof r === 'string' ? JSON.parse(r) : r;
                         if(res.status == 'success') {
                             Swal.fire('Thành công', 'Cảm ơn bạn đã mua hàng!', 'success').then(() => {
                                 location.reload();

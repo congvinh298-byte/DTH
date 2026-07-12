@@ -171,7 +171,7 @@ $('#btnCheckout').click(function() {
         },
         success: function(r) {
             try {
-                let res = JSON.parse(r);
+                let res = typeof r === 'string' ? JSON.parse(r) : r;
                 if(res.status == 'success') {
                     Swal.fire('Thành công', 'Đơn hàng của bạn đã được ghi nhận!', 'success').then(() => {
                         window.location.href = '/';

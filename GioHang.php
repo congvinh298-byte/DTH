@@ -74,7 +74,7 @@ function loadCart() {
         data: { action: 'get_cart' },
         success: function(r) {
             try {
-                let res = JSON.parse(r);
+                let res = typeof r === 'string' ? JSON.parse(r) : r;
                 if(res.status == 'success') {
                     let html = '';
                     let total = 0;
@@ -148,7 +148,7 @@ function processCheckout(e) {
         data: data,
         success: function(r) {
             try {
-                let res = JSON.parse(r);
+                let res = typeof r === 'string' ? JSON.parse(r) : r;
                 if(res.status == 'success') {
                     Swal.fire({
                         title: 'Đặt hàng thành công!',

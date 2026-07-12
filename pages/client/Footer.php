@@ -140,7 +140,7 @@ function sendOpenclawMsg(e) {
         success: function(r) {
             $('#' + typingId).remove();
             try {
-                let res = JSON.parse(r);
+                let res = typeof r === 'string' ? JSON.parse(r) : r;
                 $('#openclaw-messages').append(`<div class="msg msg-bot">${res.reply}</div>`);
             } catch(e) {
                 $('#openclaw-messages').append(`<div class="msg msg-bot">Xin lỗi, Anh thiên đang bận bảo trì server rùi!</div>`);

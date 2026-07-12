@@ -51,7 +51,7 @@
             data: { action: 'check_login' },
             success: function(r) {
                 try {
-                    let res = JSON.parse(r);
+                    let res = typeof r === 'string' ? JSON.parse(r) : r;
                     if(res.logged_in) {
                         $('#topBarStatus').html(`
                             <a href="/pages/client/Orders.php" style="color: #38bdf8; font-weight: bold; margin-right: 15px;"><i class="fa-solid fa-box"></i> Đơn hàng của tôi</a>
@@ -71,7 +71,7 @@
             data: { action: 'cart_count' },
             success: function(r) {
                 try {
-                    let res = JSON.parse(r);
+                    let res = typeof r === 'string' ? JSON.parse(r) : r;
                     if(res.count > 0) {
                         $('#cartCountBadge').text(res.count).show();
                     } else {
@@ -89,7 +89,7 @@
             data: { action: 'add_to_cart', product_id: productId },
             success: function(r) {
                 try {
-                    let res = JSON.parse(r);
+                    let res = typeof r === 'string' ? JSON.parse(r) : r;
                     if(res.status == 'success') {
                         if(typeof showToast === 'function') {
                             showToast('Đã thêm vào giỏ hàng!', 'success');
@@ -118,7 +118,7 @@
             data: { action: 'add_to_cart', product_id: productId },
             success: function(r) {
                 try {
-                    let res = JSON.parse(r);
+                    let res = typeof r === 'string' ? JSON.parse(r) : r;
                     if(res.status == 'success') {
                         window.location.href = '/GioHang.php';
                     } else {
