@@ -33,7 +33,7 @@ if (empty($_SESSION['loginadmin'])) {
 
 $_SESSION['loginadmin'] = true;
 
-$tieude = 'Quản Lý Đơn Hàng Sản Phẩm';
+$tieude = 'Quản Lý Đơn Hàng | Điện Máy Hiếu';
 require_once(__DIR__."/../../pages/admin/Head.php");
 require_once(__DIR__."/../../pages/admin/Header.php");
 
@@ -79,7 +79,13 @@ function statusBadge($status) {
 </style>
 
 <div class="qldh-wrap">
-    <div class="qldh-title">📦 Quản Lý Đơn Hàng Sản Phẩm</div>
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+        <img src="/public/assets/logo.png" alt="Điện Máy Hiếu" style="width: 60px; height: 60px; object-fit: contain;">
+        <div>
+            <div class="qldh-title" style="margin-bottom: 4px;">📦 Quản Lý Đơn Hàng</div>
+            <div style="color: #94a3b8; font-size: 14px;">Điện Máy Hiếu - Lấp Vò, Đồng Tháp</div>
+        </div>
+    </div>
 
     <div class="filter-bar">
         <a href="?filter=all" class="<?= $filter == 'all' ? 'active' : '' ?>">Tất cả</a>

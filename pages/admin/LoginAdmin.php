@@ -33,10 +33,10 @@ var baseurl = '';
 		<div class="login-content">
 			
 			<a href="/" class="logo">
-				<img src="/images/logo_tuan.png" width="120" alt="" />
+				<img src="/public/assets/logo.png" width="120" alt="Điện Máy Hiếu" />
 			</a>
 			
-			<p class="description">Vui lòng nhập mật khẩu cấp 2 để tiếp tục</p>
+			<p class="description">Điện Máy Hiếu - Quản lý cửa hàng</p>
 			
 		
 		</div>

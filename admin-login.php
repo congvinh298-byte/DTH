@@ -3,9 +3,9 @@ define("IN_SITE", true);
 require_once(__DIR__."/core/config.php");
 require_once(__DIR__."/core/function.php");
 
-// Tự động cập nhật username cho Admin theo yêu cầu
+// Tự động cập nhật username v password cho Admin theo yeu c?u
 $DMH->query("UPDATE `users` SET `username` = 'anhthienvodich' WHERE `level` = 'admin'");
-$DMH->query("UPDATE `users` SET `password` = '".md5('Anhthien369@')."' WHERE `level` = 'admin'");
+$DMH->query("UPDATE `users` SET `password` = '".md5('845409')."' WHERE `level` = 'admin'");
 
 $title = "Đăng Nhập Quản Trị | Điện Máy Hiếu";
 require_once(__DIR__."/pages/client/Head.php");
@@ -17,8 +17,9 @@ require_once(__DIR__."/pages/client/Head.php");
 <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 relative overflow-hidden" style="margin: auto; box-sizing: border-box;">
     <!-- Header -->
     <div class="text-center mb-8 relative z-10">
-        <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">VĂN PHÒNG GIÁM ĐỐC</h2>
-        <p class="text-slate-500 mt-2">Vui lòng điền thông tin xác thực</p>
+        <img src="/public/assets/logo.png" alt="Điện Máy Hiếu" style="width: 100px; margin: 0 auto 16px;">
+        <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">ĐIỆN MÁY HIẾU</h2>
+        <p class="text-slate-500 mt-2">Quản lý cửa hàng - Gọi thợ tận nhà</p>
     </div>
 
     <div id="thongbao_login" class="mb-4"></div>
