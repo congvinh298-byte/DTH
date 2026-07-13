@@ -94,7 +94,18 @@ function statusBadge($status) {
                         <td><?= $order['payment_method'] == 'COD' ? 'Khi nhận hàng' : 'Chuyển khoản' ?> <?= $order['vat_requested'] ? '(VAT)' : '' ?></td>
                         <td><?= date('H:i d/m/Y', strtotime($order['created_at'])) ?></td>
                         <td><?= statusBadge($order['status']) ?></td>
-                        <td><button class="btn-detail" onclick="openOrderDetail(<?= (int)$order['id'] ?>, '<?= htmlspecialchars($order['status']) ?>')">Chi tiết</button></td>
+                        <td>
+                            <?php if ($order['status'] == 'pending'): ?>
+                                <button class="btn-detail" style="background:#3b82f6;" onclick="quickUpdateStatus(<?= (int)$order['id'] ?>, 'shipping')">🚚 Giao hàng</button>
+                            <?php elseif ($order['status'] == 'shipping'): ?>
+                                <button class="btn-detail" style="background:#10b981;" onclick="quickUpdateStatus(<?= (int)$order['id'] ?>, 'completed')">✅ Hoàn thành</button>
+                            <?php elseif ($order['status'] == 'completed'): ?>
+                                <span style="color:#10b981; font-weight:700;">Đã giao xong</span>
+                            <?php elseif ($order['status'] == 'cancelled'): ?>
+                                <span style="color:#ef4444; font-weight:700;">Đã hủy</span>
+                            <?php endif; ?>
+                            <button class="btn-detail" onclick="openOrderDetail(<?= (int)$order['id'] ?>, '<?= htmlspecialchars($order['status']) ?>')" style="margin-left: 6px;">Chi tiết</button>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -154,7 +165,26 @@ function openOrderDetail(id, status) {
 function saveStatus() {
     var id = document.getElementById('modalId').value;
     var status = document.getElementById('statusSelect').value;
-    
+    updateOrderStatus(id, status);
+}
+
+function quickUpdateStatus(id, status) {
+    var confirmText = status == 'shipping' ? 'Chuyển sang trạng thái "Đang giao hàng"?' : 'Hoàn thành đơn hàng này?';
+    Swal.fire({
+        title: 'Xác nhận',
+        text: confirmText,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            updateOrderStatus(id, status);
+        }
+    });
+}
+
+function updateOrderStatus(id, status) {
     fetch('/controller/admin/OrderStatusUpdate.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

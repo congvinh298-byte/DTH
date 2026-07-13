@@ -11,9 +11,9 @@ $user_id = $getUser['id'];
 $orders = $DMH->get_list("SELECT * FROM `store_orders` WHERE `user_id` = '$user_id' ORDER BY id DESC");
 
 function getStatusBadge($status) {
-    if($status == 'pending') return '<span style="background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Chờ xử lý</span>';
+    if($status == 'pending') return '<span style="background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Đang chuẩn bị</span>';
     if($status == 'shipping') return '<span style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Đang giao hàng</span>';
-    if($status == 'completed') return '<span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Thành công</span>';
+    if($status == 'completed') return '<span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Đã giao hàng</span>';
     return '<span style="background: #64748b; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Đã hủy</span>';
 }
 ?>
@@ -54,8 +54,6 @@ function getStatusBadge($status) {
                         <div>
                             <?php if($order['status'] == 'shipping'): ?>
                                 <button onclick="confirmReceived(<?= $order['id'] ?>)" class="btn accent" style="padding: 10px 20px;"><i class="fa-solid fa-check"></i> Đã nhận hàng</button>
-                            <?php elseif($order['status'] == 'pending'): ?>
-                                <button onclick="alert('Đơn hàng đang chờ shop xác nhận và chuẩn bị gửi đi.')" class="btn outline" style="padding: 10px 20px;">Đang chuẩn bị</button>
                             <?php endif; ?>
                         </div>
                     </div>
