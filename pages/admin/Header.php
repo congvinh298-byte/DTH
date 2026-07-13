@@ -96,7 +96,7 @@
 				<!-- logo -->
 				<div class="logo">
 					<a href="/Admin">
-						<img src="/images/icon/logo_dmh.png" width="140px" alt="" />
+						<img src="/public/assets/logo.png" width="140px" alt="Điện Máy Hiếu" />
 					</a>
 				</div>
 
@@ -140,7 +140,7 @@
 					<li class="profile-info dropdown"><!-- add class "pull-right" if you want to place this from right -->
 		
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-							<img src="/images/logo_tuan.png" alt="" class="img-circle" width="44" />
+							<img src="/public/assets/logo.png" alt="Điện Máy Hiếu" class="img-circle" width="44" />
 							Điện Máy Hiếu
 						</a>
 		
@@ -157,7 +157,7 @@
 			<div class="col-md-6 col-sm-4 clearfix hidden-xs">		
 				<ul class="list-inline links-list pull-right">
 					<li>
-						<a href="/Admin/Logout">
+						<a href="/pages/admin/Logout.php">
 							Log Out <i class="entypo-logout right"></i>
 						</a>
 					</li>
