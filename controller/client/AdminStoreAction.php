@@ -25,7 +25,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             exit;
         }
 
-        $DMH->insert("store_products", [
+        $DMH->insert("products", [
             'type' => $type,
             'name' => $name,
             'price' => $price,
@@ -39,9 +39,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
 
     if($action == 'list_products') {
         $type = $_POST['type'] ?? 'all';
-        $sql = "SELECT * FROM `store_products` ORDER BY id DESC";
+        $sql = "SELECT * FROM `products` ORDER BY id DESC";
         if($type != 'all') {
-            $sql = "SELECT * FROM `store_products` WHERE `type` = '$type' ORDER BY id DESC";
+            $sql = "SELECT * FROM `products` WHERE `type` = '$type' ORDER BY id DESC";
         }
         $products = $DMH->get_list($sql);
         echo json_encode(['status' => 'success', 'data' => $products ? $products : []]);
@@ -50,7 +50,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
 
     if($action == 'delete_product') {
         $id = (int)$_POST['id'];
-        $DMH->query("DELETE FROM `store_products` WHERE `id` = '$id'");
+        $DMH->query("DELETE FROM `products` WHERE `id` = '$id'");
         echo json_encode(['status' => 'success']);
         exit;
     }
@@ -65,7 +65,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         $id = (int)$_POST['id'];
         $order = $DMH->get_row("SELECT * FROM `store_orders` WHERE `id` = '$id'");
         if($order) {
-            $items = $DMH->get_list("SELECT i.*, p.name FROM `store_order_items` i LEFT JOIN `store_products` p ON i.product_id = p.id WHERE i.order_id = '$id'");
+            $items = $DMH->get_list("SELECT i.*, p.name FROM `store_order_items` i LEFT JOIN `products` p ON i.product_id = p.id WHERE i.order_id = '$id'");
             echo json_encode(['status' => 'success', 'data' => ['order' => $order, 'items' => $items ? $items : []]]);
         } else {
             echo json_encode(['status' => 'error']);

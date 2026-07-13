@@ -38,7 +38,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         $quantity = 1; // Default 1
 
         // Check if product exists
-        $check = $DMH->get_row("SELECT * FROM `store_products` WHERE `id` = '$product_id'");
+        $check = $DMH->get_row("SELECT * FROM `products` WHERE `id` = '$product_id' AND `status` = 1");
         if(!$check) {
             echo json_encode(['status' => 'error', 'msg' => 'Sản phẩm không tồn tại']);
             exit;
@@ -66,7 +66,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             exit;
         }
 
-        $items = $DMH->get_list("SELECT c.*, p.name, p.price, p.image FROM `store_carts` c JOIN `store_products` p ON c.product_id = p.id WHERE c.user_id = '$user_id'");
+        $items = $DMH->get_list("SELECT c.*, p.name, p.price, p.image FROM `store_carts` c JOIN `products` p ON c.product_id = p.id WHERE c.user_id = '$user_id'");
         echo json_encode(['status' => 'success', 'data' => $items ? $items : []]);
         exit;
     }
@@ -108,7 +108,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             exit;
         }
 
-        $items = $DMH->get_list("SELECT c.*, p.price FROM `store_carts` c JOIN `store_products` p ON c.product_id = p.id WHERE c.user_id = '$user_id'");
+        $items = $DMH->get_list("SELECT c.*, p.price FROM `store_carts` c JOIN `products` p ON c.product_id = p.id WHERE c.user_id = '$user_id'");
         if(!$items) {
             echo json_encode(['status' => 'error', 'msg' => 'Giỏ hàng trống']);
             exit;

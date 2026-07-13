@@ -9,7 +9,7 @@ require_once(__DIR__."/Header.php");
 CheckLogin();
 
 $user_id = $getUser['id'];
-$items = $DMH->get_list("SELECT c.*, p.name, p.price, p.image FROM `store_carts` c JOIN `store_products` p ON c.product_id = p.id WHERE c.user_id = '$user_id'");
+$items = $DMH->get_list("SELECT c.*, p.name, p.price, p.image FROM `store_carts` c JOIN `products` p ON c.product_id = p.id WHERE c.user_id = '$user_id'");
 
 $sotien = 0;
 ?>

@@ -20,18 +20,18 @@ if ($limit > 100) $limit = 100;
 $offset = ($page - 1) * $limit;
 
 $category = isset($_GET['category']) ? $_GET['category'] : '';
-$where = "WHERE `status` = 'ACTIVE'";
+$where = "WHERE `status` = 1";
 
 if ($category === '3d') {
     $where .= " AND `type` = '3d'";
 } elseif ($category === 'dienmay') {
-    $where .= " AND `type` != '3d'";
+    $where .= " AND `type` = 'dienmay'";
 }
 
-$query = "SELECT `id`, `name`, `type`, `price`, `image`, `description` FROM `store_products` $where ORDER BY id DESC LIMIT $limit OFFSET $offset";
+$query = "SELECT `id`, `name`, `type`, `price`, `image`, `description` FROM `products` $where ORDER BY id DESC LIMIT $limit OFFSET $offset";
 $products = $DMH->get_list($query);
 
-$totalQuery = $DMH->get_row("SELECT COUNT(id) as total FROM `store_products` $where");
+$totalQuery = $DMH->get_row("SELECT COUNT(id) as total FROM `products` $where");
 $total = isset($totalQuery['total']) ? (int)$totalQuery['total'] : 0;
 
 $result = [
