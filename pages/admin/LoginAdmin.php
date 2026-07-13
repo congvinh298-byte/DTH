@@ -2,26 +2,43 @@
 define("IN_SITE", true);
 require_once(__DIR__."/../../core/config.php");
 require_once(__DIR__."/../../core/function.php");
-$tieude = "ĐĂNG NHẬP TRANG QUẢN TRỊ";
 
-// N?u cha ??ng nhp admin -> v? trang ??ng nhp admin chinh
-if (empty($getUser) || $getUser['level'] != 'admin') {
-    header("Location: /admin-login.php");
+$tieude = "ĐĂNG NHẬP QUẢN TRỊ | ĐIỆN MÁY HIẾU";
+
+// N?u ?a ??ng nhp admin -> chuy?n vo qu?n lý ??n hng
+if (!empty($getUser) && $getUser['level'] == 'admin') {
+    header("Location: /pages/admin/QuanLyDonHang.php");
     exit;
 }
 
-// N?u ?a v??t qua x?c th?c c?p 2 -> chuy?n vo admin
-if (!empty($_SESSION['loginadmin'])) {
-    header("Location: /pages/admin/QuanLyDonHang.php");
-    exit;
+$error = '';
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['username']) && isset($_POST['password'])) {
+    $username = check_string($_POST['username']);
+    $password = check_string($_POST['password']);
+    
+    if (empty($username) || empty($password)) {
+        $error = 'Vui lòng nhập đầy đủ tài khoản và mật khẩu.';
+    } else {
+        $md5pass = md5($password);
+        $check = $DMH->get_row("SELECT * FROM `users` WHERE `username` = '$username' AND `password` = '$md5pass' AND `level` = 'admin' AND `banned` = 'ON'");
+        
+        if ($check) {
+            $token = random('qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM0123456789', 64);
+            $DMH->update("users", ['tokenlog' => $token], " `id` = '".$check['id']."' ");
+            setcookie('token', $token, time() + 86400 * 30, '/');
+            $_SESSION['loginadmin'] = true;
+            header("Location: /pages/admin/QuanLyDonHang.php");
+            exit;
+        } else {
+            $error = 'Tài khoản hoặc mật khẩu không chính xác.';
+        }
+    }
 }
 
 require_once(__DIR__."/../../pages/admin/Head.php");
 ?>
 <body class="page-body login-page login-form-fall">
 
-
-<!-- This is needed when you send requests via Ajax -->
 <script type="text/javascript">
 var baseurl = '';
 </script>
@@ -36,7 +53,8 @@ var baseurl = '';
 				<img src="/public/assets/logo.png" width="120" alt="Điện Máy Hiếu" />
 			</a>
 			
-			<p class="description">Điện Máy Hiếu - Quản lý cửa hàng</p>
+			<p class="description" style="font-size: 18px; font-weight: bold;">ĐIỆN MÁY HIẾU</p>
+			<p class="description">Quản lý cửa hàng - Gọi thợ tận nhà</p>
 			
 		
 		</div>
@@ -51,9 +69,23 @@ var baseurl = '';
 		
 		<div class="login-content">
 			
+			<?php if ($error): ?>
+				<div style="background: #ef4444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-weight: bold;"><?= htmlspecialchars($error) ?></div>
+			<?php endif; ?>
 		
-			
-			<form role="form">
+			<form role="form" method="POST" action="">
+				
+				<div class="form-group">
+					
+					<div class="input-group">
+						<div class="input-group-addon">
+							<i class="entypo-user"></i>
+						</div>
+						
+						<input type="text" class="form-control" name="username" id="username" placeholder="Tài khoản admin" autocomplete="off" required value="anhthienvodich" />
+					</div>
+				
+				</div>
 				
 				<div class="form-group">
 					
@@ -62,7 +94,7 @@ var baseurl = '';
 							<i class="entypo-key"></i>
 						</div>
 						
-						<input type="password" class="form-control" name="password" id="password" placeholder="Mật khẩu cấp 2" autocomplete="off" />
+						<input type="password" class="form-control" name="password" id="password" placeholder="Mật khẩu" autocomplete="off" required />
 					</div>
 				
 				</div>
@@ -70,54 +102,12 @@ var baseurl = '';
 				<div class="form-group">
 					<button type="submit" class="btn btn-primary btn-block btn-login" id="btnLogin">
 						<i class="entypo-login"></i>
-						Đăng nhập
+						Đăng nhập hệ thống
 					</button>
 				</div>
-                <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.11.5/sweetalert2.all.js"></script>
-
-			
-                <script type="text/javascript">
-                    $("#btnLogin").on("click", function() {
-                        $('#btnLogin').html('<i class="fa fa-spinner fa-spin"></i> Đang xử lý...').prop('disabled',
-                            true);
-                        $.ajax({
-                            url: "<?=BASE_URL('controller/admin/Dangnhap.php');?>",
-                            method: "POST",
-                            dataType: "JSON",
-                            data: {
-                                password: $("#password").val()
-                            },
-                            success: function(respone) {
-                                cuteToast({
-                                    type: respone.status,
-                                    message: respone.msg,
-                                    timer: 5000
-                                });
-                                if(respone.url != '-1') {
-                                    setTimeout("location.href = '" + respone.url + "';", respone.time);
-                                } else {
-                                    setTimeout("location.href = '/pages/admin/QuanLyDonHang.php';", 1000);
-                                }
-                                $('#btnLogin').html('<i class="entypo-login"></i> Đăng nhập').prop('disabled', false);
-                            },
-                            error: function() {
-                                cuteToast({
-                                    type: "error",
-                                    message: 'Không thể xử lý',
-                                    timer: 5000
-                                });
-                                $('#btnLogin').html('<i class="entypo-login"></i> Đăng nhập').prop('disabled', false);
-                            }
-
-                        });
-                    });
-                </script>
-
 
 			</form>
 			
-                    
 			
 			
 		</div>

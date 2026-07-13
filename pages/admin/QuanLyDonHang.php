@@ -19,18 +19,13 @@ $log .= "-----\n";
 file_put_contents($debugLog, $log, FILE_APPEND | LOCK_EX);
 
 if (!isset($_COOKIE['token']) || empty($getUser)) {
-    header("Location: /admin-login.php");
+    header("Location: /pages/admin/LoginAdmin.php");
     exit;
 }
 if ($getUser['level'] != 'admin') {
     header("Location: /");
     exit;
 }
-if (empty($_SESSION['loginadmin'])) {
-    header("Location: /pages/admin/LoginAdmin.php");
-    exit;
-}
-
 $_SESSION['loginadmin'] = true;
 
 $tieude = 'Quản Lý Đơn Hàng | Điện Máy Hiếu';
