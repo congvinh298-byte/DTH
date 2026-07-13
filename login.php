@@ -54,7 +54,8 @@ require_once(__DIR__."/pages/client/Header.php");
             </button>
         </form>
         
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #cbd5e1; display: flex; justify-content: center;">
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #cbd5e1; display: flex; flex-direction: column; gap: 12px; justify-content: center;">
+            <a href="/register.php" style="width: 100%; text-align: center; background: #38bdf8; color: #0f172a; text-decoration: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; border: 2px solid #0f172a; transition: all 0.2s; box-shadow: 2px 2px 0px #0f172a;" onmouseover="this.style.background='#0ea5e9'; this.style.color='#fff';" onmouseout="this.style.background='#38bdf8'; this.style.color='#0f172a';"><i class="fa-solid fa-user-plus"></i> Tạo tài khoản mới</a>
             <a href="/tho-login.php" style="width: 100%; text-align: center; background: #e2e8f0; color: #0f172a; text-decoration: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; border: 2px solid #cbd5e1; transition: all 0.2s;" onmouseover="this.style.background='#cbd5e1'" onmouseout="this.style.background='#e2e8f0'"><i class="fa-solid fa-screwdriver-wrench"></i> Dành Cho Thợ / Đối Tác</a>
         </div>
     </div>
