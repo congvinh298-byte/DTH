@@ -3,7 +3,7 @@ define("IN_SITE", true);
 require_once(__DIR__."/../../core/config.php");
 require_once(__DIR__."/../../core/function.php");
 CheckAdmin();
-$tieude = 'BẢNG ĐIỀU KHIỂN | ĐIỆN MÁY HIẾU';
+$tieude = 'B?NG DI?U KHI?N | DI?N MAY HI?U';
 require_once(__DIR__."/../../pages/admin/Head.php");
 require_once(__DIR__."/../../pages/admin/Header.php");
 
@@ -30,12 +30,22 @@ $doanhthuhn = $tiencard + $tienatm;
 
 $viewhn = $DMH->num_rows("SELECT * FROM `logclient` WHERE `ip` != '' AND `time` >= DATE(NOW()) AND `time` < DATE(NOW()) + INTERVAL 1 DAY") ?? 0;
 
-// ===== DU LIEU GAN DAY =====
 $recent_orders = $DMH->get_list("SELECT * FROM `store_orders` ORDER BY id DESC LIMIT 6");
 $recent_bookings = $DMH->get_list("SELECT * FROM `dat_lich` ORDER BY id DESC LIMIT 6");
 
-// ===== CAN XU LY =====
 $can_xu_ly = $pending_orders + $shipping_orders + $pending_bookings + $confirmed_bookings;
+
+function formatMoney($n) { return number_format($n, 0, ',', '.'); }
+function statusBadge($status) {
+    switch($status) {
+        case 'pending': return '<span class="badge badge-pending">Ch? x? l?</span>';
+        case 'shipping': return '<span class="badge badge-shipping">?ang giao</span>';
+        case 'completed': return '<span class="badge badge-completed">Hon thnh</span>';
+        case 'cancelled': return '<span class="badge badge-cancelled">? h?y</span>';
+        case 'confirmed': return '<span class="badge badge-completed">Xc nh?n</span>';
+        default: return '<span class="badge badge-pending">'.$status.'</span>';
+    }
+}
 ?>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -43,17 +53,16 @@ $can_xu_ly = $pending_orders + $shipping_orders + $pending_bookings + $confirmed
 <style>
     .dmh-dashboard { 
         padding: 0; 
-        background: #f1f5f9; 
+        background: #f8fafc; 
         min-height: calc(100vh - 60px); 
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     .dmh-dashboard * { box-sizing: border-box; }
     
-    /* Header chac chan */
     .dash-topbar {
         background: #fff;
-        border-bottom: 2px solid #e2e8f0;
-        padding: 20px 28px;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 22px 28px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -61,7 +70,7 @@ $can_xu_ly = $pending_orders + $shipping_orders + $pending_bookings + $confirmed
         gap: 12px;
     }
     .dash-topbar h1 {
-        font-size: 22px;
+        font-size: 24px;
         font-weight: 900;
         color: #0f172a;
         margin: 0;
@@ -73,229 +82,163 @@ $can_xu_ly = $pending_orders + $shipping_orders + $pending_bookings + $confirmed
         font-weight: 600;
         margin: 4px 0 0;
     }
-    .dash-date {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
+    .dash-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #f1f5f9;
         padding: 10px 16px;
-        font-size: 13px;
-        color: #475569;
+        border-radius: 12px;
         font-weight: 700;
+        color: #334155;
+    }
+    .dash-user i { color: #0ea5e9; font-size: 18px; }
+    
+    .dash-container {
+        padding: 24px 28px;
     }
     
-    /* Content container */
-    .dash-content {
-        padding: 28px;
-        max-width: 1600px;
-        margin: 0 auto;
-    }
-    
-    /* Section title */
-    .dash-section-title {
-        font-size: 15px;
+    .section-title {
+        font-size: 16px;
         font-weight: 800;
         color: #0f172a;
-        margin: 28px 0 16px;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
+        margin: 0 0 16px;
         display: flex;
         align-items: center;
         gap: 10px;
     }
-    .dash-section-title:before {
-        content: '';
-        display: inline-block;
-        width: 4px;
-        height: 18px;
-        background: linear-gradient(180deg, #0ea5e9, #2563eb);
-        border-radius: 2px;
-    }
+    .section-title i { color: #0ea5e9; }
     
-    /* Thong ke cards */
-    .stats-row {
+    .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 20px;
-        margin-bottom: 28px;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 18px;
+        margin-bottom: 26px;
     }
-    .stat-box {
+    .stat-card {
         background: #fff;
-        border-radius: 14px;
-        border: 1px solid #e2e8f0;
+        border-radius: 16px;
         padding: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        transition: all 0.2s;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 12px rgba(15,23,42,0.06);
+        transition: transform 0.15s, box-shadow 0.15s;
     }
-    .stat-box:hover {
+    .stat-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-        border-color: #cbd5e1;
+        box-shadow: 0 10px 24px rgba(15,23,42,0.10);
     }
-    .stat-box .icon {
-        width: 52px;
-        height: 52px;
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 14px;
+    }
+    .stat-label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .stat-icon {
+        width: 42px;
+        height: 42px;
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
-        flex-shrink: 0;
+        font-size: 18px;
     }
-    .stat-box .icon.blue { background: #eff6ff; color: #2563eb; }
-    .stat-box .icon.green { background: #f0fdf4; color: #16a34a; }
-    .stat-box .icon.orange { background: #fff7ed; color: #ea580c; }
-    .stat-box .icon.red { background: #fef2f2; color: #dc2626; }
-    .stat-box .icon.purple { background: #faf5ff; color: #9333ea; }
-    .stat-box .icon.teal { background: #f0fdfa; color: #0d9488; }
-    .stat-box .icon.dark { background: #f8fafc; color: #334155; }
-    .stat-box .data h3 {
-        font-size: 26px;
+    .stat-value {
+        font-size: 28px;
         font-weight: 900;
         color: #0f172a;
-        margin: 0;
-        line-height: 1;
+        margin: 0 0 6px;
     }
-    .stat-box .data p {
-        font-size: 13px;
-        color: #64748b;
-        margin: 6px 0 0;
-        font-weight: 700;
-    }
-    .stat-box .data small {
-        display: block;
-        font-size: 11px;
-        color: #94a3b8;
-        margin-top: 4px;
-        font-weight: 600;
-    }
-    
-    /* Module cards */
-    .modules-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 18px;
-        margin-bottom: 28px;
-    }
-    .module-box {
-        background: #fff;
-        border-radius: 14px;
-        border: 1px solid #e2e8f0;
-        padding: 22px 20px;
-        text-decoration: none;
-        color: inherit;
-        display: flex;
-        align-items: flex-start;
-        gap: 16px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        transition: all 0.2s;
-    }
-    .module-box:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 28px rgba(14,165,233,0.15);
-        border-color: #0ea5e9;
-    }
-    .module-box .icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        flex-shrink: 0;
-    }
-    .module-box .info { flex: 1; }
-    .module-box .info h4 {
-        font-size: 15px;
-        font-weight: 800;
-        color: #0f172a;
-        margin: 0 0 4px;
-    }
-    .module-box .info p {
+    .stat-note {
         font-size: 12px;
         color: #64748b;
-        margin: 0;
         font-weight: 600;
     }
-    .module-box .arrow {
-        color: #cbd5e1;
-        font-size: 14px;
-        margin-top: 4px;
-    }
-    .module-box:hover .arrow { color: #0ea5e9; }
+    .stat-note strong { color: #0f172a; }
     
-    /* Tables */
-    .tables-row {
+    .icon-blue { background: #eff6ff; color: #2563eb; }
+    .icon-cyan { background: #ecfeff; color: #0891b2; }
+    .icon-green { background: #f0fdf4; color: #16a34a; }
+    .icon-yellow { background: #fefce8; color: #ca8a04; }
+    .icon-red { background: #fef2f2; color: #dc2626; }
+    .icon-purple { background: #faf5ff; color: #9333ea; }
+    
+    .dash-row {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
-        gap: 24px;
+        grid-template-columns: 2fr 1fr;
+        gap: 22px;
+        margin-bottom: 26px;
     }
+    @media (max-width: 1100px) {
+        .dash-row { grid-template-columns: 1fr; }
+    }
+    
     .panel {
         background: #fff;
-        border-radius: 14px;
+        border-radius: 16px;
         border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        box-shadow: 0 4px 12px rgba(15,23,42,0.05);
         overflow: hidden;
     }
     .panel-header {
-        padding: 16px 20px;
+        padding: 18px 20px;
         border-bottom: 1px solid #e2e8f0;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: #f8fafc;
     }
-    .panel-header h4 {
-        font-size: 15px;
-        font-weight: 800;
-        color: #0f172a;
+    .panel-header h3 {
         margin: 0;
+        font-size: 15px;
+        font-weight: 900;
+        color: #0f172a;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
     }
+    .panel-header h3 i { color: #0ea5e9; }
+    .panel-header a {
+        color: #0ea5e9;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .panel-header a:hover { text-decoration: underline; }
     .panel-body { padding: 0; }
-    .panel-table {
+    
+    .dash-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 13px;
     }
-    .panel-table th, .panel-table td {
-        padding: 13px 16px;
+    .dash-table th {
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        padding: 12px 16px;
         text-align: left;
         border-bottom: 1px solid #e2e8f0;
     }
-    .panel-table th {
-        background: #f8fafc;
-        color: #475569;
-        font-weight: 800;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+    .dash-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        font-weight: 600;
     }
-    .panel-table tr:last-child td { border-bottom: none; }
-    .panel-table td { color: #334155; font-weight: 500; }
-    .panel-table tr:hover td { background: #f8fafc; }
-    .panel-table td strong { color: #0f172a; font-weight: 700; }
-    .panel-footer {
-        padding: 12px 16px;
-        border-top: 1px solid #e2e8f0;
-        background: #f8fafc;
-    }
-    .panel-footer a {
-        color: #0ea5e9;
-        font-weight: 800;
-        text-decoration: none;
-        font-size: 13px;
-    }
-    .panel-footer a:hover { text-decoration: underline; }
-    
-    .status-badge {
+    .dash-table tr:last-child td { border-bottom: none; }
+    .dash-table tr:hover td { background: #f8fafc; }
+    .text-right { text-align: right; }
+    .text-muted { color: #94a3b8; }
+    .badge {
         display: inline-block;
         padding: 4px 10px;
         border-radius: 999px;
@@ -304,24 +247,57 @@ $can_xu_ly = $pending_orders + $shipping_orders + $pending_bookings + $confirmed
     }
     .badge-pending { background: #fef3c7; color: #92400e; }
     .badge-shipping { background: #dbeafe; color: #1e40af; }
-    .badge-completed { background: #d1fae5; color: #065f46; }
+    .badge-completed { background: #dcfce7; color: #166534; }
     .badge-cancelled { background: #fee2e2; color: #991b1b; }
-    .badge-waiting { background: #ffedd5; color: #9a3412; }
-    .badge-doing { background: #dbeafe; color: #1e40af; }
-    .badge-done { background: #d1fae5; color: #065f46; }
+    
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 14px;
+    }
+    .quick-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        color: #334155;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 13px;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+        transition: all 0.15s;
+    }
+    .quick-btn:hover {
+        border-color: #0ea5e9;
+        color: #0ea5e9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(14,165,233,0.15);
+    }
+    .quick-btn i { font-size: 18px; width: 22px; text-align: center; }
+    
+    .alert-bar {
+        background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+        border: 1px solid #fdba74;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #9a3412;
+        font-weight: 700;
+        font-size: 13px;
+    }
+    .alert-bar i { font-size: 18px; }
     
     .empty-state {
         text-align: center;
-        padding: 40px 20px;
-        color: #64748b;
+        padding: 30px;
+        color: #94a3b8;
         font-weight: 600;
-    }
-    .empty-state i { font-size: 40px; color: #cbd5e1; margin-bottom: 12px; display: block; }
-    
-    @media (max-width: 768px) {
-        .dash-content { padding: 16px; }
-        .stats-row, .modules-row, .tables-row { grid-template-columns: 1fr; }
-        .dash-topbar { flex-direction: column; align-items: flex-start; }
     }
 </style>
 
@@ -329,257 +305,178 @@ $can_xu_ly = $pending_orders + $shipping_orders + $pending_bookings + $confirmed
     
     <div class="dash-topbar">
         <div>
-            <h1><i class="fa-solid fa-gauge-high"></i> BẢNG ĐIỀU KHIỂN HỆ THỐNG</h1>
-            <p>Công ty TNHH MTV Điện Tử Hiếu — Quản lý toàn diện cửa hàng, đơn hàng, dịch vụ và tài chính</p>
+            <h1>B?NG DI?U KHI?N</h1>
+            <p>T?ng quan h? th?ng ?i?n My Hi?u</p>
         </div>
-        <div class="dash-date">
-            <i class="fa-regular fa-calendar"></i> <?= date('H:i d/m/Y') ?>
+        <div class="dash-user">
+            <i class="fa-solid fa-user-shield"></i>
+            <span><?=htmlspecialchars($getUser['username'] ?? 'Admin')?></span>
         </div>
     </div>
     
-    <div class="dash-content">
+    <div class="dash-container">
         
-        <!-- THONG KE CHINH -->
-        <div class="dash-section-title">Thống kê tổng quan</div>
+        <?php if ($can_xu_ly > 0): ?>
+        <div class="alert-bar">
+            <i class="fa-solid fa-bell"></i>
+            Cn <strong><?=$can_xu_ly?> vi?c</strong> c?n x? l? ngay hm nay (?<?=$pending_orders?> ??n hng ch? x? l?, <?=$shipping_orders?> ??n ?ang giao, <?=$pending_bookings?> l?ch h?n ch?, <?=$confirmed_bookings?> l?ch ? xc nh?n).
+        </div>
+        <?php endif; ?>
         
-        <div class="stats-row">
-            <div class="stat-box">
-                <div class="icon blue"><i class="fa-solid fa-users"></i></div>
-                <div class="data">
-                    <h3><?= number_format($total_users) ?></h3>
-                    <p>Tổng khách hàng</p>
-                    <small>+<?= number_format($new_users_today) ?> hôm nay · <?= number_format($total_admins) ?> admin</small>
+        <h2 class="section-title"><i class="fa-solid fa-chart-pie"></i> Th?ng k t?ng quan</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">T?ng khch hng</div>
+                    <div class="stat-icon icon-blue"><i class="fa-solid fa-users"></i></div>
                 </div>
+                <div class="stat-value"><?=formatMoney($total_users)?></div>
+                <div class="stat-note"><strong>+<?=$new_users_today?></strong> khch m?i hm nay</div>
             </div>
             
-            <div class="stat-box">
-                <div class="icon orange"><i class="fa-solid fa-box"></i></div>
-                <div class="data">
-                    <h3><?= number_format($total_orders) ?></h3>
-                    <p>Đơn hàng sản phẩm</p>
-                    <small><?= number_format($pending_orders) ?> chờ · <?= number_format($shipping_orders) ?> đang giao · <?= number_format($completed_orders) ?> hoàn thành</small>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">?on hng s?n ph?m</div>
+                    <div class="stat-icon icon-cyan"><i class="fa-solid fa-box-open"></i></div>
                 </div>
+                <div class="stat-value"><?=formatMoney($total_orders)?></div>
+                <div class="stat-note"><strong><?=$pending_orders?></strong> ch? x? l?, <strong><?=$shipping_orders?></strong> ?ang giao</div>
             </div>
             
-            <div class="stat-box">
-                <div class="icon purple"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-                <div class="data">
-                    <h3><?= number_format($total_bookings) ?></h3>
-                    <p>Đơn đặt lịch thợ</p>
-                    <small><?= number_format($pending_bookings) ?> chờ xác nhận · <?= number_format($confirmed_bookings) ?> đang làm</small>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">L?ch h?n g?i th?</div>
+                    <div class="stat-icon icon-yellow"><i class="fa-solid fa-calendar-check"></i></div>
                 </div>
+                <div class="stat-value"><?=formatMoney($total_bookings)?></div>
+                <div class="stat-note"><strong><?=$pending_bookings?></strong> ch?, <strong><?=$confirmed_bookings?></strong> ? xc nh?n</div>
             </div>
             
-            <div class="stat-box">
-                <div class="icon green"><i class="fa-solid fa-sack-dollar"></i></div>
-                <div class="data">
-                    <h3><?= number_format($total_revenue) ?>đ</h3>
-                    <p>Doanh thu đơn hàng SP</p>
-                    <small>Hôm nay: +<?= number_format($today_revenue) ?>đ · Nạp tiền: +<?= number_format($doanhthuhn) ?>đ</small>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">Doanh thu tch l?y</div>
+                    <div class="stat-icon icon-green"><i class="fa-solid fa-sack-dollar"></i></div>
                 </div>
+                <div class="stat-value"><?=formatMoney($total_revenue)?></sup></div>
+                <div class="stat-note">Hm nay: <strong><?=formatMoney($today_revenue)?>?</strong></div>
             </div>
             
-            <div class="stat-box">
-                <div class="icon red"><i class="fa-solid fa-bell"></i></div>
-                <div class="data">
-                    <h3><?= number_format($can_xu_ly) ?></h3>
-                    <p>Việc cần xử lý</p>
-                    <small>Đơn hàng + đặt lịch đang chờ</small>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">N?p ti?n hm nay</div>
+                    <div class="stat-icon icon-purple"><i class="fa-solid fa-wallet"></i></div>
                 </div>
+                <div class="stat-value"><?=formatMoney($doanhthuhn)?></sup></div>
+                <div class="stat-note">Th? + ATM h?p nh?t</div>
             </div>
             
-            <div class="stat-box">
-                <div class="icon dark"><i class="fa-solid fa-eye"></i></div>
-                <div class="data">
-                    <h3><?= number_format($viewhn) ?></h3>
-                    <p>Lượt truy cập hôm nay</p>
-                    <small>Tổng lượt ghé thăm website</small>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">L??t truy c?p hm nay</div>
+                    <div class="stat-icon icon-red"><i class="fa-solid fa-eye"></i></div>
                 </div>
+                <div class="stat-value"><?=formatMoney($viewhn)?></div>
+                <div class="stat-note">Khch vng lai + thnh vin</div>
             </div>
         </div>
         
-        <!-- MODULE NHANH -->
-        <div class="dash-section-title">Truy cập nhanh</div>
-        
-        <div class="modules-row">
-            <a href="/pages/admin/QuanLyDonHang.php" class="module-box">
-                <div class="icon"><i class="fa-solid fa-box"></i></div>
-                <div class="info">
-                    <h4>Quản lý đơn hàng SP</h4>
-                    <p><?= number_format($pending_orders) ?> đơn đang chuẩn bị</p>
-                </div>
-                <div class="arrow"><i class="fa-solid fa-chevron-right"></i></div>
-            </a>
-            
-            <a href="/pages/admin/QuanLyDatLich.php" class="module-box">
-                <div class="icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-                <div class="info">
-                    <h4>Quản lý đặt lịch thợ</h4>
-                    <p><?= number_format($pending_bookings) ?> đơn chờ xử lý</p>
-                </div>
-                <div class="arrow"><i class="fa-solid fa-chevron-right"></i></div>
-            </a>
-            
-            <a href="/Admin/Quanlythanhvien" class="module-box">
-                <div class="icon"><i class="fa-solid fa-users"></i></div>
-                <div class="info">
-                    <h4>Quản lý thành viên</h4>
-                    <p>+<?= number_format($new_users_today) ?> thành viên hôm nay</p>
-                </div>
-                <div class="arrow"><i class="fa-solid fa-chevron-right"></i></div>
-            </a>
-            
-            <a href="/Admin/Hoadontsr" class="module-box">
-                <div class="icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-                <div class="info">
-                    <h4>Hóa đơn & Tài chính</h4>
-                    <p>Doanh thu hôm nay: <?= number_format($doanhthuhn) ?>đ</p>
-                </div>
-                <div class="arrow"><i class="fa-solid fa-chevron-right"></i></div>
-            </a>
-            
-            <a href="/Admin/Danhmuctaoweb" class="module-box">
-                <div class="icon"><i class="fa-solid fa-globe"></i></div>
-                <div class="info">
-                    <h4>Danh mục tạo web</h4>
-                    <p>Quản lý mẫu website</p>
-                </div>
-                <div class="arrow"><i class="fa-solid fa-chevron-right"></i></div>
-            </a>
-            
-            <a href="/Admin/Danhmucbancode" class="module-box">
-                <div class="icon"><i class="fa-solid fa-code"></i></div>
-                <div class="info">
-                    <h4>Danh mục bán code</h4>
-                    <p>Quản lý source code</p>
-                </div>
-                <div class="arrow"><i class="fa-solid fa-chevron-right"></i></div>
-            </a>
-            
-            <a href="/Admin/Quanlyapi" class="module-box">
-                <div class="icon"><i class="fa-solid fa-key"></i></div>
-                <div class="info">
-                    <h4>Quản lý API</h4>
-                    <p>Khóa API và tích hợp</p>
-                </div>
-                <div class="arrow"><i class="fa-solid fa-chevron-right"></i></div>
-            </a>
-            
-            <a href="/Admin/SettingAdmin" class="module-box">
-                <div class="icon"><i class="fa-solid fa-gear"></i></div>
-                <div class="info">
-                    <h4>Cài đặt hệ thống</h4>
-                    <p>Cấu hình website</p>
-                </div>
-                <div class="arrow"><i class="fa-solid fa-chevron-right"></i></div>
-            </a>
-        </div>
-        
-        <!-- BANG GAN DAY -->
-        <div class="dash-section-title">Hoạt động gần đây</div>
-        
-        <div class="tables-row">
+        <div class="dash-row">
             
             <div class="panel">
                 <div class="panel-header">
-                    <h4><i class="fa-solid fa-box-open"></i> Đơn hàng sản phẩm mới nhất</h4>
+                    <h3><i class="fa-solid fa-cart-shopping"></i> ??n hng g?n ??y</h3>
+                    <a href="/pages/admin/QuanLyDonHang.php">Xem t?t c?</a>
                 </div>
                 <div class="panel-body">
                     <?php if (empty($recent_orders)): ?>
-                        <div class="empty-state">
-                            <i class="fa-solid fa-box-open"></i>
-                            Chưa có đơn hàng nào
-                        </div>
+                        <div class="empty-state">Ch?a c ??n hng no</div>
                     <?php else: ?>
-                        <table class="panel-table">
-                            <thead>
-                                <tr>
-                                    <th>Mã ĐH</th>
-                                    <th>Khách hàng</th>
-                                    <th>Tổng tiền</th>
-                                    <th>Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($recent_orders as $order): ?>
-                                    <tr>
-                                        <td><strong>#<?= (int)$order['id'] ?></strong></td>
-                                        <td><?= htmlspecialchars($order['customer_name']) ?></td>
-                                        <td><strong style="color:#dc2626;"><?= number_format($order['total_amount']) ?>đ</strong></td>
-                                        <td>
-                                            <?php if($order['status'] == 'pending'): ?>
-                                                <span class="status-badge badge-pending">Đang chuẩn bị</span>
-                                            <?php elseif($order['status'] == 'shipping'): ?>
-                                                <span class="status-badge badge-shipping">Đang giao</span>
-                                            <?php elseif($order['status'] == 'completed'): ?>
-                                                <span class="status-badge badge-completed">Hoàn thành</span>
-                                            <?php else: ?>
-                                                <span class="status-badge badge-cancelled">Đã hủy</span>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>M ??n</th>
+                                <th>Khch hng</th>
+                                <th class="text-right">T?ng ti?n</th>
+                                <th>Tr?ng thi</th>
+                                <th>Th?i gian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($recent_orders as $order): ?>
+                            <tr>
+                                <td>#ORD<?=$order['id']?></td>
+                                <td><?=htmlspecialchars($order['customer_name'] ?? $order['username'] ?? 'Khch vng lai')?></td>
+                                <td class="text-right"><?=formatMoney($order['total_amount'] ?? 0)?>?</td>
+                                <td><?=statusBadge($order['status'])?></td>
+                                <td class="text-muted"><?=htmlspecialchars($order['created_at'] ?? '-')?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                     <?php endif; ?>
                 </div>
-                <div class="panel-footer">
-                    <a href="/pages/admin/QuanLyDonHang.php">Xem tất cả đơn hàng sản phẩm →</a>
-                </div>
             </div>
-            
             
             <div class="panel">
                 <div class="panel-header">
-                    <h4><i class="fa-solid fa-calendar-check"></i> Đơn đặt lịch thợ mới nhất</h4>
+                    <h3><i class="fa-solid fa-wrench"></i> L?ch h?n g?n ??y</h3>
+                    <a href="/pages/admin/QuanLyDatLich.php">Xem t?t c?</a>
                 </div>
                 <div class="panel-body">
                     <?php if (empty($recent_bookings)): ?>
-                        <div class="empty-state">
-                            <i class="fa-solid fa-calendar-xmark"></i>
-                            Chưa có đơn đặt lịch nào
-                        </div>
+                        <div class="empty-state">Ch?a c l?ch h?n no</div>
                     <?php else: ?>
-                        <table class="panel-table">
-                            <thead>
-                                <tr>
-                                    <th>Mã</th>
-                                    <th>Khách hàng</th>
-                                    <th>Dịch vụ</th>
-                                    <th>Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($recent_bookings as $booking): ?>
-                                    <tr>
-                                        <td><strong>#<?= (int)$booking['id'] ?></strong></td>
-                                        <td><?= htmlspecialchars($booking['name'] ?? $booking['customer_name'] ?? 'Khách') ?></td>
-                                        <td><?= htmlspecialchars($booking['service'] ?? $booking['service_name'] ?? 'Sửa chữa') ?></td>
-                                        <td>
-                                            <?php if($booking['status'] == 'pending' || $booking['status'] == 'cho_xac_nhan'): ?>
-                                                <span class="status-badge badge-waiting">Chờ xác nhận</span>
-                                            <?php elseif($booking['status'] == 'confirmed' || $booking['status'] == 'dang_lam'): ?>
-                                                <span class="status-badge badge-doing">Đang làm</span>
-                                            <?php elseif($booking['status'] == 'completed' || $booking['status'] == 'hoan_thanh'): ?>
-                                                <span class="status-badge badge-done">Hoàn thành</span>
-                                            <?php else: ?>
-                                                <span class="status-badge badge-cancelled"><?= htmlspecialchars($booking['status']) ?></span>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>M l?ch</th>
+                                <th>Khch hng</th>
+                                <th>D?ch v?</th>
+                                <th>Tr?ng thi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($recent_bookings as $booking): ?>
+                            <tr>
+                                <td>#LIC<?=$booking['id']?></td>
+                                <td><?=htmlspecialchars($booking['name'] ?? $booking['username'] ?? '-')?></td>
+                                <td><?=htmlspecialchars($booking['service'] ?? '-')?></td>
+                                <td><?=statusBadge($booking['status'])?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                     <?php endif; ?>
                 </div>
-                <div class="panel-footer">
-                    <a href="/pages/admin/QuanLyDatLich.php">Xem tất cả đơn đặt lịch →</a>
-                </div>
             </div>
+            
         </div>
-    
+        
+        
+        <h2 class="section-title"><i class="fa-solid fa-bolt"></i> Thao tc nhanh</h2>
+        <div class="quick-actions">
+            <a href="/pages/admin/QuanLyDonHang.php" class="quick-btn">
+                <i class="fa-solid fa-box"></i> Qu?n l ??n hng
+            </a>
+            <a href="/pages/admin/QuanLyDatLich.php" class="quick-btn">
+                <i class="fa-solid fa-calendar-check"></i> L?ch g?i th?
+            </a>
+            <a href="/Admin/Quanlythanhvien" class="quick-btn">
+                <i class="fa-solid fa-users"></i> Thnh vin
+            </a>
+            <a href="/Admin/Magiamgia" class="quick-btn">
+                <i class="fa-solid fa-ticket"></i> M? gi?m gi
+            </a>
+            <a href="/Admin/SettingAdmin" class="quick-btn">
+                <i class="fa-solid fa-gear"></i> Ci d?t h? th?ng
+            </a>
+            <a href="/pages/admin/Logout.php" class="quick-btn" style="color:#dc2626;">
+                <i class="fa-solid fa-power-off"></i> ?ang xu?t
+            </a>
+        </div>
+        
     </div>
-
+    
 </div>
 
 <?php require_once(__DIR__."/../../pages/admin/Footer.php"); ?>
