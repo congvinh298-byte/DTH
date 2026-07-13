@@ -3,36 +3,9 @@
 
   $currentUri = $_SERVER['REQUEST_URI'] ?? '';
 
-  $adminMenus = $DMH->get_list("SELECT * FROM `admin_menus` WHERE `parent_id` = 0 AND `is_active` = 1 ORDER BY `sort_order` ASC, `id` ASC");
-
-  $menuIcons = [
-      'Dashboard' => 'fa-gauge',
-      'Quan ly don hang' => 'fa-box',
-      'Quan ly dat lich' => 'fa-calendar-check',
-      'Thanh vien' => 'fa-users',
-      'Tho' => 'fa-wrench',
-      'Danh muc' => 'fa-folder-tree',
-      'San pham' => 'fa-boxes-stacked',
-      'Dich vu' => 'fa-screwdriver-wrench',
-      'Lich su' => 'fa-clock-rotate-left',
-      'Hoa don' => 'fa-file-invoice-dollar',
-      'Ma giam gia' => 'fa-ticket',
-      'Cai dat' => 'fa-gear',
-      'Bao cao' => 'fa-chart-line',
-  ];
-
   function adminMenuActive($url, $currentUri) {
       if ($url == '#' || $url == '') return false;
       return strpos($currentUri, $url) !== false;
-  }
-
-  function adminMenuOpen($menu, $currentUri, $DMH) {
-      $children = $DMH->get_list("SELECT * FROM `admin_menus` WHERE `parent_id" .
-          " = '" . (int)$menu['id'] . "' AND `is_active` = 1 ORDER BY `sort_order` ASC");
-      foreach ($children as $child) {
-          if (adminMenuActive($child['url'], $currentUri)) return true;
-      }
-      return adminMenuActive($menu['url'], $currentUri);
   }
 ?>
 <body>
@@ -45,12 +18,14 @@
         </div>
         <ul class="admin-menu">
             <li><a href="/Admin" class="<?= adminMenuActive('/Admin', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-gauge"></i> Dashboard</span></a></li>
-            <li><a href="/pages/admin/QuanLyDonHang.php" class="<?= adminMenuActive('/QuanLyDonHang', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-box"></i> Don hang</span></a></li>
-            <li><a href="/pages/admin/QuanLyDatLich.php" class="<?= adminMenuActive('/QuanLyDatLich', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-calendar-check"></i> Dat lich</span></a></li>
-            <li><a href="/pages/admin/QuanLyThanhVien.php" class="<?= adminMenuActive('/QuanLyThanhVien', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-users"></i> Thanh vien</span></a></li>
-            <li><a href="/pages/admin/QuanLyTho.php" class="<?= adminMenuActive('/QuanLyTho', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-wrench"></i> Tho</span></a></li>
-            <li><a href="/pages/admin/CaiDat.php" class="<?= adminMenuActive('/CaiDat', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-gear"></i> Cai dat</span></a></li>
-            <li><a href="/pages/admin/BaoCao.php" class="<?= adminMenuActive('/BaoCao', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-chart-line"></i> Bao cao</span></a></li>
+            <li><a href="/pages/admin/QuanLyDonHang.php" class="<?= adminMenuActive('QuanLyDonHang', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-box"></i> Don hang san pham</span></a></li>
+            <li><a href="/pages/admin/QuanLyDatLich.php" class="<?= adminMenuActive('QuanLyDatLich', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-calendar-check"></i> Don goi tho</span></a></li>
+            <li><a href="/pages/admin/QuanLyKhachHang.php" class="<?= adminMenuActive('QuanLyKhachHang', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-users"></i> Khach hang</span></a></li>
+            <li><a href="/pages/admin/QuanLyTho.php" class="<?= adminMenuActive('QuanLyTho', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-wrench"></i> Tho</span></a></li>
+            <li><a href="/pages/admin/GianHangDienMay.php" class="<?= adminMenuActive('GianHangDienMay', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-plug"></i> Gian hang dien may</span></a></li>
+            <li><a href="/pages/admin/GianHang3D.php" class="<?= adminMenuActive('GianHang3D', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-cube"></i> Gian hang 3D</span></a></li>
+            <li><a href="/pages/admin/CaiDat.php" class="<?= adminMenuActive('CaiDat', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-gear"></i> Cai dat</span></a></li>
+            <li><a href="/pages/admin/BaoCao.php" class="<?= adminMenuActive('BaoCao', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-chart-line"></i> Bao cao</span></a></li>
         </ul>
     </aside>
     <div class="admin-main">

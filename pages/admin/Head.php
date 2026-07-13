@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="He thong quan tri Dien May Hieu">
     <link rel="icon" href="/public/assets/logo.png">
-    <title><?=$tieude;?></title>
+    <title><?=htmlspecialchars($tieude ?? 'Admin | Dien May Hieu')?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Inter:400,600,700,800">
     <style>
@@ -25,7 +25,6 @@
             display: flex;
             min-height: 100vh;
         }
-        /* Sidebar */
         .admin-sidebar {
             width: 260px;
             background: linear-gradient(180deg, #0f172a 0%, #1e3a8a 100%);
@@ -111,7 +110,6 @@
             color: #38bdf8;
             background: rgba(14,165,233,0.1);
         }
-        /* Main */
         .admin-main {
             flex: 1;
             margin-left: 260px;
@@ -157,7 +155,6 @@
             padding: 24px 26px;
             flex: 1;
         }
-        /* Cards */
         .card {
             background: #fff;
             border: 1px solid #e2e8f0;
@@ -182,7 +179,6 @@
         .card-body {
             padding: 20px;
         }
-        /* Stats */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -220,7 +216,6 @@
             justify-content: center;
             font-size: 17px;
         }
-        /* Tables */
         .table {
             width: 100%;
             border-collapse: collapse;
@@ -245,7 +240,6 @@
         }
         .table tr:hover td { background: #f8fafc; }
         .table tr:last-child td { border-bottom: none; }
-        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -265,8 +259,8 @@
         .btn-danger { background: #dc2626; }
         .btn-info { background: #0ea5e9; }
         .btn-warning { background: #f59e0b; color: #fff; }
+        .btn-secondary { background: #64748b; }
         .btn-sm { padding: 6px 10px; font-size: 12px; }
-        /* Badges */
         .badge {
             display: inline-block;
             padding: 4px 10px;
@@ -278,7 +272,7 @@
         .badge-shipping { background: #dbeafe; color: #1e40af; }
         .badge-completed { background: #dcfce7; color: #166534; }
         .badge-cancelled { background: #fee2e2; color: #991b1b; }
-        /* Forms */
+        .badge-default { background: #f1f5f9; color: #475569; }
         .form-group { margin-bottom: 14px; }
         .form-group label {
             display: block;
@@ -300,7 +294,6 @@
             border-color: #38bdf8;
             box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
         }
-        /* Login */
         .login-page {
             min-height: 100vh;
             display: flex;
@@ -349,10 +342,113 @@
         }
         .alert-danger { background: #fee2e2; color: #991b1b; }
         .alert-success { background: #dcfce7; color: #166534; }
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-bar a {
+            padding: 8px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 700;
+            color: #475569;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+        .filter-bar a:hover { background: #e2e8f0; }
+        .filter-bar a.active {
+            background: #0ea5e9;
+            color: #fff;
+            border-color: #0ea5e9;
+            box-shadow: 0 4px 12px rgba(14,165,233,0.25);
+        }
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.6);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-backdrop.active { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px;
+            width: 100%;
+            max-width: 560px;
+            color: #0f172a;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        .modal-box h3 { margin-top: 0; margin-bottom: 20px; font-size: 20px; }
+        .modal-box label {
+            display: block;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 700;
+            margin: 14px 0 6px;
+            text-transform: uppercase;
+        }
+        .modal-box select, .modal-box input, .modal-box textarea {
+            width: 100%;
+            padding: 12px 14px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            color: #0f172a;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        .modal-box select:focus, .modal-box input:focus, .modal-box textarea:focus {
+            outline: none;
+            border-color: #38bdf8;
+            background: #fff;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 22px;
+        }
+        .modal-actions button {
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn-modal-primary { background: #0ea5e9; color: #fff; }
+        .btn-modal-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid #e2e8f0; }
+        .tabs a {
+            padding: 10px 18px;
+            font-weight: 700;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+        }
+        .tabs a.active { color: #0ea5e9; border-bottom-color: #0ea5e9; }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 9px;
+            font-size: 14px;
+        }
+        .search-box button { white-space: nowrap; }
         @media (max-width: 768px) {
             .admin-sidebar { transform: translateX(-100%); transition: transform .3s; }
             .admin-sidebar.open { transform: translateX(0); }
             .admin-main { margin-left: 0; }
+            .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>

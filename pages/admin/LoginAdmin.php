@@ -14,7 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password'] ?? '');
     if ($username && $password) {
         $hash = md5($password);
-        $user = $DMH->get_row("SELECT * FROM `users` WHERE `username` = '" . $DMH->escape($username) . "' AND `password` = '" . $DMH->escape($hash) . "' AND `level` = 'admin'");
+        $DMH->connect();
+        $u = mysqli_real_escape_string($DMH->ketnoi, $username);
+        $user = $DMH->get_row("SELECT * FROM `users` WHERE `username` = '$u' AND `password` = '$hash' AND `level` IN ('admin','bct')");
         if ($user) {
             $_SESSION['loginadmin'] = true;
             $_SESSION['admin_id'] = $user['id'];
@@ -22,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: /Admin");
             exit;
         } else {
-            $error = 'Tai khoan hoac mat khau khong dung.';
+            $error = 'Tai khoan hoac mat khau khong dung, hoac khong co quyen admin.';
         }
     } else {
         $error = 'Vui long nhap day du thong tin.';

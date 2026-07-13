@@ -101,6 +101,14 @@ RewriteRule ^Admin/EditPar_manguon$ pages/admin/EditPar_manguon.php [L]
 
 RewriteRule ^Admin/EditQuanlytaoweb/([A-Za-z0-9-_]+)$ pages/client/EditQuanlytaoweb.php?id=$1 [L]
 RewriteRule ^Admin/Logout$ pages/admin/Logout.php [L]
+RewriteRule ^Admin/QuanLyDonHang$ pages/admin/QuanLyDonHang.php [L]
+RewriteRule ^Admin/QuanLyDatLich$ pages/admin/QuanLyDatLich.php [L]
+RewriteRule ^Admin/QuanLyKhachHang$ pages/admin/QuanLyKhachHang.php [L]
+RewriteRule ^Admin/QuanLyTho$ pages/admin/QuanLyTho.php [L]
+RewriteRule ^Admin/GianHangDienMay$ pages/admin/GianHangDienMay.php [L]
+RewriteRule ^Admin/GianHang3D$ pages/admin/GianHang3D.php [L]
+RewriteRule ^Admin/CaiDat$ pages/admin/CaiDat.php [L]
+RewriteRule ^Admin/BaoCao$ pages/admin/BaoCao.php [L]
 
 
 RewriteRule ^Partner$ pages/partner/Home.php [L]

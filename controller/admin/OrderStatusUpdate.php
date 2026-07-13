@@ -6,13 +6,17 @@ require_once(__DIR__."/../../core/function.php");
 header('Content-Type: application/json');
 
 try {
-    if (!isset($_COOKIE['token']) || empty($getUser) || $getUser['level'] != 'admin') {
-        echo json_encode(['status' => 'error', 'msg' => 'Không có quyền']);
+    if (!isset($_COOKIE['token']) || empty($getUser) || !in_array($getUser['level'], ['admin','bct'])) {
+        echo json_encode(['status' => 'error', 'msg' => 'Khong co quyen']);
+        exit;
+    }
+    if (empty($_SESSION['loginadmin'])) {
+        echo json_encode(['status' => 'error', 'msg' => 'Vui long dang nhap admin']);
         exit;
     }
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST['id']) || empty($_POST['status'])) {
-        echo json_encode(['status' => 'error', 'msg' => 'Thiếu thông tin']);
+        echo json_encode(['status' => 'error', 'msg' => 'Thieu thong tin']);
         exit;
     }
 
@@ -21,13 +25,13 @@ try {
     $validStatuses = ['pending', 'shipping', 'completed', 'cancelled'];
 
     if (!in_array($status, $validStatuses)) {
-        echo json_encode(['status' => 'error', 'msg' => 'Trạng thái không hợp lệ']);
+        echo json_encode(['status' => 'error', 'msg' => 'Trang thai khong hop le']);
         exit;
     }
 
     $order = $DMH->get_row("SELECT * FROM `store_orders` WHERE `id` = '$id'");
     if (!$order) {
-        echo json_encode(['status' => 'error', 'msg' => 'Đơn hàng không tồn tại']);
+        echo json_encode(['status' => 'error', 'msg' => 'Don hang khong ton tai']);
         exit;
     }
 
@@ -40,7 +44,7 @@ try {
         $deliveryNote = check_string($_POST['delivery_note'] ?? '');
 
         if (empty($shipperName)) {
-            echo json_encode(['status' => 'error', 'msg' => 'Vui lòng nhập tên người giao / đơn vị vận chuyển']);
+            echo json_encode(['status' => 'error', 'msg' => 'Vui long nhap nguoi giao / don vi van chuyen']);
             exit;
         }
 
@@ -59,25 +63,15 @@ try {
 
     if ($update) {
         $statusText = [
-            'pending' => 'Đang chuẩn bị',
-            'shipping' => 'Đang giao hàng',
-            'completed' => 'Đã giao xong',
-            'cancelled' => 'Đã hủy'
+            'pending' => 'Dang chuan bi',
+            'shipping' => 'Dang giao hang',
+            'completed' => 'Da giao xong',
+            'cancelled' => 'Da huy'
         ][$status];
-        
-        $teleMsg = "📦 CẬP NHẬT ĐƠN HÀNG #".$id."\nKhách: ".$order['customer_name']."\nSĐT: ".$order['phone']."\nTrạng thái mới: ".$statusText;
-        if ($status == 'shipping' && !empty($updateData['shipper_name'])) {
-            $teleMsg .= "\nGiao bởi: ".$updateData['shipper_name'];
-            if (!empty($updateData['shipper_phone'])) $teleMsg .= " (".$updateData['shipper_phone'].")";
-            if (!empty($updateData['tracking_code'])) $teleMsg .= "\nMã vận đơn: ".$updateData['tracking_code'];
-        }
-        send_tele($teleMsg);
-        
-        echo json_encode(['status' => 'success', 'msg' => 'Đã cập nhật trạng thái: ' . $statusText]);
+        echo json_encode(['status' => 'success', 'msg' => 'Da cap nhat trang thai: ' . $statusText]);
     } else {
-        echo json_encode(['status' => 'error', 'msg' => 'Cập nhật thất bại']);
+        echo json_encode(['status' => 'error', 'msg' => 'Cap nhat that bai']);
     }
 } catch (Throwable $e) {
-    echo json_encode(['status' => 'error', 'msg' => 'Lỗi hệ thống: ' . $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'msg' => 'Loi he thong: ' . $e->getMessage()]);
 }
-?>
