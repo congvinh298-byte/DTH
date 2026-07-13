@@ -3,9 +3,9 @@ define("IN_SITE", true);
 require_once(__DIR__."/../../core/config.php");
 require_once(__DIR__."/../../core/function.php");
 
-// Neu da dang nhap admin -> chuyen vao quan ly don hang
+// Neu da dang nhap admin -> chuyen vao trang admin tong quan
 if (!empty($getUser) && $getUser['level'] == 'admin') {
-    header("Location: /pages/admin/QuanLyDonHang.php");
+    header("Location: /Admin");
     exit;
 }
 
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['username']) && isset($
             $DMH->update("users", ['tokenlog' => $token], " `id` = '".$check['id']."' ");
             setcookie('token', $token, time() + 86400 * 30, '/');
             $_SESSION['loginadmin'] = true;
-            header("Location: /pages/admin/QuanLyDonHang.php");
+            header("Location: /Admin");
             exit;
         } else {
             $error = 'Tài khoản hoặc mật khẩu không chính xác.';
