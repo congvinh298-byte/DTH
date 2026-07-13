@@ -2,26 +2,101 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="Điện Máy Hiếu - Mua sắm điện máy, gọi thợ tận nhà tại Lấp Vò, Đồng Tháp.">
   <title>Điện Máy Hiếu</title>
+  <link rel="manifest" href="manifest.json">
   <style>
-    body, html { 
-      margin: 0; 
-      padding: 0; 
-      height: 100%; 
-      overflow: hidden; 
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+      overflow: hidden;
       background-color: #0f172a;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
-    iframe { 
-      width: 100%; 
-      height: 100%; 
-      border: none; 
-      display: block;
+    #loader {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #0f172a; color: #38bdf8;
+      z-index: 9999; transition: opacity .35s ease;
     }
+    #loader.hidden { opacity: 0; pointer-events: none; }
+    #loader .brand {
+      font-size: 26px; font-weight: 900; letter-spacing: -0.5px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    #loader .sub {
+      margin-top: 12px; font-size: 13px; color: #94a3b8;
+    }
+    #loader .spinner {
+      margin-top: 24px; width: 32px; height: 32px;
+      border: 3px solid rgba(56,189,248,0.2);
+      border-top-color: #38bdf8; border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #appFrame {
+      width: 100%; height: 100%; border: none; display: block;
+    }
+    #offline {
+      display: none; position: fixed; inset: 0;
+      background: #0f172a; color: #fff;
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 30px; text-align: center; z-index: 10000;
+    }
+    #offline i { font-size: 48px; color: #f59e0b; margin-bottom: 16px; }
   </style>
 </head>
 <body>
-  <!-- Nhúng trực tiếp bản Web của Điện Máy Hiếu vào Mini App -->
-  <iframe src="https://dienmayhieu.com/" allow="geolocation; microphone; camera"></iframe>
+  <div id="loader">
+    <div class="brand">⚡ Điện Máy Hiếu</div>
+    <div class="sub">Đang tải hệ sinh thái...</div>
+    <div class="spinner"></div>
+  </div>
+
+  <div id="offline">
+    <div>📡 Không có kết nối mạng</div>
+    <div style="margin-top:12px;font-size:14px;color:#94a3b8;">Vui lòng kiểm tra lại mạng và thử lại.</div>
+  </div>
+
+  <iframe
+    id="appFrame"
+    src="https://dienmayhieu.com/"
+    allow="geolocation; microphone; camera"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-modals"
+    loading="eager"
+    title="Điện Máy Hiếu"
+  ></iframe>
+
+  <script>
+    (function() {
+      var loader = document.getElementById('loader');
+      var frame = document.getElementById('appFrame');
+      var offline = document.getElementById('offline');
+
+      function hideLoader() {
+        loader.classList.add('hidden');
+      }
+      frame.addEventListener('load', hideLoader);
+      setTimeout(hideLoader, 4000);
+
+      function updateOnlineStatus() {
+        offline.style.display = navigator.onLine ? 'none' : 'flex';
+      }
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      updateOnlineStatus();
+
+      // Gửi thông báo về Zalo khi web sẵn sàng (nếu có SDK)
+      if (window.ZaloMiniApp && typeof window.ZaloMiniApp.postMessage === 'function') {
+        try {
+          window.ZaloMiniApp.postMessage(JSON.stringify({ event: 'web_ready', ts: Date.now() }));
+        } catch (e) {}
+      }
+    })();
+  </script>
 </body>
 </html>

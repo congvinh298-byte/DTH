@@ -34,6 +34,7 @@
                 <a class="btn dark" href="/dien-may">Cửa hàng</a>
                 <a class="btn dark" href="/in-3d.php">In 3D</a>
                 <a class="btn dark" href="/goi-tho.php">Gọi thợ</a>
+                <a class="btn dark" href="/tra-cuu-don.php">Tra cứu đơn</a>
                 <a class="btn" href="/GioHang.php" style="background: var(--brand-accent); color: white; position: relative; padding: 10px 15px;">
                     <i class="fa-solid fa-cart-shopping"></i> Giỏ Hàng
                     <span id="cartCountBadge" style="position: absolute; top: -8px; right: -8px; background: #f43f5e; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: none;">0</span>

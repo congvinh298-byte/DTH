@@ -26,7 +26,7 @@ $base_url = 'https://'.$_SERVER['SERVER_NAME'].'/'; // Thay url web bạn
 // $base_url = 'https://localhost/';
 class DMH
 {
-    private $ketnoi;
+    public $ketnoi;
     function connect()
     {
         if (!$this->ketnoi)
@@ -170,15 +170,46 @@ class DMH
         }
         return false;
     }
+    /**
+     * Truy vấn prepared statement an toàn, tránh SQL injection.
+     * Dùng cho các truy vấn đọc dữ liệu 1 dòng với tham số từ user.
+     */
+    function prepared_get_row($sql, $params = [])
+    {
+        $this->connect();
+        $stmt = mysqli_prepare($this->ketnoi, $sql);
+        if (!$stmt) return false;
+        if (!empty($params)) {
+            $types = '';
+            $bindParams = [];
+            foreach ($params as $p) {
+                if (is_int($p)) $types .= 'i';
+                elseif (is_double($p)) $types .= 'd';
+                else $types .= 's';
+                $bindParams[] = $p;
+            }
+            $refs = [];
+            foreach ($bindParams as $key => $value) {
+                $refs[$key] = &$bindParams[$key];
+            }
+            array_unshift($refs, $types);
+            call_user_func_array([$stmt, 'bind_param'], $refs);
+        }
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+        return $row ?: false;
+    }
 }
 if(isset($_COOKIE['token']))
 { 
     $DMH = new DMH;
-    $getUser = $DMH->get_row(" SELECT * FROM users WHERE tokenlog = '".$_COOKIE['token']."' ");
+    $getUser = $DMH->prepared_get_row("SELECT * FROM users WHERE tokenlog = ?", [$_COOKIE['token']]);
     $my_username = True;
-    $my_money = $getUser['money'];
-    $verifx = $getUser['verify'];
-    $my_level = $getUser['level'];
+    $my_money = $getUser ? $getUser['money'] : 0;
+    $verifx = $getUser ? $getUser['verify'] : 0;
+    $my_level = $getUser ? $getUser['level'] : '';
     if(!$getUser) {
         unset($_COOKIE['token']);
         setcookie('token', null, -1, '/');

@@ -200,6 +200,8 @@ require_once(__DIR__."/pages/client/Head.php");
                 <div class="order-actions">
                     <a href="tel:<?= htmlspecialchars($don['sdt']) ?>" class="btn-action btn-call"><i class="fa-solid fa-phone"></i> Gọi Khách</a>
                     <a href="<?= $mapLink ?>" target="_blank" class="btn-action btn-map"><i class="fa-solid fa-location-arrow"></i> Dẫn Đường</a>
+                    <button class="btn-action" onclick="baoGiaPhatSinh(<?= $don['id'] ?>)" style="background: rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.3);"><i class="fa-solid fa-file-invoice-dollar"></i> Báo giá phát sinh</button>
+                    <button class="btn-action" onclick="nghiemThu(<?= $don['id'] ?>)" style="background: rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3);"><i class="fa-solid fa-camera"></i> Nghiệm thu</button>
                     <button class="btn-action btn-hoanthanh" onclick="hoanThanhDon(<?= $don['id'] ?>)"><i class="fa-solid fa-clipboard-check"></i> Đánh Dấu Hoàn Thành</button>
                 </div>
             </div>
@@ -236,6 +238,38 @@ require_once(__DIR__."/pages/client/Head.php");
     </div>
 </div>
 
+<!-- Modal Báo giá phát sinh -->
+<div id="modalBaogia" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#1e293b; border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:24px; width:90%; max-width:420px; color:#fff;">
+        <div style="font-weight:800; font-size:18px; margin-bottom:12px;">📝 Báo giá phát sinh</div>
+        <input type="hidden" id="bg_id">
+        <label style="display:block; margin-bottom:6px; color:#94a3b8; font-size:13px;">Mô tả vật tư / công việc phát sinh</label>
+        <textarea id="bg_mota" rows="3" style="width:100%; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:12px; border-radius:8px; margin-bottom:12px;"></textarea>
+        <label style="display:block; margin-bottom:6px; color:#94a3b8; font-size:13px;">Giá phát sinh (VND)</label>
+        <input type="number" id="bg_gia" style="width:100%; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:12px; border-radius:8px; margin-bottom:16px;">
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button onclick="closeModal('modalBaogia')" style="padding:8px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#fff; cursor:pointer;">Đóng</button>
+            <button onclick="saveBaogia()" style="padding:8px 16px; border-radius:8px; border:none; background:#38bdf8; color:#0f172a; font-weight:800; cursor:pointer;">Gửi báo giá</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nghiệm thu -->
+<div id="modalNghiemthu" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#1e293b; border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:24px; width:90%; max-width:420px; color:#fff;">
+        <div style="font-weight:800; font-size:18px; margin-bottom:12px;">📸 Nghiệm thu công việc</div>
+        <input type="hidden" id="nt_id">
+        <label style="display:block; margin-bottom:6px; color:#94a3b8; font-size:13px;">Link ảnh nghiệm thu (Google Drive / imgur / v.v.)</label>
+        <input type="url" id="nt_anh" placeholder="https://..." style="width:100%; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:12px; border-radius:8px; margin-bottom:12px;">
+        <label style="display:block; margin-bottom:6px; color:#94a3b8; font-size:13px;">Ghi chú nghiệm thu</label>
+        <textarea id="nt_note" rows="2" style="width:100%; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:12px; border-radius:8px; margin-bottom:16px;"></textarea>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button onclick="closeModal('modalNghiemthu')" style="padding:8px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#fff; cursor:pointer;">Đóng</button>
+            <button onclick="saveNghiemthu()" style="padding:8px 16px; border-radius:8px; border:none; background:#8b5cf6; color:#fff; font-weight:800; cursor:pointer;">Lưu nghiệm thu</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -246,6 +280,65 @@ function switchTab(tabId, btn) {
     
     document.getElementById(tabId).classList.add('active');
     btn.classList.add('active');
+}
+
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+function baoGiaPhatSinh(id) {
+    document.getElementById('bg_id').value = id;
+    document.getElementById('bg_mota').value = '';
+    document.getElementById('bg_gia').value = '';
+    openModal('modalBaogia');
+}
+function saveBaogia() {
+    var id = document.getElementById('bg_id').value;
+    var mota = document.getElementById('bg_mota').value.trim();
+    var gia = document.getElementById('bg_gia').value.trim();
+    if(!mota || !gia) return Swal.fire('Thiếu thông tin', 'Vui lòng nhập đầy đủ mô tả và giá', 'warning');
+    $.ajax({
+        url: '/controller/client/BaoGiaPhatSinh.php',
+        method: 'POST',
+        data: { id: id, mota: mota, gia: gia },
+        dataType: 'json',
+        success: function(r) {
+            if(r.status == 'success') {
+                Swal.fire('Thành công', r.msg, 'success').then(() => location.reload());
+            } else {
+                Swal.fire('Lỗi', r.msg, 'error');
+            }
+        },
+        error: function() { Swal.fire('Lỗi', 'Không thể kết nối máy chủ', 'error'); }
+    });
+    closeModal('modalBaogia');
+}
+
+function nghiemThu(id) {
+    document.getElementById('nt_id').value = id;
+    document.getElementById('nt_anh').value = '';
+    document.getElementById('nt_note').value = '';
+    openModal('modalNghiemthu');
+}
+function saveNghiemthu() {
+    var id = document.getElementById('nt_id').value;
+    var anh = document.getElementById('nt_anh').value.trim();
+    var note = document.getElementById('nt_note').value.trim();
+    if(!anh) return Swal.fire('Thiếu thông tin', 'Vui lòng nhập link ảnh nghiệm thu', 'warning');
+    $.ajax({
+        url: '/controller/client/NghiemThu.php',
+        method: 'POST',
+        data: { id: id, anh: anh, note: note },
+        dataType: 'json',
+        success: function(r) {
+            if(r.status == 'success') {
+                Swal.fire('Thành công', r.msg, 'success').then(() => location.reload());
+            } else {
+                Swal.fire('Lỗi', r.msg, 'error');
+            }
+        },
+        error: function() { Swal.fire('Lỗi', 'Không thể kết nối máy chủ', 'error'); }
+    });
+    closeModal('modalNghiemthu');
 }
 
 function nhanDon(id) {

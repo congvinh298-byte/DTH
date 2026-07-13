@@ -18,6 +18,13 @@ if ($q && $r = $q->fetch_assoc()) {
       `thoigian` int(11) NOT NULL,
       `trangthai` varchar(50) DEFAULT 'CHO_XU_LY',
       `tho_id` int(11) DEFAULT '0',
+      `phatsinh_mota` text DEFAULT NULL,
+      `phatsinh_gia` int(11) DEFAULT '0',
+      `phatsinh_duyet` tinyint(1) DEFAULT '0',
+      `nghiemthu_note` text DEFAULT NULL,
+      `nghiemthu_anh` text DEFAULT NULL,
+      `danhgia_sao` tinyint(1) DEFAULT NULL,
+      `danhgia_noidung` text DEFAULT NULL,
       PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
     echo "Created dat_lich.\n";

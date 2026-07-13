@@ -15,10 +15,31 @@ $sql_dat_lich = "CREATE TABLE IF NOT EXISTS `dat_lich` (
   `thoigian` int(11) NOT NULL,
   `trangthai` varchar(50) DEFAULT 'CHO_XU_LY',
   `tho_id` int(11) DEFAULT '0',
+  `phatsinh_mota` text DEFAULT NULL,
+  `phatsinh_gia` int(11) DEFAULT '0',
+  `phatsinh_duyet` tinyint(1) DEFAULT '0',
+  `nghiemthu_note` text DEFAULT NULL,
+  `nghiemthu_anh` text DEFAULT NULL,
+  `danhgia_sao` tinyint(1) DEFAULT NULL,
+  `danhgia_noidung` text DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 if ($DMH->query($sql_dat_lich)) {
     echo "<p style='color:green'>✔ Bảng dat_lich đã sẵn sàng.</p>";
+
+    // Thêm các cột mới nếu chưa có
+    $cols = [
+        'phatsinh_mota' => "ALTER TABLE `dat_lich` ADD COLUMN IF NOT EXISTS `phatsinh_mota` text DEFAULT NULL",
+        'phatsinh_gia' => "ALTER TABLE `dat_lich` ADD COLUMN IF NOT EXISTS `phatsinh_gia` int(11) DEFAULT '0'",
+        'phatsinh_duyet' => "ALTER TABLE `dat_lich` ADD COLUMN IF NOT EXISTS `phatsinh_duyet` tinyint(1) DEFAULT '0'",
+        'nghiemthu_note' => "ALTER TABLE `dat_lich` ADD COLUMN IF NOT EXISTS `nghiemthu_note` text DEFAULT NULL",
+        'nghiemthu_anh' => "ALTER TABLE `dat_lich` ADD COLUMN IF NOT EXISTS `nghiemthu_anh` text DEFAULT NULL",
+        'danhgia_sao' => "ALTER TABLE `dat_lich` ADD COLUMN IF NOT EXISTS `danhgia_sao` tinyint(1) DEFAULT NULL",
+        'danhgia_noidung' => "ALTER TABLE `dat_lich` ADD COLUMN IF NOT EXISTS `danhgia_noidung` text DEFAULT NULL"
+    ];
+    foreach ($cols as $col => $sql) {
+        $DMH->query($sql);
+    }
 } else {
     echo "<p style='color:red'>✖ Lỗi tạo bảng dat_lich.</p>";
 }
