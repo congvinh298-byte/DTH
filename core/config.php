@@ -272,13 +272,13 @@ function CheckAdmin()
     global $my_level;
     if($my_level != 'admin' && $my_level != 'bct')
     {
-        return die('<script type="text/javascript">setTimeout(function(){ location.href = "'.BASE_URL('').'" }, 0);</script>');
+        return die('<script type="text/javascript">window.location.href = "/pages/admin/LoginAdmin.php";</script>');
     }
     else
     {
         if(empty($_SESSION['loginadmin']))
         {
-            return die('<script type="text/javascript">setTimeout(function(){ location.href = "'.BASE_URL('Login-Admin').'" }, 0);</script>');
+            return die('<script type="text/javascript">window.location.href = "/pages/admin/LoginAdmin.php";</script>');
         }
     }
 }
