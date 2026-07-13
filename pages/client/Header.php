@@ -7,13 +7,27 @@
 <body id="body_class">
     
     <div class="top">
-        <div class="wrap">
+        <div class="wrap" style="display: flex; justify-content: space-between; align-items: center;">
             <div>Điện Tử Hiếu - Storefront công khai</div>
-            <div id="topBarStatus" style="display: flex; gap: 15px; align-items: center;">
-                <a href="/login.php" style="color: white; font-weight: bold; text-decoration: underline;" id="loginLink">Đăng nhập / Đăng ký</a>
+            <div style="position: relative;">
+                <button id="topMenuToggle" onclick="toggleTopMenu()" style="background: transparent; border: none; color: white; font-size: 22px; cursor: pointer; padding: 4px 8px;">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div id="topMenuDropdown" style="display: none; position: absolute; right: 0; top: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; min-width: 200px; z-index: 1000; padding: 8px 0; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                    <a href="/login.php" style="display: block; padding: 10px 16px; color: white; font-weight: 600; text-decoration: none; white-space: nowrap;"><i class="fa-solid fa-sign-in-alt" style="width: 22px;"></i> Đăng nhập / Đăng ký</a>
+                </div>
             </div>
         </div>
     </div>
+    
+    <style>
+    #topMenuDropdown a:hover { background: rgba(56,189,248,0.15); color: #38bdf8; }
+    #topMenuDropdown a i { margin-right: 8px; }
+    @media (max-width: 768px) {
+        .top .wrap { padding: 0 12px; }
+        #topMenuDropdown { right: -10px; }
+    }
+    </style>
     
     <div class="approval-line">Website đang chờ duyệt</div>
     
@@ -44,6 +58,21 @@
     </header>
 
     <script>
+    function toggleTopMenu() {
+        const menu = document.getElementById('topMenuDropdown');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Đóng menu khi click ra ngoài
+    document.addEventListener('click', function(e) {
+        const toggle = document.getElementById('topMenuToggle');
+        const menu = document.getElementById('topMenuDropdown');
+        if (!toggle || !menu) return;
+        if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    });
+
     // JS check login status for header
     function checkLoginStatus() {
         $.ajax({
@@ -54,10 +83,10 @@
                 try {
                     let res = typeof r === 'string' ? JSON.parse(r) : r;
                     if(res.logged_in) {
-                        $('#topBarStatus').html(`
-                            <a href="/pages/client/Orders.php" style="color: #38bdf8; font-weight: bold; margin-right: 15px;"><i class="fa-solid fa-box"></i> Đơn hàng của tôi</a>
-                            <a href="/profile.php" style="color: white; font-weight: bold; margin-right: 15px;"><i class="fa-solid fa-user"></i> Xin chào, ${res.username}</a>
-                            <a href="javascript:void(0)" onclick="logout()" style="color: #f43f5e; font-weight: bold;"><i class="fa-solid fa-sign-out-alt"></i> Đăng xuất</a>
+                        $('#topMenuDropdown').html(`
+                            <a href="/pages/client/Orders.php" style="display: block; padding: 10px 16px; color: white; font-weight: 600; text-decoration: none; white-space: nowrap;"><i class="fa-solid fa-box" style="width: 22px;"></i> Đơn hàng của tôi</a>
+                            <a href="/profile.php" style="display: block; padding: 10px 16px; color: white; font-weight: 600; text-decoration: none; white-space: nowrap;"><i class="fa-solid fa-user" style="width: 22px;"></i> Thông tin khách hàng</a>
+                            <a href="javascript:void(0)" onclick="logout()" style="display: block; padding: 10px 16px; color: #f43f5e; font-weight: 600; text-decoration: none; white-space: nowrap;"><i class="fa-solid fa-sign-out-alt" style="width: 22px;"></i> Đăng xuất</a>
                         `);
                         updateCartCount();
                     }
