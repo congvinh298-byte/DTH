@@ -47,6 +47,32 @@ function getStatusBadge($status) {
                         <div><i class="fa-solid fa-credit-card" style="width: 20px;"></i> Thanh toán: <?= $order['payment_method'] == 'COD' ? 'Khi nhận hàng' : 'Chuyển khoản' ?> <?= $order['vat_requested'] ? '<span style="color: #38bdf8; font-weight: bold;">(Có VAT)</span>' : '' ?></div>
                     </div>
 
+                    <?php if($order['status'] == 'shipping' || $order['status'] == 'completed'): ?>
+                        <div style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 15px; margin-bottom: 15px;">
+                            <h4 style="margin: 0 0 10px; color: #38bdf8; font-size: 14px;">🚚 Thông tin giao hàng</h4>
+                            
+                            <?php if(!empty($order['shipper_name'])): ?>
+                                <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 6px;"><strong>Người giao:</strong> <?= htmlspecialchars($order['shipper_name']) ?></div>
+                            <?php endif; ?>
+                            
+                            <?php if(!empty($order['shipper_phone'])): ?>
+                                <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 6px;"><strong>SĐT giao hàng:</strong> <?= htmlspecialchars($order['shipper_phone']) ?></div>
+                            <?php endif; ?>
+                            
+                            <?php if(!empty($order['tracking_code'])): ?>
+                                <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 6px;"><strong>Mã vận đơn:</strong> <span style="color: #fbbf24; font-weight: bold;"><?= htmlspecialchars($order['tracking_code']) ?></span></div>
+                            <?php endif; ?>
+                            
+                            <?php if(!empty($order['delivery_note'])): ?>
+                                <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 6px;"><strong>Ghi chú:</strong> <?= htmlspecialchars($order['delivery_note']) ?></div>
+                            <?php endif; ?>
+                            
+                            <?php if(!empty($order['shipped_at'])): ?>
+                                <div style="font-size: 13px; color: #94a3b8;"><strong>Giao lúc:</strong> <?= date('H:i d/m/Y', strtotime($order['shipped_at'])) ?></div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+
                     <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px;">
                         <div style="font-size: 16px;">
                             Tổng tiền: <strong style="color: #f43f5e; font-size: 20px;"><?= number_format($order['total_amount']) ?>đ</strong>

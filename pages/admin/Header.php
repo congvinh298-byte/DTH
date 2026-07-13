@@ -1,5 +1,87 @@
 <?php
   if (!defined('IN_SITE')) die('The Request Not Found');
+
+  // Tính badges cho các menu d?c bi?t
+  $badge_xuly_card = $DMH->num_rows(" SELECT * FROM `napcard` WHERE `status` = 'xuly' ") ?? 0;
+  $badge_xuly_domain = $DMH->num_rows(" SELECT * FROM `lichsumuamien` WHERE `status` = 'xuly' ") ?? 0;
+  $badge_xuly_giahan = $DMH->num_rows(" SELECT * FROM `lichsugiahan` WHERE `status` = 'xuly' ") ?? 0;
+  $badge_xuly_hoso = $DMH->num_rows(" SELECT * FROM `upload_hoso` WHERE `status` = 'xuly' ") ?? 0;
+  $badge_tsr = $DMH->num_rows(" SELECT * FROM `hoadon_vi` WHERE `status` = 'xuly' ") ?? 0;
+  $badge_lichsu_total = $badge_xuly_card + $badge_xuly_domain + $badge_xuly_giahan + $badge_xuly_hoso;
+
+  $menuBadges = [
+      'Lịch sử' => '<span class="badge badge-info">'.$badge_lichsu_total.'</span>',
+      'Hóa đơn' => '<span class="badge badge-danger">'.$badge_tsr.'</span>',
+      'Đơn gia hạn website' => '<span class="badge badge-danger">'.$badge_xuly_giahan.'</span>',
+      'Lịch sử mua miền' => '<span class="badge badge-danger">'.$badge_xuly_domain.'</span>',
+      'Lịch sử nạp thẻ' => '<span class="badge badge-danger">'.$badge_xuly_card.'</span>',
+      'Hồ sơ xác minh' => '<span class="badge badge-danger">'.$badge_xuly_hoso.'</span>',
+      'Hóa đơn TSR' => '<span class="badge badge-danger">'.$badge_tsr.'</span>',
+  ];
+
+  function renderAdminMenu($DMH, $menuBadges) {
+      $currentUri = $_SERVER['REQUEST_URI'] ?? '';
+      $menus = $DMH->get_list("SELECT * FROM `admin_menus` WHERE `parent_id` = 0 AND `is_active` = 1 ORDER BY `sort_order` ASC, `id` ASC");
+      
+      foreach ($menus as $menu) {
+          $children = $DMH->get_list("SELECT * FROM `admin_menus` WHERE `parent_id` = '{$menu['id']}' AND `is_active` = 1 ORDER BY `sort_order` ASC, `id` ASC");
+          $isActiveParent = isAdminMenuActive($menu, $children, $currentUri);
+          $hasSub = !empty($children);
+          $menuUrl = $menu['url'] == '#' ? 'javascript:void(0)' : htmlspecialchars($menu['url']);
+          $icon = !empty($menu['icon']) ? $menu['icon'] : 'entypo-doc-text';
+          $badge = $menuBadges[$menu['title']] ?? '';
+
+          // Special: T?o s? ki?n thm trng thi ?en
+          $extraIcon = '';
+          if ($menu['title'] == 'Tạo sự kiện') {
+              $extraIcon = ($DMH->site('sukien') == 'OFF') ? ' ?' : ' ?';
+          }
+
+          $liClass = '';
+          if ($hasSub) {
+              $liClass = 'has-sub ' . ($isActiveParent ? 'opened active' : '');
+          } else {
+              $liClass = $isActiveParent ? 'active' : '';
+          }
+
+          echo "\n\t\t\t\t<li class=\"$liClass\"\u003e";
+          echo "\n\t\t\t\t\t<a href=\"$menuUrl\"\u003e";
+          echo "\n\t\t\t\t\t\t<i class=\"$icon\"></i>";
+          echo "\n\t\t\t\t\t\t<span class=\"title\">" . htmlspecialchars($menu['title']) . $extraIcon . "</span>";
+          echo $badge;
+          echo "\n\t\t\t\t\t</a>";
+
+          if ($hasSub) {
+              echo "\n\t\t\t\t\t<ul>";
+              foreach ($children as $child) {
+                  $childActive = isAdminMenuActive($child, [], $currentUri);
+                  $childUrl = $child['url'] == '#' ? 'javascript:void(0)' : htmlspecialchars($child['url']);
+                  $childBadge = $menuBadges[$child['title']] ?? '';
+                  echo "\n\t\t\t\t\t\t<li class=\"" . ($childActive ? 'active' : '') . "\"\u003e";
+                  echo "\n\t\t\t\t\t\t\t<a href=\"$childUrl\"\u003e";
+                  echo "\n\t\t\t\t\t\t\t\t<span class=\"title\">" . htmlspecialchars($child['title']) . "</span>";
+                  echo $childBadge;
+                  echo "\n\t\t\t\t\t\t\t</a>";
+                  echo "\n\t\t\t\t\t\t</li>";
+              }
+              echo "\n\t\t\t\t\t</ul>";
+          }
+
+          echo "\n\t\t\t\t</li>";
+      }
+  }
+
+  function isAdminMenuActive($menu, $children, $currentUri) {
+      if (strpos($currentUri, $menu['url']) !== false && $menu['url'] != '#') {
+          return true;
+      }
+      foreach ($children as $child) {
+          if (strpos($currentUri, $child['url']) !== false && $child['url'] != '#') {
+              return true;
+          }
+      }
+      return false;
+  }
 ?>
 <body class="page-body  page-fade" data-url="https//dmh.vn">
 
@@ -35,237 +117,9 @@
 
 			</header>
 			
-									
+								
 			<ul id="main-menu" class="main-menu">
-				<li>
-					<a href="/Admin">
-						<i class="entypo-gauge"></i>
-						<span class="title">Dashboard</span>
-					</a>
-				</li>
-				<li class="<?=(strpos($_SERVER['REQUEST_URI'], '/pages/admin/QuanLyDonHang.php') !== false ? 'active' : ''); ?>">
-					<a href="/pages/admin/QuanLyDonHang.php">
-						<i class="entypo-basket"></i>
-						<span class="title">Quản lý đơn hàng</span>
-					</a>
-				</li>
-				<li class="has-sub <?=(in_array($_SERVER['REQUEST_URI'], ['/Admin/Quanlythanhvien', '/Admin/QuanlythanhvienKhoa', '/Admin/ThanhVienON']) ? 'opened active' : ''); ?>">
-					<a href="/Admin/Quanlythanhvien">
-						<i class="entypo-user"></i>
-						<span class="title">Thành viên</span>
-					</a>
-					<ul>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Quanlythanhvien') ? 'active' : ''; ?>">
-							<a href="/Admin/Quanlythanhvien">
-								<span class="title">Tổng thành viên</span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/QuanlythanhvienKhoa') ? 'active' : ''; ?>">
-							<a href="/Admin/QuanlythanhvienKhoa">
-								<span class="title">Thành viên bị khóa</span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/ThanhVienON') ? 'active' : ''; ?>">
-							<a href="/Admin/ThanhVienON">
-								<span class="title">Thành viên đang ONLINE</span>
-							</a>
-						</li>
-						
-					
-					</ul>
-				</li>
-				<li class="has-sub <?=(in_array($_SERVER['REQUEST_URI'], ['/Admin/Danhmuctaoweb', '/Admin/ThemMauWeb']) ? 'opened active' : ''); ?>">
-					<a href="layout-api.html">
-						<i class="entypo-layout"></i>
-						<span class="title">Danh mục tạo website</span>
-					</a>
-					<ul>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Danhmuctaoweb') ? 'active' : ''; ?>">
-							<a href="/Admin/Danhmuctaoweb">
-								<span class="title">Quản lý danh mục</span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/ThemMauWeb') ? 'active' : ''; ?>">
-							<a href="/Admin/ThemMauWeb">
-								<span class="title">Đăng mẫu website</span>
-							</a>
-						</li>
-						
-					</ul>
-				</li>
-
-				<li class="has-sub <?=(in_array($_SERVER['REQUEST_URI'], ['/Admin/Danhmucbancode', '/Admin/ThemMaNguon']) ? 'opened active' : ''); ?>">
-					<a href="layout-api.html">
-						<i class="entypo-layout"></i>
-						<span class="title">Danh mục bán code</span>
-					</a>
-					<ul>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Danhmucbancode') ? 'active' : ''; ?>">
-							<a href="/Admin/Danhmucbancode">
-								<span class="title">Quản lý danh mục</span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/ThemMaNguon') ? 'active' : ''; ?>">
-							<a href="/Admin/ThemMaNguon">
-								<span class="title">Đăng bán code</span>
-							</a>
-						</li>
-						
-					</ul>
-				</li>
-
-				<li class="has-sub <?=(in_array($_SERVER['REQUEST_URI'], ['/Admin/HistoryChuyentien', '/Admin/HistoryBiendongsodu', '/Admin/Lichsugiahan', '/Admin/Quanlytaoweb', '/Admin/Quanlymuamien', '/Admin/Lichsunaptien', '/Admin/LichsunaptienATM', '/Admin/Lichsumuacode', '/Admin/HosoXacMinh']) ? 'opened active' : ''); ?>">
-					<?php 
-						$xuly_card = $DMH->num_rows(" SELECT * FROM `napcard` WHERE `status` = 'xuly' ") ?? 0;
-						$xuly_domain = $DMH->num_rows(" SELECT * FROM `lichsumuamien` WHERE `status` = 'xuly' ") ?? 0;
-						$xuly_giahan = $DMH->num_rows(" SELECT * FROM `lichsugiahan` WHERE `status` = 'xuly' ") ?? 0;
-						$xuly_hoso = $DMH->num_rows(" SELECT * FROM `upload_hoso` WHERE `status` = 'xuly' ") ?? 0;
-					?>
-					<a href="layout-api.html">
-						<i class="entypo-back"></i>
-						<span class="title">Lịch sử</span>
-						<span class="badge badge-info"><?=($xuly_card + $xuly_domain +$xuly_giahan + $xuly_hoso);?></span>
-					</a>
-					<ul>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/HistoryChuyentien') ? 'active' : ''; ?>">
-							<a href="/Admin/HistoryChuyentien">
-								<span class="title">Lịch sử chuyển tiền</span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/HistoryBiendongsodu') ? 'active' : ''; ?>">
-							<a href="/Admin/HistoryBiendongsodu">
-								<span class="title">Biến động số dư</span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Lichsugiahan') ? 'active' : ''; ?>">
-							<a href="/Admin/Lichsugiahan">
-								<span class="title">Đơn gia hạn website</span>
-								<span class="badge badge-danger"><?=($xuly_giahan);?></span>
-
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Quanlytaoweb') ? 'active' : ''; ?>">
-							<a href="/Admin/Quanlytaoweb">
-								<span class="title">Lịch sử tạo website</span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Quanlymuamien') ? 'active' : ''; ?>">
-							<a href="/Admin/Quanlymuamien">
-								<span class="title">Lịch sử mua miền</span>
-								<span class="badge badge-danger"><?=($xuly_domain);?></span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Lichsunaptien') ? 'active' : ''; ?>">
-							<a href="/Admin/Lichsunaptien">
-								<span class="title">Lịch sử nạp thẻ</span>
-								<span class="badge badge-danger"><?=($xuly_card);?></span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/LichsunaptienATM') ? 'active' : ''; ?>">
-							<a href="/Admin/LichsunaptienATM">
-								<span class="title">Lịch sử nạp ATM</span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Lichsumuacode') ? 'active' : ''; ?>">
-							<a href="/Admin/Lichsumuacode">
-								<span class="title">Lịch sử mua Code</span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/HosoXacMinh') ? 'active' : ''; ?>">
-							<a href="/Admin/HosoXacMinh">
-								<span class="title">Hồ sơ xác minh</span>
-								<span class="badge badge-danger"><?=($xuly_hoso);?></span>
-							</a>
-						</li>
-					</ul>
-				</li>
-
-				<li class="has-sub <?=(in_array($_SERVER['REQUEST_URI'], ['/Admin/Hoadontsr']) ? 'opened active' : ''); ?>">
-				<?php 
-					$tsr = $DMH->num_rows(" SELECT * FROM `hoadon_vi` WHERE `status` = 'xuly' ") ?? 0;
-					// $tsr = $DMH->num_rows(" SELECT * FROM `hoadon_vi` WHERE `status` = 'xuly' ") ?? 0;
-
-				?>
-					<a href="layout-api.html">
-						<i class="entypo-window"></i>
-						<span class="title">Hóa đơn</span>
-						<span class="badge badge-danger"><?=$tsr;?></span>
-					</a>
-					<ul>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Hoadontsr') ? 'active' : ''; ?>">
-							<a href="/Admin/Hoadontsr">
-								<span class="title">Hóa đơn TSR</span>
-								<span class="badge badge-danger"><?=$tsr;?></span>
-							</a>
-						</li>
-					</ul>
-				</li>
-
-				<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Magiamgia') ? 'active' : ''; ?>">
-					<a href="/Admin/Magiamgia">
-						<i class="entypo-share"></i>
-						<span class="title">Mã giảm giá</span>
-					</a>
-				</li>
-
-				<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Quanlyapi') ? 'active' : ''; ?>">
-					<a href="/Admin/Quanlyapi">
-						<i class="entypo entypo-code"></i>
-						<span class="title">Quản lý API</span>
-					</a>
-				</li>
-				<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Blockip') ? 'active' : ''; ?>">
-					<a href="/Admin/Blockip">
-						<i class="entypo-block"></i>
-						<span class="title">Block IP</span>
-					</a>
-				</li>
-				<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Sukien') ? 'active' : ''; ?>">
-					<a href="/Admin/Sukien">
-						<i class="entypo-tag"></i>
-						<span class="title">Tạo sự kiện	<?=($DMH->site('sukien') == 'OFF') ? '🔴' : ' 🟢';?></span>
-					</a>
-				</li>
-				<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/SettingAdmin') ? 'active' : ''; ?>">
-					<a href="/Admin/SettingAdmin">
-						<i class="entypo-cog"></i>
-						<span class="title">Cài đặt</span>
-					</a>
-				</li>
-				<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/SettingClf') ? 'active' : ''; ?>">
-					<a href="/Admin/SettingClf">
-						<i class="entypo-cog"></i>
-						<span class="title">Cấu Hình CLF</span>
-					</a>
-				</li>
-
-				<li class="has-sub <?=(in_array($_SERVER['REQUEST_URI'], ['/Admin/Par_manguon', '/Admin/Par_ruttien', '/Admin/Par_biendongsodu']) ? 'opened active' : ''); ?>">
-					<a href="/Admin/Par_manguon">
-						<i class="entypo-users"></i>
-						<span class="title">Cộng tác viên</span>
-					</a>
-					<ul>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Par_manguon') ? 'active' : ''; ?>">
-							<a href="/Admin/Par_manguon">
-								<span class="title">Mã nguồn đang bán</span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Par_ruttien') ? 'active' : ''; ?>">
-							<a href="/Admin/Par_ruttien">
-								<span class="title">Rút tiền</span>
-							</a>
-						</li>
-						<li class="<?=($_SERVER['REQUEST_URI'] == '/Admin/Par_biendongsodu') ? 'active' : ''; ?>">
-							<a href="/Admin/Par_biendongsodu">
-								<span class="title">Biến động số dư</span>
-							</a>
-						</li>
-					
-					</ul>
-				</li>
-
-
-
+				<?php renderAdminMenu($DMH, $menuBadges); ?>
 			</ul>
 			
 			
@@ -298,7 +152,7 @@
 			
 		
 			</div>
-	
+
 			<!-- Raw Links -->
 			<div class="col-md-6 col-sm-4 clearfix hidden-xs">		
 				<ul class="list-inline links-list pull-right">
@@ -314,4 +168,3 @@
 		</div>
 		
 		<hr />
-	

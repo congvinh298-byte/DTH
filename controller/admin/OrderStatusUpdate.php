@@ -31,19 +31,47 @@ try {
         exit;
     }
 
-    $update = $DMH->update("store_orders", [
-        'status' => $status
-    ], "`id` = '$id'");
+    $updateData = ['status' => $status];
+
+    if ($status == 'shipping') {
+        $shipperName = check_string($_POST['shipper_name'] ?? '');
+        $shipperPhone = check_string($_POST['shipper_phone'] ?? '');
+        $trackingCode = check_string($_POST['tracking_code'] ?? '');
+        $deliveryNote = check_string($_POST['delivery_note'] ?? '');
+
+        if (empty($shipperName)) {
+            echo json_encode(['status' => 'error', 'msg' => 'Vui lòng nhập tên người giao / đơn vị vận chuyển']);
+            exit;
+        }
+
+        $updateData['shipper_name'] = $shipperName;
+        $updateData['shipper_phone'] = $shipperPhone;
+        $updateData['tracking_code'] = $trackingCode;
+        $updateData['delivery_note'] = $deliveryNote;
+        $updateData['shipped_at'] = date('Y-m-d H:i:s');
+    }
+
+    if ($status == 'completed') {
+        $updateData['delivered_at'] = date('Y-m-d H:i:s');
+    }
+
+    $update = $DMH->update("store_orders", $updateData, "`id` = '$id'");
 
     if ($update) {
         $statusText = [
-            'pending' => 'Chờ xử lý',
+            'pending' => 'Đang chuẩn bị',
             'shipping' => 'Đang giao hàng',
-            'completed' => 'Đã hoàn thành',
+            'completed' => 'Đã giao xong',
             'cancelled' => 'Đã hủy'
         ][$status];
         
-        send_tele("📦 CẬP NHẬT ĐƠN HÀNG #".$id."\nKhách: ".$order['customer_name']."\nSĐT: ".$order['phone']."\nTrạng thái mới: ".$statusText);
+        $teleMsg = "📦 CẬP NHẬT ĐƠN HÀNG #".$id."\nKhách: ".$order['customer_name']."\nSĐT: ".$order['phone']."\nTrạng thái mới: ".$statusText;
+        if ($status == 'shipping' && !empty($updateData['shipper_name'])) {
+            $teleMsg .= "\nGiao bởi: ".$updateData['shipper_name'];
+            if (!empty($updateData['shipper_phone'])) $teleMsg .= " (".$updateData['shipper_phone'].")";
+            if (!empty($updateData['tracking_code'])) $teleMsg .= "\nMã vận đơn: ".$updateData['tracking_code'];
+        }
+        send_tele($teleMsg);
         
         echo json_encode(['status' => 'success', 'msg' => 'Đã cập nhật trạng thái: ' . $statusText]);
     } else {

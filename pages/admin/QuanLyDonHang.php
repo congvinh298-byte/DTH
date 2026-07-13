@@ -27,13 +27,13 @@ $orders = $DMH->get_list("SELECT * FROM `store_orders` WHERE $where ORDER BY id 
 
 function statusBadge($status) {
     $map = [
-        'pending' => ['text' => 'Chờ xử lý', 'color' => '#f59e0b'],
+        'pending' => ['text' => 'Đang chuẩn bị', 'color' => '#f59e0b'],
         'shipping' => ['text' => 'Đang giao hàng', 'color' => '#3b82f6'],
-        'completed' => ['text' => 'Đã hoàn thành', 'color' => '#10b981'],
+        'completed' => ['text' => 'Đã giao xong', 'color' => '#10b981'],
         'cancelled' => ['text' => 'Đã hủy', 'color' => '#ef4444'],
     ];
     $st = $map[$status] ?? ['text' => $status, 'color' => '#64748b'];
-    return "<span style='background: {$st['color']}20; color: {$st['color']}; border: 1px solid {$st['color']}40; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;'>" . htmlspecialchars($st['text']) . "</span>";
+    return "<span style='background: " . $st['color'] . "20; color: " . $st['color'] . "; border: 1px solid " . $st['color'] . "40; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;'>" . htmlspecialchars($st['text']) . "</span>";
 }
 ?>
 
@@ -52,7 +52,7 @@ function statusBadge($status) {
     .modal-backdrop.active { display: flex; }
     .modal-box { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; width: 90%; max-width: 520px; color: #fff; max-height: 90vh; overflow-y: auto; }
     .modal-box h3 { margin-top: 0; }
-    .modal-box select { width: 100%; padding: 12px; margin: 12px 0; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px; }
+    .modal-box select, .modal-box input, .modal-box textarea { width: 100%; padding: 12px; margin: 8px 0; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px; box-sizing: border-box; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
     @media (max-width: 900px) { .qldh-table { font-size: 12px; } .qldh-table th, .qldh-table td { padding: 10px 8px; } }
 </style>
@@ -62,9 +62,9 @@ function statusBadge($status) {
 
     <div class="filter-bar">
         <a href="?filter=all" class="<?= $filter == 'all' ? 'active' : '' ?>">Tất cả</a>
-        <a href="?filter=pending" class="<?= $filter == 'pending' ? 'active' : '' ?>">Chờ xử lý</a>
+        <a href="?filter=pending" class="<?= $filter == 'pending' ? 'active' : '' ?>">Đang chuẩn bị</a>
         <a href="?filter=shipping" class="<?= $filter == 'shipping' ? 'active' : '' ?>">Đang giao hàng</a>
-        <a href="?filter=completed" class="<?= $filter == 'completed' ? 'active' : '' ?>">Đã hoàn thành</a>
+        <a href="?filter=completed" class="<?= $filter == 'completed' ? 'active' : '' ?>">Đã giao xong</a>
         <a href="?filter=cancelled" class="<?= $filter == 'cancelled' ? 'active' : '' ?>">Đã hủy</a>
     </div>
 
@@ -96,9 +96,9 @@ function statusBadge($status) {
                         <td><?= statusBadge($order['status']) ?></td>
                         <td>
                             <?php if ($order['status'] == 'pending'): ?>
-                                <button class="btn-detail" style="background:#3b82f6;" onclick="quickUpdateStatus(<?= (int)$order['id'] ?>, 'shipping')">🚚 Giao hàng</button>
+                                <button class="btn-detail" style="background:#3b82f6;" onclick="openShipModal(<?= (int)$order['id'] ?>)">🚚 Giao hàng</button>
                             <?php elseif ($order['status'] == 'shipping'): ?>
-                                <button class="btn-detail" style="background:#10b981;" onclick="quickUpdateStatus(<?= (int)$order['id'] ?>, 'completed')">✅ Hoàn thành</button>
+                                <button class="btn-detail" style="background:#10b981;" onclick="quickComplete(<?= (int)$order['id'] ?>)">✅ Hoàn thành</button>
                             <?php elseif ($order['status'] == 'completed'): ?>
                                 <span style="color:#10b981; font-weight:700;">Đã giao xong</span>
                             <?php elseif ($order['status'] == 'cancelled'): ?>
@@ -124,30 +124,53 @@ function statusBadge($status) {
         
         <label style="color: #94a3b8; font-size: 13px;">Cập nhật trạng thái:</label>
         <select id="statusSelect">
-            <option value="pending">Chờ xử lý</option>
+            <option value="pending">Đang chuẩn bị</option>
             <option value="shipping">Đang giao hàng</option>
-            <option value="completed">Đã hoàn thành</option>
+            <option value="completed">Đã giao xong</option>
             <option value="cancelled">Đã hủy</option>
         </select>
         
         <div class="modal-actions">
-            <button onclick="closeModal()" style="padding: 8px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#fff; cursor:pointer;">Đóng</button>
+            <button onclick="closeModal('orderModal')" style="padding: 8px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#fff; cursor:pointer;">Đóng</button>
             <button onclick="saveStatus()" style="padding: 8px 16px; border-radius:8px; border:none; background:#38bdf8; color:#0f172a; font-weight:800; cursor:pointer;">Lưu trạng thái</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal nhập thông tin giao hàng -->
+<div class="modal-backdrop" id="shipModal">
+    <div class="modal-box">
+        <h3>🚚 Giao hàng đơn #<span id="shipModalOrderId"></span></h3>
+        <input type="hidden" id="shipOrderId">
+        
+        <label style="color: #94a3b8; font-size: 13px;">Tên người giao / đơn vị vận chuyển:</label>
+        <input type="text" id="shipperName" placeholder="VD: Giao Hàng Nhanh, A Thợ...">
+        
+        <label style="color: #94a3b8; font-size: 13px;">Số điện thoại giao hàng:</label>
+        <input type="text" id="shipperPhone" placeholder="VD: 0901234567">
+        
+        <label style="color: #94a3b8; font-size: 13px;">Mã vận đơn:</label>
+        <input type="text" id="trackingCode" placeholder="VD: GHN123456">
+        
+        <label style="color: #94a3b8; font-size: 13px;">Ghi chú giao hàng:</label>
+        <textarea id="deliveryNote" placeholder="Ghi chú cho khách..." rows="3"></textarea>
+        
+        <div class="modal-actions">
+            <button onclick="closeModal('shipModal')" style="padding: 8px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#fff; cursor:pointer;">Đóng</button>
+            <button onclick="saveShipInfo()" style="padding: 8px 16px; border-radius:8px; border:none; background:#3b82f6; color:#fff; font-weight:800; cursor:pointer;">🚚 Xác nhận giao hàng</button>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-function openModal() { document.getElementById('orderModal').classList.add('active'); }
-function closeModal() { document.getElementById('orderModal').classList.remove('active'); }
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
 function openOrderDetail(id, status) {
     document.getElementById('modalId').value = id;
     document.getElementById('modalOrderId').textContent = id;
     document.getElementById('statusSelect').value = status;
-    
-    // Load chi tiết đơn
     document.getElementById('modalContent').innerHTML = '<div style="text-align:center; color:#94a3b8;">Đang tải...</div>';
     
     fetch('/controller/admin/OrderDetail.php?id=' + id)
@@ -159,7 +182,7 @@ function openOrderDetail(id, status) {
             document.getElementById('modalContent').innerHTML = 'Không thể tải chi tiết.';
         });
     
-    openModal();
+    openModal('orderModal');
 }
 
 function saveStatus() {
@@ -168,18 +191,62 @@ function saveStatus() {
     updateOrderStatus(id, status);
 }
 
-function quickUpdateStatus(id, status) {
-    var confirmText = status == 'shipping' ? 'Chuyển sang trạng thái "Đang giao hàng"?' : 'Hoàn thành đơn hàng này?';
+function openShipModal(id) {
+    document.getElementById('shipOrderId').value = id;
+    document.getElementById('shipModalOrderId').textContent = id;
+    document.getElementById('shipperName').value = '';
+    document.getElementById('shipperPhone').value = '';
+    document.getElementById('trackingCode').value = '';
+    document.getElementById('deliveryNote').value = '';
+    openModal('shipModal');
+}
+
+function saveShipInfo() {
+    var id = document.getElementById('shipOrderId').value;
+    var shipperName = document.getElementById('shipperName').value.trim();
+    var shipperPhone = document.getElementById('shipperPhone').value.trim();
+    var trackingCode = document.getElementById('trackingCode').value.trim();
+    var deliveryNote = document.getElementById('deliveryNote').value.trim();
+    
+    if (!shipperName) {
+        Swal.fire('Thiếu thông tin', 'Vui lòng nhập tên người giao / đơn vị vận chuyển', 'warning');
+        return;
+    }
+    
+    var body = 'id=' + id + '&status=shipping&shipper_name=' + encodeURIComponent(shipperName) +
+               '&shipper_phone=' + encodeURIComponent(shipperPhone) +
+               '&tracking_code=' + encodeURIComponent(trackingCode) +
+               '&delivery_note=' + encodeURIComponent(deliveryNote);
+    
+    fetch('/controller/admin/OrderStatusUpdate.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body
+    })
+    .then(r => r.json())
+    .then(res => {
+    if (res.status == 'success') {
+            Swal.fire('Thành công', res.msg, 'success').then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire('Lỗi', res.msg, 'error');
+        }
+    })
+    .catch(() => Swal.fire('Lỗi', 'Không thể kết nối máy chủ', 'error'));
+}
+
+function quickComplete(id) {
     Swal.fire({
         title: 'Xác nhận',
-        text: confirmText,
+        text: 'Hoàn thành đơn hàng này?',
         icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'Đồng ý',
         cancelButtonText: 'Hủy'
     }).then((result) => {
         if (result.isConfirmed) {
-            updateOrderStatus(id, status);
+            updateOrderStatus(id, 'completed');
         }
     });
 }
