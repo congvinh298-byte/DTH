@@ -2,20 +2,11 @@
 define("IN_SITE", true);
 require_once(__DIR__."/../../core/config.php");
 require_once(__DIR__."/../../core/function.php");
+CheckAdmin();
 
 header('Content-Type: application/json');
 
-try {
-    if (!isset($_COOKIE['token']) || empty($getUser) || !in_array($getUser['level'], ['admin','bct'])) {
-        echo json_encode(['status' => 'error', 'msg' => 'Khong co quyen']);
-        exit;
-    }
-    if (empty($_SESSION['loginadmin'])) {
-        echo json_encode(['status' => 'error', 'msg' => 'Vui long dang nhap admin']);
-        exit;
-    }
-
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+try {    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         echo json_encode(['status' => 'error', 'msg' => 'Khong ho tro']);
         exit;
     }
@@ -29,6 +20,7 @@ try {
     $description = trim($_POST['description'] ?? '');
     $type = in_array($_POST['type'] ?? '', ['dienmay','3d']) ? $_POST['type'] : 'dienmay';
     $status = isset($_POST['status']) ? (int)$_POST['status'] : 1;
+    $featured = isset($_POST['featured']) ? (int)$_POST['featured'] : 0;
 
     if ($name == '') {
         echo json_encode(['status' => 'error', 'msg' => 'Vui long nhap ten san pham']);
@@ -79,6 +71,7 @@ try {
         'stock' => $stock,
         'type' => $type,
         'status' => $status,
+        'featured' => $featured,
     ];
     if ($image !== '') {
         $data['image'] = $image;

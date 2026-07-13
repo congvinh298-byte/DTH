@@ -86,13 +86,14 @@ $products = $DMH->get_list("SELECT p.*, c.name AS cat_name FROM `products` p LEF
                         <th>Danh muc</th>
                         <th>Gia</th>
                         <th>Ton kho</th>
+                        <th>Noi bat</th>
                         <th>Trang thai</th>
                         <th>Thao tac</th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php foreach ($products as $p): ?>
-                    <tr data-id="<?= (int)$p['id'] ?>" data-name="<?= htmlspecialchars($p['name']) ?>" data-slug="<?= htmlspecialchars($p['slug']) ?>" data-cat="<?= (int)$p['category_id'] ?>" data-price="<?= (int)$p['price'] ?>" data-stock="<?= (int)$p['stock'] ?>" data-desc="<?= htmlspecialchars($p['description'] ?? '') ?>" data-image="<?= htmlspecialchars($p['image'] ?? '') ?>" data-status="<?= (int)$p['status'] ?>">
+                    <tr data-id="<?= (int)$p['id'] ?>" data-name="<?= htmlspecialchars($p['name']) ?>" data-slug="<?= htmlspecialchars($p['slug']) ?>" data-cat="<?= (int)$p['category_id'] ?>" data-price="<?= (int)$p['price'] ?>" data-stock="<?= (int)$p['stock'] ?>" data-desc="<?= htmlspecialchars($p['description'] ?? '') ?>" data-image="<?= htmlspecialchars($p['image'] ?? '') ?>" data-status="<?= (int)$p['status'] ?>" data-featured="<?= (int)$p['featured'] ?>">
                         <td><?= (int)$p['id'] ?></td>
                         <td>
                             <?php if (!empty($p['image'])): ?>
@@ -106,6 +107,13 @@ $products = $DMH->get_list("SELECT p.*, c.name AS cat_name FROM `products` p LEF
                         <td><?= number_format((int)$p['price']) ?>d</td>
                         <td><?= (int)$p['stock'] ?></td>
                         <td>
+                            <?php if (!empty($p['featured'])): ?>
+                                <span class="badge badge-warning"><i class="fa-solid fa-star"></i> Trang chu</span>
+                            <?php else: ?>
+                                <span class="badge badge-pending">-</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
                             <?php if (!empty($p['status'])): ?>
                                 <span class="badge badge-completed">Hien thi</span>
                             <?php else: ?>
@@ -114,6 +122,7 @@ $products = $DMH->get_list("SELECT p.*, c.name AS cat_name FROM `products` p LEF
                         </td>
                         <td>
                             <button class="btn btn-info btn-sm" onclick="editProduct(this)"><i class="fa-solid fa-pen"></i> Sua</button>
+                            <button class="btn btn-warning btn-sm" onclick="toggleFeatured(<?= (int)$p['id'] ?>, <?= (int)$p['featured'] ?>)"><i class="fa-solid fa-star"></i> <?= $p['featured'] ? 'Gỡ' : 'Nổi bật' ?></button>
                             <button class="btn btn-danger btn-sm" onclick="deleteProduct(<?= (int)$p['id'] ?>)"><i class="fa-solid fa-trash"></i> Xoa</button>
                         </td>
                     </tr>
@@ -191,6 +200,13 @@ $products = $DMH->get_list("SELECT p.*, c.name AS cat_name FROM `products` p LEF
                     <select name="status" id="productStatus" class="form-control">
                         <option value="1">Hien thi</option>
                         <option value="0">An</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dua len trang chu</label>
+                    <select name="featured" id="productFeatured" class="form-control">
+                        <option value="0">Khong</option>
+                        <option value="1">Co</option>
                     </select>
                 </div>
             </div>
@@ -277,6 +293,17 @@ function deleteProduct(id) {
             .catch(() => Swal.fire('Loi', 'Khong the ket noi', 'error'));
         }
     });
+}
+function toggleFeatured(id, current) {
+    const action = current ? 'gỡ' : 'đưa lên';
+    if (!confirm('Xac nhan ' + action + ' trang chu?')) return;
+    fetch('/controller/admin/ToggleFeatured.php?id=' + id)
+    .then(r => r.json())
+    .then(res => {
+        if (res.status === 'success') location.reload();
+        else alert(res.msg);
+    })
+    .catch(() => alert('Loi ket noi'));
 }
 </script>
 

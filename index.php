@@ -15,7 +15,7 @@ require_once(__DIR__."/pages/client/Head.php");
 require_once(__DIR__."/pages/client/Header.php");
 
 $productError = '';
-$products = $DMH->get_list("SELECT * FROM `store_products` WHERE `status` = 'ACTIVE' ORDER BY id DESC LIMIT 60");
+$products = $DMH->get_list("SELECT p.*, c.name as category_name FROM `products` p LEFT JOIN `product_categories` c ON c.id = p.category_id WHERE p.`status` = 1 AND p.`featured` = 1 ORDER BY p.id DESC LIMIT 60");
 if (!is_array($products)) {
     $products = [];
 }
@@ -69,7 +69,7 @@ $services = array(
                     <?php foreach ($products as $p): ?>
                         <?php
                         $name = isset($p['name']) ? (string)$p['name'] : '';
-                        $category = $p['type'] == '3d' ? 'Mô hình In 3D' : 'Điện Máy & Gia Dụng';
+                        $category = $p['category_name'] ? $p['category_name'] : ($p['type'] == '3d' ? 'Mo hinh In 3D' : 'Dien May & Gia Dung');
                         $image = isset($p['image']) ? (string)$p['image'] : '';
                         $price = isset($p['price']) ? (float)$p['price'] : 0;
                         ?>
