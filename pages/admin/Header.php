@@ -119,6 +119,86 @@
 			
 								
 			<ul id="main-menu" class="main-menu">
+				<style>
+					/* Custom clean sidebar menu styles */
+					.sidebar-menu .logo-env { padding: 20px 15px !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
+					.sidebar-menu .logo img { max-height: 55px !important; width: auto !important; }
+					
+					#main-menu.main-menu { padding-top: 10px !important; }
+					#main-menu.main-menu li a {
+						font-size: 14px !important;
+						font-weight: 600 !important;
+						padding: 14px 18px !important;
+						color: #e2e8f0 !important;
+						border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+						transition: all 0.2s ease !important;
+					}
+					#main-menu.main-menu li a i {
+						margin-right: 12px !important;
+						font-size: 16px !important;
+						width: 22px !important;
+						text-align: center !important;
+						color: #94a3b8 !important;
+					}
+					#main-menu.main-menu li a:hover {
+						background: rgba(14,165,233,0.15) !important;
+						color: #38bdf8 !important;
+					}
+					#main-menu.main-menu li a:hover i { color: #38bdf8 !important; }
+					#main-menu.main-menu li.active > a,
+					#main-menu.main-menu li.opened > a {
+						background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%) !important;
+						color: #fff !important;
+						box-shadow: 0 4px 12px rgba(14,165,233,0.3) !important;
+					}
+					#main-menu.main-menu li.active > a i,
+					#main-menu.main-menu li.opened > a i { color: #fff !important; }
+					#main-menu.main-menu li.has-sub > a:after {
+						content: '\f107' !important;
+						font-family: 'FontAwesome' !important;
+						float: right !important;
+						font-size: 12px !important;
+						color: #94a3b8 !important;
+					}
+					#main-menu.main-menu li.has-sub.opened > a:after { color: #fff !important; }
+					
+					#main-menu.main-menu ul {
+						background: rgba(15,23,42,0.5) !important;
+						border-left: 3px solid #0ea5e9 !important;
+						margin: 0 !important;
+						padding: 8px 0 !important;
+					}
+					#main-menu.main-menu ul li a {
+						font-size: 13px !important;
+						padding: 10px 18px 10px 50px !important;
+						color: #cbd5e1 !important;
+						border-bottom: none !important;
+					}
+					#main-menu.main-menu ul li a:hover {
+						background: rgba(14,165,233,0.1) !important;
+						color: #38bdf8 !important;
+						padding-left: 55px !important;
+					}
+					#main-menu.main-menu ul li.active > a {
+						background: rgba(14,165,233,0.2) !important;
+						color: #38bdf8 !important;
+						font-weight: 700 !important;
+					}
+					
+					#main-menu.main-menu .badge {
+						font-size: 10px !important;
+						padding: 3px 7px !important;
+						border-radius: 999px !important;
+						margin-left: 8px !important;
+						float: right !important;
+						margin-top: 2px !important;
+					}
+					
+					@media (max-width: 768px) {
+						#main-menu.main-menu li a { font-size: 13px !important; padding: 12px 14px !important; }
+						#main-menu.main-menu ul li a { padding-left: 35px !important; }
+					}
+				</style>
 				<?php renderAdminMenu($DMH, $menuBadges); ?>
 			</ul>
 			
