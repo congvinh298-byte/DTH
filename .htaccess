@@ -38,6 +38,7 @@ RewriteRule ^Nap/Vi$ pages/client/Vionline.php [L]
 RewriteRule ^Chuyen-tien$ pages/client/Transfer.php [L]
 RewriteRule ^GioHang$ pages/client/GioHang.php [L]
 RewriteRule ^Thanhtoan$ pages/client/Thanhtoan.php [L]
+RewriteRule ^profile.php$ pages/client/Profile.php [L]
 RewriteRule ^Sellcode$ pages/client/Sellcode.php [L]
 RewriteRule ^Verify$ pages/client/Verify.php [L]
 

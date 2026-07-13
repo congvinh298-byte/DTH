@@ -6,26 +6,12 @@
 </head>
 <body id="body_class">
     
-    <div class="top">
-        <div class="wrap" style="display: flex; justify-content: space-between; align-items: center;">
-            <div>Điện Tử Hiếu - Storefront công khai</div>
-            <div style="position: relative;">
-                <button id="topMenuToggle" onclick="toggleTopMenu()" style="background: transparent; border: none; color: white; font-size: 22px; cursor: pointer; padding: 4px 8px;">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
-                <div id="topMenuDropdown" style="display: none; position: absolute; right: 0; top: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; min-width: 200px; z-index: 1000; padding: 8px 0; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-                    <a href="/login.php" style="display: block; padding: 10px 16px; color: white; font-weight: 600; text-decoration: none; white-space: nowrap;"><i class="fa-solid fa-sign-in-alt" style="width: 22px;"></i> Đăng nhập / Đăng ký</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
     <style>
     #topMenuDropdown a:hover { background: rgba(56,189,248,0.15); color: #38bdf8; }
     #topMenuDropdown a i { margin-right: 8px; }
+    #topMenuToggle:hover { background: rgba(255,255,255,0.1); }
     @media (max-width: 768px) {
-        .top .wrap { padding: 0 12px; }
-        #topMenuDropdown { right: -10px; }
+        #topMenuDropdown { right: 0; }
     }
     </style>
     
@@ -44,7 +30,7 @@
                 <button type="submit">Tìm</button>
             </form>
             
-            <div style="display: flex; gap: 8px; align-items: center;">
+            <div style="display: flex; gap: 8px; align-items: center; position: relative;">
                 <a class="btn dark" href="/dien-may">Cửa hàng</a>
                 <a class="btn dark" href="/in-3d.php">In 3D</a>
                 <a class="btn dark" href="/goi-tho.php">Gọi thợ</a>
@@ -53,6 +39,13 @@
                     <i class="fa-solid fa-cart-shopping"></i> Giỏ Hàng
                     <span id="cartCountBadge" style="position: absolute; top: -8px; right: -8px; background: #f43f5e; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: none;">0</span>
                 </a>
+                
+                <button id="topMenuToggle" onclick="toggleTopMenu()" style="background: transparent; border: none; color: white; font-size: 20px; cursor: pointer; padding: 6px 10px; border-radius: 8px;">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div id="topMenuDropdown" style="display: none; position: absolute; right: 0; top: calc(100% + 8px); background: #0f172a; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; min-width: 200px; z-index: 1000; padding: 8px 0; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                    <a href="/login.php" style="display: block; padding: 10px 16px; color: white; font-weight: 600; text-decoration: none; white-space: nowrap;"><i class="fa-solid fa-sign-in-alt" style="width: 22px;"></i> Đăng nhập / Đăng ký</a>
+                </div>
             </div>
         </div>
     </header>
