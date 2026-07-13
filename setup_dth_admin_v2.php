@@ -36,6 +36,28 @@ $DMH->query("CREATE TABLE IF NOT EXISTS `products` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 echo "Bang products OK\n";
 
+// 2b. Ensure products columns exist (in case table was created earlier without all columns)
+$productCols = [
+    'category_id' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `category_id` INT(11) UNSIGNED DEFAULT 0",
+    'name' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `name` VARCHAR(255) NOT NULL",
+    'slug' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `slug` VARCHAR(255) NOT NULL",
+    'description' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `description` TEXT DEFAULT NULL",
+    'price' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `price` INT(11) DEFAULT 0",
+    'stock' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `stock` INT(11) DEFAULT 0",
+    'image' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `image` VARCHAR(500) DEFAULT NULL",
+    'type' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `type` ENUM('dienmay','3d') NOT NULL DEFAULT 'dienmay'",
+    'status' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `status` TINYINT(1) DEFAULT 1",
+    'created_at' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+];
+foreach ($productCols as $col => $sql) {
+    try {
+        $DMH->query($sql);
+        echo "products cot $col OK\n";
+    } catch (Throwable $e) {
+        echo "products cot $col: " . $e->getMessage() . "\n";
+    }
+}
+
 // 3. Ensure store_orders has needed columns
 $storeCols = [
     'customer_name' => "ALTER TABLE `store_orders` ADD COLUMN IF NOT EXISTS `customer_name` VARCHAR(255) DEFAULT NULL",
