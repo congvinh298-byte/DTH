@@ -10,13 +10,13 @@
   $badge_lichsu_total = $badge_xuly_card + $badge_xuly_domain + $badge_xuly_giahan + $badge_xuly_hoso;
 
   $menuBadges = [
-      'Lịch sử' => '<span class="badge badge-info" style="font-size:10px; padding:2px 6px; border-radius:999px;"'>'.$badge_lichsu_total.'</span>',
-      'Hóa đơn' => '<span class="badge badge-danger" style="font-size:10px; padding:2px 6px; border-radius:999px;"'>'.$badge_tsr.'</span>',
-      'Đơn gia hạn website' => '<span class="badge badge-danger" style="font-size:10px; padding:2px 6px; border-radius:999px;"'>'.$badge_xuly_giahan.'</span>',
-      'Lịch sử mua miền' => '<span class="badge badge-danger" style="font-size:10px; padding:2px 6px; border-radius:999px;"'>'.$badge_xuly_domain.'</span>',
-      'Lịch sử nạp thẻ' => '<span class="badge badge-danger" style="font-size:10px; padding:2px 6px; border-radius:999px;"'>'.$badge_xuly_card.'</span>',
-      'Hồ sơ xác minh' => '<span class="badge badge-danger" style="font-size:10px; padding:2px 6px; border-radius:999px;"'>'.$badge_xuly_hoso.'</span>',
-      'Hóa đơn TSR' => '<span class="badge badge-danger" style="font-size:10px; padding:2px 6px; border-radius:999px;"'>'.$badge_tsr.'</span>',
+      'Lịch sử' => '<span class="badge badge-info" style="font-size:10px; padding:2px 6px; border-radius:999px;">'.$badge_lichsu_total.'</span>',
+      'Hóa đơn' => '<span class="badge badge-danger" style="font-size:10px; padding:2px 6px; border-radius:999px;">'.$badge_tsr.'</span>',
+      'Đơn gia hạn website' => '<span class="badge badge-danger" style="font-size:10px; padding:2px 6px; border-radius:999px;">'.$badge_xuly_giahan.'</span>',
+      'Lịch sử mua miền' => '<span class="badge badge-danger" style="font-size:10px; padding:2px 6px; border-radius:999px;">'.$badge_xuly_domain.'</span>',
+      'Lịch sử nạp thẻ' => '<span class="badge badge-danger" style="font-size:10px; padding:2px 6px; border-radius:999px;">'.$badge_xuly_card.'</span>',
+      'Hồ sơ xác minh' => '<span class="badge badge-danger" style="font-size:10px; padding:2px 6px; border-radius:999px;">'.$badge_xuly_hoso.'</span>',
+      'Hóa đơn TSR' => '<span class="badge badge-danger" style="font-size:10px; padding:2px 6px; border-radius:999px;">'.$badge_tsr.'</span>',
   ];
 
   $menuIcons = [
@@ -35,6 +35,18 @@
       'Cấu hình CLF' => 'fa-sliders',
       'Cộng tác viên' => 'fa-handshake',
   ];
+
+  function isAdminMenuActive($menu, $children, $currentUri) {
+      if (strpos($currentUri, $menu['url']) !== false && $menu['url'] != '#') {
+          return true;
+      }
+      foreach ($children as $child) {
+          if (strpos($currentUri, $child['url']) !== false && $child['url'] != '#') {
+              return true;
+          }
+      }
+      return false;
+  }
 
   function renderAdminMenu($DMH, $menuBadges, $menuIcons) {
       $currentUri = $_SERVER['REQUEST_URI'] ?? '';
@@ -56,67 +68,54 @@
           }
 
           $aStyle = 'display:flex; align-items:center; justify-content:space-between; padding: 14px 16px; color: ' . ($isActiveParent ? '#fff' : '#e2e8f0') . '; text-decoration:none; font-size: 14px; font-weight: 600; border-radius: 10px; transition: all 0.2s;';
+          $aHover = '';
           if (!$isActiveParent) {
-              $aStyle .= ' hover-style';
+              $aHover = " onmouseover=\"this.style.background='rgba(14,165,233,0.15)'; this.style.color='#38bdf8';\" onmouseout=\"this.style.background='transparent'; this.style.color='#e2e8f0';\"";
           }
+          ?>
+          <li class="dmh-menu-item" style="<?=$liStyle?>">
+              <a href="<?=$menuUrl?>" class="dmh-menu-link" style="<?=$aStyle?>"<?=$aHover?>>
+                  <span style="display:flex; align-items:center; gap:12px;">
+                      <i class="fa-solid <?=$icon?>" style="font-size:16px; width:22px; text-align:center; color: <?=($isActiveParent ? '#fff' : '#94a3b8')?>;"></i>
+                      <span class="title" style="font-weight:700;"><?=htmlspecialchars($menu['title'])?></span>
+                  </span>
+                  <?php
+                  $right = '';
+                  if ($badge) $right .= $badge;
+                  if ($hasSub) {
+                      $right .= "<i class='fa-solid fa-chevron-down' style='font-size:11px; margin-left:8px; color: " . ($isActiveParent ? '#fff' : '#94a3b8') . ";'></i>";
+                  }
+                  if ($right) {
+                      echo '<span style="display:flex; align-items:center;">'.$right.'</span>';
+                  }
+                  ?>
+              </a>
 
-          echo "\n\t\t\t\t<li class=\"dmh-menu-item\" style=\"$liStyle\"">;
-          echo "\n\t\t\t\t\t<a href=\"$menuUrl\" class=\"dmh-menu-link\" style=\"$aStyle\"";
-          if (!$isActiveParent) {
-              echo " onmouseover=\"this.style.background='rgba(14,165,233,0.15)'; this.style.color='#38bdf8';\" onmouseout=\"this.style.background='transparent'; this.style.color='#e2e8f0';\"";
-          }
-          echo ">";
-          
-          echo "\n\t\t\t\t\t\t<span style='display:flex; align-items:center; gap:12px;'\u003e";
-          echo "\n\t\t\t\t\t\t\t<i class=\"fa-solid $icon\" style=\"font-size:16px; width:22px; text-align:center; color: " . ($isActiveParent ? '#fff' : '#94a3b8') . ";\"\u003e</i\u003e";
-          echo "\n\t\t\t\t\t\t\t<span class=\"title\" style=\"font-weight:700;\"\u003e" . htmlspecialchars($menu['title']) . "</span\u003e";
-          echo "\n\t\t\t\t\t\t</span\u003e";
-          
-          $right = '';
-          if ($badge) $right .= $badge;
-          if ($hasSub) {
-              $right .= "<i class='fa-solid fa-chevron-down' style='font-size:11px; margin-left:8px; color: " . ($isActiveParent ? '#fff' : '#94a3b8') . ";'></i>";
-          }
-          if ($right) {
-              echo "\n\t\t\t\t\t\t<span style='display:flex; align-items:center;'\u003e$right</span\u003e";
-          }
-          echo "\n\t\t\t\t\t</a>";
-
-          if ($hasSub) {
-              $subDisplay = $isActiveParent ? 'block' : 'none';
-              echo "\n\t\t\t\t\t<ul class=\"dmh-submenu\" style=\"display:$subDisplay; list-style:none; margin:8px 0 8px 12px; padding:8px 0; background: rgba(15,23,42,0.5); border-left:3px solid #0ea5e9; border-radius:0 10px 10px 0;\"\u003e";
-              foreach ($children as $child) {
-                  $childActive = isAdminMenuActive($child, [], $currentUri);
-                  $childUrl = $child['url'] == '#' ? 'javascript:void(0)' : htmlspecialchars($child['url']);
-                  $childBadge = $menuBadges[$child['title']] ?? '';
-                  
-                  $caStyle = 'display:flex; align-items:center; justify-content:space-between; padding: 10px 14px 10px 24px; color: ' . ($childActive ? '#38bdf8' : '#cbd5e1') . '; text-decoration:none; font-size: 13px; font-weight: ' . ($childActive ? '700' : '500') . '; border-radius: 0 8px 8px 0; transition: all 0.2s;';
-                  $caHover = !$childActive ? " onmouseover=\"this.style.background='rgba(14,165,233,0.1)'; this.style.color='#38bdf8'; this.style.paddingLeft='30px';\" onmouseout=\"this.style.background='transparent'; this.style.color='#cbd5e1'; this.style.paddingLeft='24px';\"" : '';
-                  
-                  echo "\n\t\t\t\t\t\t<li class=\"dmh-submenu-item\" style=\"margin-bottom:2px;\"\u003e";
-                  echo "\n\t\t\t\t\t\t\t<a href=\"$childUrl\" class=\"dmh-submenu-link\" style=\"$caStyle\"$caHover\u003e";
-                  echo "\n\t\t\t\t\t\t\t\t<span\u003e" . htmlspecialchars($child['title']) . "</span\u003e";
-                  if ($childBadge) echo "\n\t\t\t\t\t\t\t\t$childBadge";
-                  echo "\n\t\t\t\t\t\t\t</a\u003e";
-                  echo "\n\t\t\t\t\t\t</li\u003e";
-              }
-              echo "\n\t\t\t\t\t</ul>";
-          }
-
-          echo "\n\t\t\t\t</li\u003e";
+              <?php if ($hasSub): ?>
+              <ul class="dmh-submenu" style="display:<?=($isActiveParent ? 'block' : 'none')?>; list-style:none; margin:8px 0 8px 12px; padding:8px 0; background: rgba(15,23,42,0.5); border-left:3px solid #0ea5e9; border-radius:0 10px 10px 0;">
+                  <?php foreach ($children as $child): ?>
+                  <?php
+                      $childActive = isAdminMenuActive($child, [], $currentUri);
+                      $childUrl = $child['url'] == '#' ? 'javascript:void(0)' : htmlspecialchars($child['url']);
+                      $childBadge = $menuBadges[$child['title']] ?? '';
+                      $caStyle = 'display:flex; align-items:center; justify-content:space-between; padding: 10px 14px 10px 24px; color: ' . ($childActive ? '#38bdf8' : '#cbd5e1') . '; text-decoration:none; font-size: 13px; font-weight: ' . ($childActive ? '700' : '500') . '; border-radius: 0 8px 8px 0; transition: all 0.2s;';
+                      $caHover = '';
+                      if (!$childActive) {
+                          $caHover = " onmouseover=\"this.style.background='rgba(14,165,233,0.1)'; this.style.color='#38bdf8'; this.style.paddingLeft='30px';\" onmouseout=\"this.style.background='transparent'; this.style.color='#cbd5e1'; this.style.paddingLeft='24px';\"";
+                      }
+                  ?>
+                  <li class="dmh-submenu-item" style="margin-bottom:2px;">
+                      <a href="<?=$childUrl?>" class="dmh-submenu-link" style="<?=$caStyle?>"<?=$caHover?>>
+                          <span><?=htmlspecialchars($child['title'])?></span>
+                          <?php if ($childBadge) echo $childBadge; ?>
+                      </a>
+                  </li>
+                  <?php endforeach; ?>
+              </ul>
+              <?php endif; ?>
+          </li>
+          <?php
       }
-  }
-
-  function isAdminMenuActive($menu, $children, $currentUri) {
-      if (strpos($currentUri, $menu['url']) !== false && $menu['url'] != '#') {
-          return true;
-      }
-      foreach ($children as $child) {
-          if (strpos($currentUri, $child['url']) !== false && $child['url'] != '#') {
-              return true;
-          }
-      }
-      return false;
   }
 ?>
 <!DOCTYPE html>
@@ -163,7 +162,7 @@
 
 			</header>
 			
-							
+						
 			<ul id="main-menu" class="main-menu" style="padding: 15px 12px; list-style: none;">
 				<?php renderAdminMenu($DMH, $menuBadges, $menuIcons); ?>
 			</ul>
