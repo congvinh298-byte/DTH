@@ -14,7 +14,7 @@ $title = "Điện Máy & Gia Dụng - Điện Máy Hiếu";
 require_once(__DIR__."/Head.php");
 require_once(__DIR__."/Header.php");
 
-$products = $DMH->get_list("SELECT * FROM `danhsachmuacode` WHERE `hienthi` = 'SHOW' AND `money` > 0 ORDER BY id DESC LIMIT 100");
+$products = $DMH->get_list("SELECT p.*, c.name AS category_name FROM `products` p LEFT JOIN `product_categories` c ON c.id = p.category_id WHERE p.`type` = 'dienmay' AND p.`status` = 1 ORDER BY p.`featured` DESC, p.`id` DESC LIMIT 100");
 if (!is_array($products)) {
     $products = [];
 }
@@ -41,12 +41,12 @@ if (!is_array($products)) {
                 <?php else: ?>
                     <?php foreach ($products as $p): ?>
                         <?php
-                        $name = isset($p['title']) ? (string)$p['title'] : '';
-                        $category = 'Điện Máy & Gia Dụng';
-                        $image = isset($p['img']) ? (string)$p['img'] : '';
-                        $price = isset($p['money']) ? (float)$p['money'] : 0;
+                        $name = isset($p['name']) ? (string)$p['name'] : '';
+                        $category = $p['category_name'] ? (string)$p['category_name'] : 'Điện Máy & Gia Dụng';
+                        $image = isset($p['image']) ? (string)$p['image'] : '';
+                        $price = isset($p['price']) ? (float)$p['price'] : 0;
                         ?>
-                        <article class="product" data-name="<?= htmlspecialchars(strtolower($name)) ?>" data-category="<?= htmlspecialchars(strtolower($category)) ?>" onclick="window.location.href='/mua-code/<?=$p['id'];?>'">
+                        <article class="product" data-name="<?= htmlspecialchars(strtolower($name)) ?>" data-category="<?= htmlspecialchars(strtolower($category)) ?>">
                             <div class="img">
                                 <?php if ($image !== ''): ?>
                                     <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($name) ?>" onerror="this.parentNode.textContent='Chưa có ảnh'">
@@ -57,8 +57,11 @@ if (!is_array($products)) {
                             <div class="body">
                                 <div class="cat"><?= htmlspecialchars($category) ?></div>
                                 <div class="name" title="<?= htmlspecialchars($name) ?>"><?= htmlspecialchars($name) ?></div>
-                                <div class="price"><?= number_format($price, 0, ',', '.') ?></div>
-                                <a href="/mua-code/<?=$p['id'];?>"><i class="fa-solid fa-eye"></i> Xem chi tiết</a>
+                                <div class="price"><?= number_format($price, 0, ',', '.') ?>đ</div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+                                    <button onclick="addToCart(<?= (int)$p['id'] ?>)" class="btn outline" style="width: 100%; padding: 8px; font-size: 13px; border-color: rgba(255,255,255,0.2);"><i class="fa-solid fa-cart-plus"></i> Thêm giỏ</button>
+                                    <button onclick="buyNow(<?= (int)$p['id'] ?>)" class="btn accent" style="width: 100%; padding: 8px; font-size: 13px;"><i class="fa-solid fa-bolt"></i> Mua Ngay</button>
+                                </div>
                             </div>
                         </article>
                     <?php endforeach; ?>
