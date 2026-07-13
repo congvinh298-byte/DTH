@@ -2,7 +2,7 @@
 define("IN_SITE", true);
 require_once(__DIR__."/core/config.php");
 require_once(__DIR__."/core/function.php");
-$title = "Xưởng In 3D & Gian Hàng Mô Hình | Điện Máy Hiếu";
+$title = "Mô hình Store | Điện Máy Hiếu";
 require_once(__DIR__."/pages/client/Head.php");
 require_once(__DIR__."/pages/client/Header.php");
 ?>
@@ -16,10 +16,10 @@ require_once(__DIR__."/pages/client/Header.php");
         
         <div style="position: relative; z-index: 10; max-width: 800px; margin: 0 auto;">
             <div style="display: inline-block; background: #fbbf24; color: #000; font-weight: 900; padding: 6px 16px; border: 3px solid #000; border-radius: 50px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; box-shadow: 4px 4px 0px #000;">
-                ⚡ Xưởng In 3D Số 1 Đồng Tháp
+                ⚡ Mô hình Store
             </div>
             <h1 style="font-size: 56px; font-weight: 900; color: #fff; text-shadow: 4px 4px 0px #0f172a; line-height: 1.1; margin-bottom: 20px; text-transform: uppercase; letter-spacing: -2px;">
-                Giải Pháp In Mô Hình 3D FDM
+                Mô hình Store - Gian hàng mô hình & In 3D
             </h1>
             <p style="font-size: 20px; font-weight: 700; color: #fff; background: #0f172a; display: inline-block; padding: 10px 20px; border-radius: 12px;">
                 Độ chính xác cao - Vật liệu bền bỉ - Báo giá minh bạch
@@ -38,9 +38,9 @@ require_once(__DIR__."/pages/client/Header.php");
                 <div style="background: #10b981; width: 80px; height: 80px; border-radius: 20px; border: 4px solid #0f172a; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 24px; box-shadow: 4px 4px 0px #0f172a;">
                     🖨️
                 </div>
-                <h2 style="font-size: 28px; font-weight: 900; margin-bottom: 12px; text-transform: uppercase;">In Bản Mẫu Có Sẵn</h2>
+                <h2 style="font-size: 28px; font-weight: 900; margin-bottom: 12px; text-transform: uppercase;">In mô hình 3D</h2>
                 <p style="font-size: 16px; font-weight: 600; color: #475569; margin-bottom: 24px; flex-grow: 1; line-height: 1.5;">
-                    Bạn đã có file thiết kế 3D (STL, OBJ). Chúng tôi chỉ việc cho vào máy in. Tối ưu chi phí tối đa!
+                    Bạn đã có file STL/OBJ. Chúng tôi in mô hình 3D chất lượng cao, giá minh bạch.
                 </p>
                 <div style="background: #f1f5f9; padding: 16px; border-radius: 12px; border: 2px dashed #94a3b8; text-align: center; margin-bottom: 24px;">
                     <span style="font-size: 14px; font-weight: 800; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px;">Đơn giá siêu rẻ</span>
@@ -54,9 +54,9 @@ require_once(__DIR__."/pages/client/Header.php");
                 <div style="background: #a855f7; width: 80px; height: 80px; border-radius: 20px; border: 4px solid #0f172a; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 24px; box-shadow: 4px 4px 0px #0f172a;">
                     📐
                 </div>
-                <h2 style="font-size: 28px; font-weight: 900; margin-bottom: 12px; text-transform: uppercase;">Thiết Kế Bản In</h2>
+                <h2 style="font-size: 28px; font-weight: 900; margin-bottom: 12px; text-transform: uppercase;">Thiết kế mô hình</h2>
                 <p style="font-size: 16px; font-weight: 600; color: #475569; margin-bottom: 24px; flex-grow: 1; line-height: 1.5;">
-                    Bạn chỉ có ý tưởng hoặc vật mẫu bị hỏng. Kỹ sư của chúng tôi sẽ dựng lại file 3D hoàn chỉnh cho bạn.
+                    Bạn có ý tưởng hoặc vật mẫu cần copy. Kỹ sư sẽ dựng file 3D hoàn chỉnh rồi in cho bạn.
                 </p>
                 <div style="background: #f1f5f9; padding: 16px; border-radius: 12px; border: 2px dashed #94a3b8; text-align: center; margin-bottom: 24px;">
                     <span style="font-size: 14px; font-weight: 800; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px;">Đơn giá trọn gói</span>
@@ -70,13 +70,13 @@ require_once(__DIR__."/pages/client/Header.php");
         <!-- Store Section (Gian Hàng Mô Hình In Sẵn) -->
         <div style="margin-bottom: 80px;">
             <div style="text-align: center; margin-bottom: 40px;">
-                <h2 style="font-size: 40px; font-weight: 900; text-transform: uppercase; letter-spacing: -1px; margin-bottom: 10px; color: #0f172a;">Gian Hàng In Sẵn</h2>
+                <h2 style="font-size: 40px; font-weight: 900; text-transform: uppercase; letter-spacing: -1px; margin-bottom: 10px; color: #0f172a;">Mô hình Store</h2>
                 <div style="width: 80px; height: 6px; background: #f43f5e; margin: 0 auto; border-radius: 3px;"></div>
             </div>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px;">
                 <?php
-                $products_3d = $DMH->get_list("SELECT * FROM `store_products` WHERE `type` = '3d' AND `status` = 'ACTIVE' ORDER BY `id` DESC");
+                $products_3d = $DMH->get_list("SELECT p.*, c.name as category_name FROM `products` p LEFT JOIN `product_categories` c ON c.id = p.category_id WHERE p.`type` = '3d' AND p.`status` = 1 ORDER BY p.`id` DESC");
                 if ($products_3d):
                     foreach($products_3d as $p):
                 ?>
