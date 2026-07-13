@@ -3,14 +3,35 @@ define("IN_SITE", true);
 require_once(__DIR__."/../../core/config.php");
 require_once(__DIR__."/../../core/function.php");
 
+// Debug log
+$debugLog = '/home/kwkrbcce/public_html/qldh_debug.log';
+$log = "=== " . date('Y-m-d H:i:s') . " ===\n";
+$log .= "URI: " . ($_SERVER['REQUEST_URI'] ?? 'none') . "\n";
+$log .= "Token exists: " . (isset($_COOKIE['token']) ? 'YES ' . substr($_COOKIE['token'], 0, 16) . '...' : 'NO') . "\n";
+$log .= "getUser empty: " . (empty($getUser) ? 'YES' : 'NO') . "\n";
+if (!empty($getUser)) {
+    $log .= "getUser level: " . ($getUser['level'] ?? 'null') . "\n";
+    $log .= "getUser id: " . ($getUser['id'] ?? 'null') . "\n";
+    $log .= "getUser username: " . ($getUser['username'] ?? 'null') . "\n";
+}
+$log .= "loginadmin session: " . (isset($_SESSION['loginadmin']) ? 'YES' : 'NO') . "\n";
+$log .= "-----\n";
+file_put_contents($debugLog, $log, FILE_APPEND | LOCK_EX);
+
 if (!isset($_COOKIE['token']) || empty($getUser)) {
-    header("Location: /pages/admin/LoginAdmin.php");
+    header("Location: /admin-login.php");
     exit;
 }
 if ($getUser['level'] != 'admin') {
     header("Location: /");
     exit;
 }
+if (empty($_SESSION['loginadmin'])) {
+    header("Location: /pages/admin/LoginAdmin.php");
+    exit;
+}
+
+$_SESSION['loginadmin'] = true;
 
 $tieude = 'Quản Lý Đơn Hàng Sản Phẩm';
 require_once(__DIR__."/../../pages/admin/Head.php");

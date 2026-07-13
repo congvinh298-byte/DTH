@@ -1,12 +1,22 @@
 <?php
 define("IN_SITE", true);
-require_once("../../core/config.php");
-require_once("../../core/function.php");
+require_once(__DIR__."/../../core/config.php");
+require_once(__DIR__."/../../core/function.php");
 $tieude = "ĐĂNG NHẬP TRANG QUẢN TRỊ";
-if(empty($getUser) || $getUser['level'] != 'admin') {
-	die('<script type="text/javascript">setTimeout(function(){ location.href = "'.BASE_URL('').'" }, 0);</script>');
+
+// N?u cha ??ng nhp admin -> v? trang ??ng nhp admin chinh
+if (empty($getUser) || $getUser['level'] != 'admin') {
+    header("Location: /admin-login.php");
+    exit;
 }
-require_once("../../pages/admin/Head.php");
+
+// N?u ?a v??t qua x?c th?c c?p 2 -> chuy?n vo admin
+if (!empty($_SESSION['loginadmin'])) {
+    header("Location: /pages/admin/QuanLyDonHang.php");
+    exit;
+}
+
+require_once(__DIR__."/../../pages/admin/Head.php");
 ?>
 <body class="page-body login-page login-form-fall">
 
@@ -26,7 +36,7 @@ var baseurl = '';
 				<img src="/images/logo_tuan.png" width="120" alt="" />
 			</a>
 			
-			<p class="description">Vui lòng đăng nhập ADMIN</p>
+			<p class="description">Vui lòng nhập mật khẩu cấp 2 để tiếp tục</p>
 			
 		
 		</div>
@@ -52,7 +62,7 @@ var baseurl = '';
 							<i class="entypo-key"></i>
 						</div>
 						
-						<input type="password" class="form-control" name="password" id="password" placeholder="Mật khẩu" autocomplete="off" />
+						<input type="password" class="form-control" name="password" id="password" placeholder="Mật khẩu cấp 2" autocomplete="off" />
 					</div>
 				
 				</div>
@@ -86,6 +96,8 @@ var baseurl = '';
                                 });
                                 if(respone.url != '-1') {
                                     setTimeout("location.href = '" + respone.url + "';", respone.time);
+                                } else {
+                                    setTimeout("location.href = '/pages/admin/QuanLyDonHang.php';", 1000);
                                 }
                                 $('#btnLogin').html('<i class="entypo-login"></i> Đăng nhập').prop('disabled', false);
                             },
