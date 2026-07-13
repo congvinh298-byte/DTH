@@ -269,6 +269,11 @@ function CheckVeri()
 }
 function CheckAdmin()
 {
+    // Cho phep truy cap neu da dang nhap admin qua session
+    if(!empty($_SESSION['loginadmin']))
+    {
+        return;
+    }
     global $my_level;
     if($my_level != 'admin' && $my_level != 'bct')
     {
