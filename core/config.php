@@ -202,14 +202,21 @@ class DMH
         return $row ?: false;
     }
 }
+$getUser = null;
+$my_username = false;
+$my_money = 0;
+$verifx = 0;
+$my_level = null;
 if(isset($_COOKIE['token']))
 { 
     $DMH = new DMH;
     $getUser = $DMH->prepared_get_row("SELECT * FROM users WHERE tokenlog = ?", [$_COOKIE['token']]);
-    $my_username = True;
-    $my_money = $getUser ? $getUser['money'] : 0;
-    $verifx = $getUser ? $getUser['verify'] : 0;
-    $my_level = $getUser ? $getUser['level'] : '';
+    if($getUser) {
+        $my_username = True;
+        $my_money = $getUser['money'];
+        $verifx = $getUser['verify'];
+        $my_level = $getUser['level'];
+    }
     if(!$getUser) {
         unset($_COOKIE['token']);
         setcookie('token', null, -1, '/');

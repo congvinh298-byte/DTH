@@ -3,8 +3,8 @@ define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 $tieude = "ĐĂNG NHẬP TRANG QUẢN TRỊ";
-if($getUser['level'] != 'admin') {
-	die('<script type="text/javascript">setTimeout(function(){ location.href = "'.BASE_URL().'" }, 0);</script>');
+if(empty($getUser) || $getUser['level'] != 'admin') {
+	die('<script type="text/javascript">setTimeout(function(){ location.href = "'.BASE_URL('').'" }, 0);</script>');
 }
 require_once("../../pages/admin/Head.php");
 ?>

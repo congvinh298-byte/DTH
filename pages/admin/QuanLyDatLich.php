@@ -15,7 +15,8 @@ if ($getUser['level'] != 'admin') {
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
 $where = "1=1";
 if (in_array($filter, ['CHO_XU_LY', 'DANG_XU_LY', 'HOAN_THANH', 'DA_HUY'])) {
-    $where = "`trangthai` = '" . mysqli_real_escape_string($DMH->ketnoi ?? null, $filter) . "'";
+    $DMH->connect();
+    $where = "`trangthai` = '" . mysqli_real_escape_string($DMH->ketnoi, $filter) . "'";
 }
 
 $orders = $DMH->get_list("SELECT d.*, u.name AS tho_name, u.username AS tho_username 

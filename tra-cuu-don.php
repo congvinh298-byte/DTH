@@ -12,7 +12,8 @@ $orders = [];
 $error = '';
 
 if ($search && strlen($search) >= 9) {
-    $safe_sdt = mysqli_real_escape_string($DMH->ketnoi ?? null, $search);
+    $DMH->connect();
+    $safe_sdt = mysqli_real_escape_string($DMH->ketnoi, $search);
     $orders = $DMH->get_list("SELECT * FROM `dat_lich` WHERE `sdt` = '$safe_sdt' ORDER BY `thoigian` DESC LIMIT 50");
     if (empty($orders)) {
         $error = 'Không tìm thấy đơn nào với số điện thoại này.';
