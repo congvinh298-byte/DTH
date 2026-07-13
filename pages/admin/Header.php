@@ -43,6 +43,12 @@
 						<span class="title">Dashboard</span>
 					</a>
 				</li>
+				<li class="<?=(in_array($_SERVER['REQUEST_URI'], ['/Admin/QuanLyDonHang']) ? 'active' : ''); ?>">
+					<a href="/pages/admin/QuanLyDonHang.php">
+						<i class="entypo-basket"></i>
+						<span class="title">Quản lý đơn hàng SP</span>
+					</a>
+				</li>
 				<li class="has-sub <?=(in_array($_SERVER['REQUEST_URI'], ['/Admin/Quanlythanhvien', '/Admin/QuanlythanhvienKhoa', '/Admin/ThanhVienON']) ? 'opened active' : ''); ?>">
 					<a href="/Admin/Quanlythanhvien">
 						<i class="entypo-user"></i>

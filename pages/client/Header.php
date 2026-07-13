@@ -56,7 +56,8 @@
                     if(res.logged_in) {
                         $('#topBarStatus').html(`
                             <a href="/pages/client/Orders.php" style="color: #38bdf8; font-weight: bold; margin-right: 15px;"><i class="fa-solid fa-box"></i> Đơn hàng của tôi</a>
-                            <a href="/profile.php" style="color: white; font-weight: bold;"><i class="fa-solid fa-user"></i> Xin chào, ${res.username}</a>
+                            <a href="/profile.php" style="color: white; font-weight: bold; margin-right: 15px;"><i class="fa-solid fa-user"></i> Xin chào, ${res.username}</a>
+                            <a href="javascript:void(0)" onclick="logout()" style="color: #f43f5e; font-weight: bold;"><i class="fa-solid fa-sign-out-alt"></i> Đăng xuất</a>
                         `);
                         updateCartCount();
                     }
@@ -137,4 +138,24 @@
     $(document).ready(function() {
         checkLoginStatus();
     });
+
+    function logout() {
+        if(confirm('Bạn có chắc muốn đăng xuất?')) {
+            $.ajax({
+                url: '/controller/client/Logout.php',
+                method: 'POST',
+                dataType: 'json',
+                success: function(res) {
+                    if(res.status == 'success') {
+                        window.location.href = '/';
+                    } else {
+                        alert(res.msg || 'Đăng xuất thất bại');
+                    }
+                },
+                error: function() {
+                    window.location.href = '/';
+                }
+            });
+        }
+    }
     </script>
