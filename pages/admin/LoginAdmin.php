@@ -24,34 +24,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: /Admin");
             exit;
         } else {
-            $error = 'Tai khoan hoac mat khau khong dung, hoac khong co quyen admin.';
+            $error = 'Tài khoản hoặc mật khẩu không đúng, hoặc tài khoản không có quyền quản trị.';
         }
     } else {
-        $error = 'Vui long nhap day du thong tin.';
+        $error = 'Vui lòng nhập đầy đủ tài khoản và mật khẩu.';
     }
 }
-$tieude = 'Dang nhap Admin | Dien May Hieu';
+$tieude = 'Đăng nhập quản trị | Điện Máy Hiếu';
 require_once(__DIR__."/../../pages/admin/Head.php");
 ?>
 <body>
 <div class="login-page">
     <div class="login-card">
-        <img src="/public/assets/logo.png" alt="Dien May Hieu">
-        <h2>Dang nhap quan tri</h2>
-        <p>He thong quan ly Dien May Hieu</p>
+        <img src="/public/assets/logo.png" alt="Điện Máy Hiếu">
+        <h2>Đăng nhập quản trị</h2>
+        <p>Hệ thống quản lý Điện Máy Hiếu</p>
         <?php if ($error): ?>
             <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
         <form method="POST" action="">
             <div class="form-group">
-                <label>Tai khoan</label>
-                <input type="text" name="username" class="form-control" placeholder="Nhap tai khoan" required autofocus>
+                <label>Tài khoản</label>
+                <input type="text" name="username" class="form-control" placeholder="Nhập tài khoản" required autofocus>
             </div>
             <div class="form-group">
-                <label>Mat khau</label>
-                <input type="password" name="password" class="form-control" placeholder="Nhap mat khau" required>
+                <label>Mật khẩu</label>
+                <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
             </div>
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-sign-in-alt"></i> Dang nhap</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-sign-in-alt"></i> Đăng nhập</button>
         </form>
     </div>
 </div>

@@ -4,10 +4,23 @@ require_once(__DIR__."/../../core/config.php");
 require_once(__DIR__."/../../core/function.php");
 CheckAdmin();
 
-header('Content-Type: application/json');
+$isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+    || (($_POST['ajax'] ?? '') === '1');
 
-try {    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        echo json_encode(['status' => 'error', 'msg' => 'Khong ho tro']);
+if (!$isAjax) {
+    header('Content-Type: text/html; charset=utf-8');
+} else {
+    header('Content-Type: application/json');
+}
+
+try {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        if ($isAjax) {
+            echo json_encode(['status' => 'error', 'msg' => 'Không hỗ trợ phương thức này']);
+        } else {
+            $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Không hỗ trợ phương thức này'];
+            header('Location: /pages/admin/GianHangDienMay.php');
+        }
         exit;
     }
 
@@ -23,20 +36,30 @@ try {    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $featured = isset($_POST['featured']) ? (int)$_POST['featured'] : 0;
 
     if ($name == '') {
-        echo json_encode(['status' => 'error', 'msg' => 'Vui long nhap ten san pham']);
+        if ($isAjax) {
+            echo json_encode(['status' => 'error', 'msg' => 'Vui lòng nhập tên sản phẩm']);
+        } else {
+            $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Vui lòng nhập tên sản phẩm'];
+            header('Location: /pages/admin/GianHang' . ucfirst($type) . '.php' . ($id ? '?edit='.$id : ''));
+        }
         exit;
     }
     if ($category_id <= 0) {
-        echo json_encode(['status' => 'error', 'msg' => 'Vui long chon danh muc']);
+        if ($isAjax) {
+            echo json_encode(['status' => 'error', 'msg' => 'Vui lòng chọn danh mục']);
+        } else {
+            $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Vui lòng chọn danh mục'];
+            header('Location: /pages/admin/GianHang' . ucfirst($type) . '.php' . ($id ? '?edit='.$id : ''));
+        }
         exit;
     }
 
     $DMH->connect();
 
     if ($slug == '') {
-        $slug = preg_replace('/[^a-z0-9]+/', '-', strtolower(vn_to_ascii($name)));
-        $slug = trim($slug, '-');
-        if ($slug == '') $slug = 'sp-' . time();
+        $slug = createSlug($name);
+    } else {
+        $slug = createSlug($slug);
     }
 
     // Unique slug
@@ -83,29 +106,51 @@ try {    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         $ok = $DMH->insert("products", $data);
     }
 
+    $backUrl = '/pages/admin/GianHang' . ($type == '3d' ? '3D' : 'DienMay') . '.php';
     if ($ok) {
-        echo json_encode(['status' => 'success', 'msg' => 'Da luu san pham.', 'url' => '/pages/admin/GianHang' . ucfirst($type) . '.php', 'time' => 1000]);
+        if ($isAjax) {
+            echo json_encode(['status' => 'success', 'msg' => 'Đã lưu sản phẩm.', 'url' => $backUrl, 'time' => 1000]);
+        } else {
+            $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Đã lưu sản phẩm thành công'];
+            header('Location: ' . $backUrl);
+        }
     } else {
-        echo json_encode(['status' => 'error', 'msg' => 'Luu san pham that bai.']);
+        if ($isAjax) {
+            echo json_encode(['status' => 'error', 'msg' => 'Lưu sản phẩm thất bại']);
+        } else {
+            $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Lưu sản phẩm thất bại'];
+            header('Location: ' . $backUrl . ($id ? '?edit='.$id : ''));
+        }
     }
 } catch (Throwable $e) {
-    echo json_encode(['status' => 'error', 'msg' => 'Loi he thong: ' . $e->getMessage()]);
+    if ($isAjax) {
+        echo json_encode(['status' => 'error', 'msg' => 'Lỗi hệ thống: ' . $e->getMessage()]);
+    } else {
+        $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Lỗi hệ thống: ' . $e->getMessage()];
+        header('Location: /pages/admin/GianHangDienMay.php');
+    }
+}
+exit;
+
+function createSlug($str) {
+    $str = strtolower(trim($str));
+    $str = preg_replace('/[àáạảãâầấậẩẫăằắặẳẵ]/u', 'a', $str);
+    $str = preg_replace('/[èéẹẻẽêềếệểễ]/u', 'e', $str);
+    $str = preg_replace('/[ìíịỉĩ]/u', 'i', $str);
+    $str = preg_replace('/[òóọỏõôồốộổỗơờớợởỡ]/u', 'o', $str);
+    $str = preg_replace('/[ùúụủũưừứựửữ]/u', 'u', $str);
+    $str = preg_replace('/[ỳýỵỷỹ]/u', 'y', $str);
+    $str = preg_replace('/đ/u', 'd', $str);
+    $str = preg_replace('/[^a-z0-9]+/u', '-', $str);
+    $str = trim($str, '-');
+    if ($str == '') $str = 'sp-' . time();
+    return $str;
 }
 
 function vn_to_ascii($str) {
-    $a = [
-        'a' => 'aAeEoOuUiIdDyY',
-        'a' => 'aaaaaaaaaaaaaaaa',
-        'e' => 'eeeeeeeeeeee',
-        'o' => 'oooooooooooo',
-        'u' => 'uuuuuuuuuuuu',
-        'i' => 'iiiiiiiiiiii',
-        'd' => 'dd',
-        'y' => 'yyyyyyyyyyyy',
-    ];
-    $map = [];
     $orig = 'aAeEoOuUiIdDyY';
     $flat = 'aaaaaaaaaaaaaaaaeeeeeeeeeeeeoooooooooooouuuuuuuuuuuuiiiiiiiiiiiidddyyyyyyyyyyyy';
+    $map = [];
     for ($i = 0; $i < strlen($orig); $i++) {
         $map[$orig[$i]] = $flat[$i];
     }

@@ -4,7 +4,7 @@ require_once(__DIR__."/../../core/config.php");
 require_once(__DIR__."/../../core/function.php");
 CheckAdmin();
 
-$tieude = 'Don goi tho | Dien May Hieu';
+$tieude = 'Quản lý đơn gọi thợ | Điện Máy Hiếu';
 require_once(__DIR__."/../../pages/admin/Head.php");
 require_once(__DIR__."/../../pages/admin/Header.php");
 
@@ -22,10 +22,10 @@ $orders = $DMH->get_list("SELECT d.*, u.name AS tho_name, u.username AS tho_user
     ORDER BY d.thoigian DESC LIMIT 200");
 
 $status_map = [
-    'CHO_XU_LY' => ['text' => 'Cho xu ly', 'class' => 'badge-pending'],
-    'DANG_XU_LY' => ['text' => 'Dang xu ly', 'class' => 'badge-shipping'],
-    'HOAN_THANH' => ['text' => 'Hoan thanh', 'class' => 'badge-completed'],
-    'DA_HUY' => ['text' => 'Da huy', 'class' => 'badge-cancelled'],
+    'CHO_XU_LY' => ['text' => 'Chờ xử lý', 'class' => 'badge-pending'],
+    'DANG_XU_LY' => ['text' => 'Đang xử lý', 'class' => 'badge-shipping'],
+    'HOAN_THANH' => ['text' => 'Hoàn thành', 'class' => 'badge-completed'],
+    'DA_HUY' => ['text' => 'Đã hủy', 'class' => 'badge-cancelled'],
 ];
 
 $thoList = $DMH->get_list("SELECT id, name, username, fullname FROM `users` WHERE `level` = 'tho' AND `banned` = 'ON' ORDER BY name, username");
@@ -40,14 +40,14 @@ $thoList = $DMH->get_list("SELECT id, name, username, fullname FROM `users` WHER
     .table-wrap { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 12px; }
 </style>
 
-<h2 style="margin:0 0 20px; font-size:18px; font-weight:800; color:#0f172a;"><i class="fa-solid fa-calendar-check" style="color:#0ea5e9;"></i> Quan ly don goi tho</h2>
+<h2 style="margin:0 0 20px; font-size:18px; font-weight:800; color:#0f172a;"><i class="fa-solid fa-calendar-check" style="color:#0ea5e9;"></i> Quản lý đơn gọi thợ</h2>
 
 <div class="filter-bar">
-    <a href="?filter=all" class="<?= $filter == 'all' ? 'active' : '' ?>">Tat ca</a>
-    <a href="?filter=CHO_XU_LY" class="<?= $filter == 'CHO_XU_LY' ? 'active' : '' ?>"><span class="badge badge-pending">Cho xu ly</span></a>
-    <a href="?filter=DANG_XU_LY" class="<?= $filter == 'DANG_XU_LY' ? 'active' : '' ?>"><span class="badge badge-shipping">Dang xu ly</span></a>
-    <a href="?filter=HOAN_THANH" class="<?= $filter == 'HOAN_THANH' ? 'active' : '' ?>"><span class="badge badge-completed">Hoan thanh</span></a>
-    <a href="?filter=DA_HUY" class="<?= $filter == 'DA_HUY' ? 'active' : '' ?>"><span class="badge badge-cancelled">Da huy</span></a>
+    <a href="?filter=all" class="<?= $filter == 'all' ? 'active' : '' ?>">Tất cả</a>
+    <a href="?filter=CHO_XU_LY" class="<?= $filter == 'CHO_XU_LY' ? 'active' : '' ?>"><span class="badge badge-pending">Chờ xử lý</span></a>
+    <a href="?filter=DANG_XU_LY" class="<?= $filter == 'DANG_XU_LY' ? 'active' : '' ?>"><span class="badge badge-shipping">Đang xử lý</span></a>
+    <a href="?filter=HOAN_THANH" class="<?= $filter == 'HOAN_THANH' ? 'active' : '' ?>"><span class="badge badge-completed">Hoàn thành</span></a>
+    <a href="?filter=DA_HUY" class="<?= $filter == 'DA_HUY' ? 'active' : '' ?>"><span class="badge badge-cancelled">Đã hủy</span></a>
 </div>
 
 <div class="card">
@@ -55,7 +55,7 @@ $thoList = $DMH->get_list("SELECT id, name, username, fullname FROM `users` WHER
         <?php if (empty($orders)): ?>
             <div style="text-align:center; padding: 50px 20px; color:#64748b;">
                 <i class="fa-solid fa-calendar-xmark" style="font-size:40px; margin-bottom:14px; display:block;"></i>
-                <div style="font-size:16px; font-weight:700;">Khong co don goi tho nao</div>
+                <div style="font-size:16px; font-weight:700;">Không có đơn gọi thợ nào</div>
             </div>
         <?php else: ?>
             <div class="table-wrap">
@@ -63,14 +63,14 @@ $thoList = $DMH->get_list("SELECT id, name, username, fullname FROM `users` WHER
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Khach hang</th>
-                            <th>SDT</th>
-                            <th>Dich vu</th>
-                            <th>Dia chi</th>
-                            <th>Thoi gian</th>
-                            <th>Tho</th>
-                            <th>Trang thai</th>
-                            <th>Thao tac</th>
+                            <th>Khách hàng</th>
+                            <th>SĐT</th>
+                            <th>Dịch vụ</th>
+                            <th>Địa chỉ</th>
+                            <th>Thời gian</th>
+                            <th>Thợ</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -89,9 +89,9 @@ $thoList = $DMH->get_list("SELECT id, name, username, fullname FROM `users` WHER
                                 <td><span class="badge-stt <?= $st['class'] ?>"><?= htmlspecialchars($st['text']) ?></span></td>
                                 <td>
                                     <?php if ($don['trangthai'] == 'CHO_XU_LY' || $don['trangthai'] == 'DANG_XU_LY'): ?>
-                                        <button class="action-btn btn-assign" onclick="openAssign(<?= (int)$don['id'] ?>)"><i class="fa-solid fa-user-check"></i> Giao tho</button>
-                                        <button class="action-btn btn-complete" onclick="serviceComplete(<?= (int)$don['id'] ?>)"><i class="fa-solid fa-check"></i> Hoan thanh</button>
-                                        <button class="action-btn btn-cancel" onclick="serviceCancel(<?= (int)$don['id'] ?>)"><i class="fa-solid fa-ban"></i> Huy</button>
+                                        <button class="action-btn btn-assign" onclick="openAssign(<?= (int)$don['id'] ?>)"><i class="fa-solid fa-user-check"></i> Giao thợ</button>
+                                        <button class="action-btn btn-complete" onclick="serviceComplete(<?= (int)$don['id'] ?>)"><i class="fa-solid fa-check"></i> Hoàn thành</button>
+                                        <button class="action-btn btn-cancel" onclick="serviceCancel(<?= (int)$don['id'] ?>)"><i class="fa-solid fa-ban"></i> Hủy</button>
                                     <?php else: ?>—<?php endif; ?>
                                 </td>
                             </tr>
@@ -103,22 +103,22 @@ $thoList = $DMH->get_list("SELECT id, name, username, fullname FROM `users` WHER
     </div>
 </div>
 
-<!-- Modal giao tho -->
+<!-- Modal giao thợ -->
 <div class="modal-backdrop" id="assignModal">
     <div class="modal-box">
-        <h3><i class="fa-solid fa-user-check"></i> Giao don cho tho</h3>
+        <h3><i class="fa-solid fa-user-check"></i> Giao đơn cho thợ</h3>
         <input type="hidden" id="assignOrderId">
-        <label>Chon tho</label>
-        <select id="assignThoId">
-            <option value="">-- Chon tho --</option>
+        <label>Chọn thợ</label>
+        <select id="assignThoId" class="form-control">
+            <option value="">-- Chọn thợ --</option>
             <?php foreach ($thoList as $tho) {
                 $label = htmlspecialchars(($tho['name'] ?: $tho['fullname'] ?: $tho['username']));
-                echo '<option value="' . (int)$tho['id'] . '">' . $label . '</option>';
+                echo '<option value="' . (int)$tho['id'] . '"\u003e' . $label . '</option\u003e';
             } ?>
         </select>
         <div class="modal-actions">
-            <button class="btn-modal-secondary" onclick="closeAssign()">Dong</button>
-            <button class="btn-modal-primary" onclick="saveAssign()">Luu</button>
+            <button class="btn-modal-secondary" onclick="closeAssign()">Đóng</button>
+            <button class="btn-modal-primary" onclick="saveAssign()">Lưu</button>
         </div>
     </div>
 </div>
@@ -134,7 +134,7 @@ function closeAssign() {
 function saveAssign() {
     const id = document.getElementById('assignOrderId').value;
     const thoId = document.getElementById('assignThoId').value;
-    if (!thoId) return Swal.fire('Thieu thong tin', 'Vui long chon tho', 'warning');
+    if (!thoId) return Swal.fire('Thiếu thông tin', 'Vui lòng chọn thợ', 'warning');
 
     fetch('/controller/admin/AssignTho.php', {
         method: 'POST',
@@ -144,22 +144,22 @@ function saveAssign() {
     .then(r => r.json())
     .then(res => {
         if (res.status === 'success') {
-            Swal.fire('Thanh cong', res.msg, 'success').then(() => location.reload());
+            Swal.fire('Thành công', res.msg, 'success').then(() => location.reload());
         } else {
-            Swal.fire('Loi', res.msg, 'error');
+            Swal.fire('Lỗi', res.msg, 'error');
         }
     })
-    .catch(() => Swal.fire('Loi', 'Khong the ket noi', 'error'));
+    .catch(() => Swal.fire('Lỗi', 'Không thể kết nối', 'error'));
     closeAssign();
 }
 function serviceComplete(id) {
     Swal.fire({
-        title: 'Hoan thanh?',
-        text: 'Xac nhan don dich vu da hoan tat.',
+        title: 'Hoàn thành?',
+        text: 'Xác nhận đơn dịch vụ đã hoàn tất.',
         icon: 'question',
         showCancelButton: true,
-        confirmButtonText: 'Dong y',
-        cancelButtonText: 'Dong'
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Đóng'
     }).then((result) => {
         if (result.isConfirmed) {
             fetch('/controller/admin/ServiceStatusUpdate.php', {
@@ -170,23 +170,23 @@ function serviceComplete(id) {
             .then(r => r.json())
             .then(res => {
                 if (res.status === 'success') {
-                    Swal.fire('Thanh cong', res.msg, 'success').then(() => location.reload());
+                    Swal.fire('Thành công', res.msg, 'success').then(() => location.reload());
                 } else {
-                    Swal.fire('Loi', res.msg, 'error');
+                    Swal.fire('Lỗi', res.msg, 'error');
                 }
             })
-            .catch(() => Swal.fire('Loi', 'Khong the ket noi', 'error'));
+            .catch(() => Swal.fire('Lỗi', 'Không thể kết nối', 'error'));
         }
     });
 }
 function serviceCancel(id) {
     Swal.fire({
-        title: 'Huy don?',
-        text: 'Don se bi danh dau huy.',
+        title: 'Hủy đơn?',
+        text: 'Đơn sẽ bị đánh dấu là đã hủy.',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Huy don',
-        cancelButtonText: 'Dong'
+        confirmButtonText: 'Hủy đơn',
+        cancelButtonText: 'Đóng'
     }).then((result) => {
         if (result.isConfirmed) {
             fetch('/controller/admin/ServiceStatusUpdate.php', {
@@ -197,12 +197,12 @@ function serviceCancel(id) {
             .then(r => r.json())
             .then(res => {
                 if (res.status === 'success') {
-                    Swal.fire('Da huy', res.msg, 'success').then(() => location.reload());
+                    Swal.fire('Đã hủy', res.msg, 'success').then(() => location.reload());
                 } else {
-                    Swal.fire('Loi', res.msg, 'error');
+                    Swal.fire('Lỗi', res.msg, 'error');
                 }
             })
-            .catch(() => Swal.fire('Loi', 'Khong the ket noi', 'error'));
+            .catch(() => Swal.fire('Lỗi', 'Không thể kết nối', 'error'));
         }
     });
 }

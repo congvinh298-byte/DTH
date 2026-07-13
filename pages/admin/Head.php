@@ -6,9 +6,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="He thong quan tri Dien May Hieu">
+    <meta name="description" content="Hệ thống quản trị Điện Máy Hiếu">
     <link rel="icon" href="/public/assets/logo.png">
-    <title><?=htmlspecialchars($tieude ?? 'Admin | Dien May Hieu')?></title>
+    <title><?=htmlspecialchars($tieude ?? 'Quản trị | Điện Máy Hiếu')?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Inter:400,600,700,800">
     <style>

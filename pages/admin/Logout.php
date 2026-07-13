@@ -8,5 +8,6 @@ if (isset($_COOKIE[session_name()])) {
 }
 session_destroy();
 setcookie('token', '', time() - 3600, '/');
-header("Location: /Login-Admin");
+header("Location: /pages/admin/LoginAdmin.php");
 exit;
+?>

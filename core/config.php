@@ -272,18 +272,52 @@ function CheckAdmin()
     // Cho phep truy cap neu da dang nhap admin qua session
     if(!empty($_SESSION['loginadmin']))
     {
+        global $getUser, $my_level;
+        if (empty($getUser)) {
+            $getUser = [
+                'id' => $_SESSION['admin_id'] ?? 0,
+                'username' => $_SESSION['admin_username'] ?? 'admin',
+                'level' => 'admin'
+            ];
+            $my_level = 'admin';
+        }
         return;
     }
     global $my_level;
     if($my_level != 'admin' && $my_level != 'bct')
     {
-        return die('<script type="text/javascript">window.location.href = "/pages/admin/LoginAdmin.php";</script>');
+        adminAccessDenied();
     }
     else
     {
-        if(empty($_SESSION['loginadmin']))
-        {
-            return die('<script type="text/javascript">window.location.href = "/pages/admin/LoginAdmin.php";</script>');
-        }
+        adminAccessDenied();
     }
+}
+
+function adminAccessDenied()
+{
+    $html = '<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chưa đăng nhập quản trị | Điện Máy Hiếu</title>
+<style>
+body{font-family:Arial, sans-serif;background:#f1f5f9;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+.card{background:#fff;padding:32px 40px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1);text-align:center;max-width:420px;width:90%}
+.card h2{color:#0f172a;margin:0 0 12px;font-size:20px}
+.card p{color:#64748b;margin:0 0 20px;line-height:1.6}
+.btn{display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="card">
+<h2>🔒 Bạn chưa đăng nhập quản trị</h2>
+<p>Vui lòng đăng nhập tài khoản admin để tiếp tục sử dụng hệ thống.</p>
+<a href="/pages/admin/LoginAdmin.php" class="btn">Đăng nhập quản trị</a>
+</div>
+<script>setTimeout(function(){ window.location.href="/pages/admin/LoginAdmin.php"; }, 3000);</script>
+</body>
+</html>';
+    die($html);
 }

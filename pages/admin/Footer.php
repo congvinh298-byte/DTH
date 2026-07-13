@@ -1,5 +1,5 @@
 <?php
-  if (!defined('IN_SITE')) die('The Request Not Found');
+  if (!defined('IN_SITE')) die('Truy cập không hợp lệ');
 ?>
         </main>
     </div>
