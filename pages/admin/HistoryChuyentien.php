@@ -3,9 +3,9 @@ define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 $tieude = 'LỊCH SỬ CHUYỂN TIỀN';
+CheckAdmin();
 require_once("../../pages/admin/Head.php");
 require_once("../../pages/admin/Header.php");
-CheckAdmin();
 ?>
 <h2>Lịch sử chuyển tiền</h2>
 

@@ -3,9 +3,9 @@ define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 $tieude = 'EDIT THÀNH VIÊN';
+CheckAdmin();
 require_once("../../pages/admin/Head.php");
 require_once("../../pages/admin/Header.php");
-CheckAdmin();
 if(isset($_GET['id']) && $getUser['level'] == 'admin')
 {
     $row = $DMH->get_row(" SELECT * FROM `users` WHERE `id` = '".$_GET['id']."'");

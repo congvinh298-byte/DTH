@@ -3,9 +3,9 @@ define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 $tieude = 'THÀNH VIÊN ĐANG ONLINE';
+CheckAdmin();
 require_once("../../pages/admin/Head.php");
 require_once("../../pages/admin/Header.php");
-CheckAdmin();
 ?>
 <h2>Thành viên đang ONLINE</h2>
 

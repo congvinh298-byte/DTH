@@ -3,9 +3,9 @@ define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 $tieude = 'LỊCH SỬ NẠP ATM';
+CheckAdmin();
 require_once("../../pages/admin/Head.php");
 require_once("../../pages/admin/Header.php");
-CheckAdmin();
 ?>
 <h2>Lịch sử nạp ATM <a href="/Admin/AddNapAtm" class="btn btn-info"><i class="fa fa-cloud-upload"></i>  Thêm thông tin</a></h2>
 

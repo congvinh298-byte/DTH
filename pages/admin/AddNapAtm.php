@@ -3,9 +3,9 @@ define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 $tieude = 'ADD NẠP ATM';
+CheckAdmin();
 require_once("../../pages/admin/Head.php");
 require_once("../../pages/admin/Header.php");
-CheckAdmin();
 ?>
 <h2>NẠP TIỀN ATM <a href="/Admin/LichsunaptienATM" class="btn btn-info"><i class="fa fa-backward"></i> Quay Lại</a></h2>
 <div class="row">

@@ -3,9 +3,9 @@ define("IN_SITE", true);
 require_once("../../core/config.php");
 require_once("../../core/function.php");
 $tieude = 'ĐƠN GIA HẠN WEBSITE';
+CheckAdmin();
 require_once("../../pages/admin/Head.php");
 require_once("../../pages/admin/Header.php");
-CheckAdmin();
 ?>
 <?php
 if(isset($_GET['status']) && isset($_GET['id']) && $getUser['level'] == 'admin') {

@@ -2,16 +2,7 @@
 define("IN_SITE", true);
 require_once(__DIR__."/../../core/config.php");
 require_once(__DIR__."/../../core/function.php");
-
-if (!isset($_COOKIE['token']) || empty($getUser)) {
-    header("Location: /pages/admin/LoginAdmin.php");
-    exit;
-}
-if ($getUser['level'] != 'admin') {
-    header("Location: /");
-    exit;
-}
-$_SESSION['loginadmin'] = true;
+CheckAdmin();
 
 $tieude = 'Quản Lý Đơn Hàng | Điện Máy Hiếu';
 require_once(__DIR__."/../../pages/admin/Head.php");
