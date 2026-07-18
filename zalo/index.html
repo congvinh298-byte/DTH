@@ -40,14 +40,16 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     #appFrame {
       width: 100%; height: 100%; border: none; display: block;
+      background: #0f172a;
     }
-    #offline {
+    #offline, #error {
       display: none; position: fixed; inset: 0;
       background: #0f172a; color: #fff;
       flex-direction: column; align-items: center; justify-content: center;
       padding: 30px; text-align: center; z-index: 10000;
     }
-    #offline i { font-size: 48px; color: #f59e0b; margin-bottom: 16px; }
+    #offline i, #error i { font-size: 48px; color: #f59e0b; margin-bottom: 16px; }
+    #error .detail { margin-top: 12px; font-size: 13px; color: #94a3b8; max-width: 320px; }
   </style>
 </head>
 <body>
@@ -62,12 +64,18 @@
     <div style="margin-top:12px;font-size:14px;color:#94a3b8;">Vui lòng kiểm tra lại mạng và thử lại.</div>
   </div>
 
+  <div id="error">
+    <div>⚠️ Không thể tải trang</div>
+    <div class="detail">Vui lòng kiểm tra kết nối hoặc liên hệ hotline 0979.553.289.</div>
+  </div>
+
   <iframe
     id="appFrame"
     src="https://dienmayhieu.com/"
     allow="geolocation; microphone; camera"
-    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-modals"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-modals allow-top-navigation"
     loading="eager"
+    referrerpolicy="origin"
     title="Điện Máy Hiếu"
   ></iframe>
 
@@ -76,12 +84,25 @@
       var loader = document.getElementById('loader');
       var frame = document.getElementById('appFrame');
       var offline = document.getElementById('offline');
+      var error = document.getElementById('error');
 
       function hideLoader() {
         loader.classList.add('hidden');
       }
+
+      function showError() {
+        error.style.display = 'flex';
+        hideLoader();
+      }
+
       frame.addEventListener('load', hideLoader);
-      setTimeout(hideLoader, 4000);
+      frame.addEventListener('error', showError);
+      setTimeout(function() {
+        if (!loader.classList.contains('hidden')) {
+          // Nếu sau 8 giây chưa load xong, vẫn ẩn loader để tránh treo
+          hideLoader();
+        }
+      }, 8000);
 
       function updateOnlineStatus() {
         offline.style.display = navigator.onLine ? 'none' : 'flex';
@@ -89,13 +110,6 @@
       window.addEventListener('online', updateOnlineStatus);
       window.addEventListener('offline', updateOnlineStatus);
       updateOnlineStatus();
-
-      // Gửi thông báo về Zalo khi web sẵn sàng (nếu có SDK)
-      if (window.ZaloMiniApp && typeof window.ZaloMiniApp.postMessage === 'function') {
-        try {
-          window.ZaloMiniApp.postMessage(JSON.stringify({ event: 'web_ready', ts: Date.now() }));
-        } catch (e) {}
-      }
     })();
   </script>
 </body>

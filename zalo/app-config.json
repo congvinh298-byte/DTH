@@ -1,23 +1,23 @@
 {
   "app": {
-    "appId": "1271764499975436667",
     "title": "Điện Máy Hiếu",
-    "headerTitle": "Điện Máy Hiếu",
     "headerColor": "#0f172a",
-    "textColor": "#ffffff",
-    "statusBarColor": "#0f172a",
-    "actionBarHidden": true
+    "textColor": "white",
+    "statusBar": "transparent",
+    "actionBarHidden": true,
+    "hideAndroidBottomNavigationBar": false,
+    "hideIOSSafeAreaBottom": true,
+    "selfControlLoading": false
   },
-  "list": [
-    "index.html"
-  ],
-  "pages": [
-    "index"
-  ],
-  "networkTimeout": {
-    "request": 30000,
-    "connectSocket": 30000,
-    "uploadFile": 30000,
-    "downloadFile": 30000
+  "listCSS": [],
+  "listSyncJS": [],
+  "listAsyncJS": [],
+  "template": {
+    "name": "dienmayhieu-zalo-miniapp",
+    "apiUrl": "https://dienmayhieu.com",
+    "oaIDtoOpenChat": "",
+    "logoUrl": "",
+    "shopName": "Điện Máy Hiếu",
+    "shopAddress": "166, Ấp Bình Thạnh 1, Xã Lấp Vò, Tỉnh Đồng Tháp"
   }
 }

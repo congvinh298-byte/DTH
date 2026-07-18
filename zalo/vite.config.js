@@ -1,20 +1,25 @@
 import { defineConfig } from 'vite';
-import reactRefresh from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react';
 import zmpVitePlugin from 'zmp-vite-plugin';
 
 export default defineConfig({
   root: './src',
-  base: '',
+  base: './',
   plugins: [
-    reactRefresh(),
+    react(),
     zmpVitePlugin()
   ],
   build: {
     outDir: '../dist',
     emptyOutDir: true,
+    polyfillModulePreload: false,
     rollupOptions: {
       input: {
         index: './src/index.html'
+      },
+      output: {
+        entryFileNames: 'assets/[name].[hash].module.js',
+        chunkFileNames: 'assets/[name].[hash].module.js'
       }
     }
   }
