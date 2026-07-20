@@ -11,13 +11,5 @@
   },
   "listCSS": [],
   "listSyncJS": [],
-  "listAsyncJS": [],
-  "template": {
-    "name": "dienmayhieu-zalo-miniapp",
-    "apiUrl": "https://dienmayhieu.com",
-    "oaIDtoOpenChat": "",
-    "logoUrl": "",
-    "shopName": "Điện Máy Hiếu",
-    "shopAddress": "166, Ấp Bình Thạnh 1, Xã Lấp Vò, Tỉnh Đồng Tháp"
-  }
+  "listAsyncJS": []
 }

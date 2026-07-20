@@ -1,0 +1,19 @@
+{
+  "cwd": "C:\\Users\\pcpv\\OneDrive\\Desktop\\DTH\\zalo",
+  "name": "dienmayhieu-zalo-miniapp",
+  "framework": "react-javascript",
+  "cssPreProcessor": "scss",
+  "includeTailwind": false,
+  "package": "zmp-ui",
+  "stateManagement": "none",
+  "newProject": true,
+  "template": "single-view",
+  "theming": {
+    "customColor": true,
+    "color": "#0f172a",
+    "darkTheme": true,
+    "iconFonts": false,
+    "fillBars": false,
+    "useUiKits": false
+  }
+}

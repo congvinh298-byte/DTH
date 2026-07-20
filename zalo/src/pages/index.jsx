@@ -1,36 +1,105 @@
-import React, { useEffect } from 'react';
-import { Page, Button } from 'zmp-ui';
-import { openWebview } from 'zmp-sdk';
+import React, { useEffect, useState } from "react";
+import {
+  openWebview,
+  closeLoading,
+  getNetworkType,
+  onNetworkStatusChange,
+  getSystemInfo,
+  configAppView
+} from "zmp-sdk/apis";
 
-const HomePage = () => {
+const WEBSITE_URL = "https://dienmayhieu.com/";
+const SHOP_NAME = "Điện Máy Hiếu";
+const SHOP_ADDRESS = "166, Ấp Bình Thạnh 1, Xã Lấp Vò, Tỉnh Đồng Tháp";
+
+function HomePage() {
+  const [network, setNetwork] = useState("unknown");
+  const [error, setError] = useState(null);
+
+  // Ẩn splash loading và cấu hình view
   useEffect(() => {
-    // Tự động mở webview website chính ngay khi Mini App khởi động
-    openWebview({
-      url: 'https://dienmayhieu.com/',
+    closeLoading().catch(() => {
+      // ignore nếu splash không bật
+    });
+
+    configAppView({
+      headerColor: "#0f172a",
+      statusBar: "transparent",
+      actionBar: "hide",
+      hideBottomNavigationBar: true
     }).catch(() => {
-      // Nếu tự động bị chặn, người dùng sẽ bấm nút bên dưới
+      // ignore nếu API không hỗ trợ
     });
   }, []);
 
-  return (
-    <Page className="page" hideScrollbar style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      height: '100vh', padding: 20, textAlign: 'center', background: '#0f172a', color: '#fff'
-    }}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>⚡</div>
-      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Điện Máy Hiếu</div>
-      <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 24 }}>Mini App</div>
+  // Lấy thông tin mạng
+  useEffect(() => {
+    getNetworkType()
+      .then((res) => setNetwork(res.networkType || "unknown"))
+      .catch(() => setNetwork("unknown"));
 
-      <Button
-        variant="primary"
-        size="large"
-        onClick={() => openWebview({ url: 'https://dienmayhieu.com/' })}
-        style={{ background: '#38bdf8', color: '#0f172a', fontWeight: 700 }}
-      >
-        Mở cửa hàng
-      </Button>
-    </Page>
+    const unsubscribe = onNetworkStatusChange((res) => {
+      setNetwork(res.isConnected ? (res.networkType || "unknown") : "none");
+    });
+
+    return () => {
+      if (typeof unsubscribe === "function") unsubscribe();
+    };
+  }, []);
+
+  // Log thông tin hệ thống (dev only)
+  useEffect(() => {
+    getSystemInfo()
+      .then((info) => console.log("[DMH] System info:", info))
+      .catch((err) => console.warn("[DMH] getSystemInfo failed:", err));
+  }, []);
+
+  const handleOpen = () => {
+    if (network === "none") {
+      setError("Không có kết nối mạng. Vui lòng kiểm tra lại.");
+      return;
+    }
+
+    setError(null);
+
+    openWebview({
+      url: WEBSITE_URL,
+      title: SHOP_NAME
+    })
+      .then(() => console.log("[DMH] openWebview success"))
+      .catch((err) => {
+        console.error("[DMH] openWebview error:", err);
+        setError("Không thể mở website. Vui lòng thử lại.");
+      });
+  };
+
+  // Tự động mở webview sau khi load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleOpen();
+    }, 800);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [network]);
+
+  return (
+    <div className="launch-page">
+      <div className="brand">⚡ {SHOP_NAME}</div>
+      <div className="address">{SHOP_ADDRESS}</div>
+      <button className="open-btn" onClick={handleOpen}>
+        Mở website
+      </button>
+      {error && (
+        <div className="error" style={{ marginTop: 16, color: "#f87171", fontSize: 13, textAlign: "center" }}>
+          {error}
+        </div>
+      )}
+      <div className="hint">
+        Nếu website không tự mở, hãy bấm nút bên trên.
+      </div>
+    </div>
   );
-};
+}
 
 export default HomePage;

@@ -1,20 +1,18 @@
-import React from 'react';
-import { Route } from 'react-router-dom';
-import { App, ZMPRouter, AnimationRoutes, SnackbarProvider } from 'zmp-ui';
-import HomePage from './pages/index';
+import React from "react";
+import { createRoot } from "react-dom/client";
 
-const MyApp = () => {
-  return (
-    <App>
-      <SnackbarProvider>
-        <ZMPRouter>
-          <AnimationRoutes>
-            <Route path="/" element={<HomePage />} />
-          </AnimationRoutes>
-        </ZMPRouter>
-      </SnackbarProvider>
-    </App>
-  );
-};
+import "./css/app.scss";
 
-export default MyApp;
+import appConfig from "../app-config.json";
+import HomePage from "./pages/index";
+
+if (!window.APP_CONFIG) {
+  window.APP_CONFIG = appConfig;
+}
+
+const root = createRoot(document.getElementById("app"));
+root.render(
+  <React.StrictMode>
+    <HomePage />
+  </React.StrictMode>
+);
