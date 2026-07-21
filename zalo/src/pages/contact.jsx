@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Page, Header, Box, Text, Button, Input, List } from "zmp-ui";
-import { openPhone, followOA } from "zmp-sdk/apis";
+import { openPhone } from "zmp-sdk/apis";
 import { useSnackbar } from "zmp-ui";
 
 function ContactPage() {
@@ -28,9 +28,11 @@ function ContactPage() {
     <Page className="page contact-page">
       <Header title="Liên hệ" showBackIcon={false} />
 
-      <Box p={2}>
-        <Text size="large" bold>Điện Máy Hiếu</Text>
-        <Text size="small">166, Ấp Bình Thạnh 1, Xã Lấp Vò, Tỉnh Đồng Tháp</Text>
+      <Box className="hero-section" mb={2}>
+        <Text className="hero-title">Điện Máy Hiếu</Text>
+        <Text className="hero-subtitle">
+          166, Ấp Bình Thạnh 1, Xã Lấp Vò, Tỉnh Đồng Tháp
+        </Text>
       </Box>
 
       <List>
@@ -39,13 +41,13 @@ function ContactPage() {
       </List>
 
       <Box p={2}>
-        <Button variant="primary" fullWidth onClick={handleCall}>
+        <Button className="btn-primary" fullWidth onClick={handleCall}>
           Gọi ngay
         </Button>
       </Box>
 
-      <Box p={2}>
-        <Text size="normal" bold>Để lại thông tin</Text>
+      <Box className="contact-form">
+        <Text size="normal" bold mb={2}>Để lại thông tin</Text>
         <Input
           label="Số điện thoại"
           type="number"
@@ -53,19 +55,15 @@ function ContactPage() {
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
-        <Box mt={2}>
-          <Input
-            label="Nội dung cần tư vấn"
-            placeholder="Anh/chị cần mua sản phẩm gì?"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
-        </Box>
-        <Box mt={2}>
-          <Button variant="primary" fullWidth onClick={handleSubmit}>
-            Gửi yêu cầu
-          </Button>
-        </Box>
+        <Input
+          label="Nội dung cần tư vấn"
+          placeholder="Anh/chị cần mua sản phẩm gì?"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
+        <Button fullWidth onClick={handleSubmit}>
+          Gửi yêu cầu
+        </Button>
       </Box>
     </Page>
   );

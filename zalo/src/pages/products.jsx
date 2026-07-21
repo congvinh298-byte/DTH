@@ -7,12 +7,9 @@ import ProductCard from "../components/product-card";
 
 const categories = [
   { id: "all", name: "Tất cả" },
-  { id: "Tivi", name: "Tivi" },
-  { id: "Tu lanh", name: "Tủ lạnh" },
-  { id: "May giat", name: "Máy giặt" },
-  { id: "Dieu hoa", name: "Điều hòa" },
-  { id: "May loc nuoc", name: "Máy lọc nước" },
   { id: "Gia dung", name: "Gia dụng" },
+  { id: "San pham 3D", name: "In 3D" },
+  { id: "Dien may", name: "Điện máy" },
 ];
 
 function ProductsPage() {
@@ -60,14 +57,13 @@ function ProductsPage() {
         />
       </Box>
 
-      <Box className="category-list" p={2} flex flexWrap="wrap">
+      <Box className="category-chips">
         {categories.map((cat) => (
           <Button
             key={cat.id}
-            size="small"
-            variant={activeCategory === cat.id ? "primary" : "secondary"}
+            className={`category-chip ${activeCategory === cat.id ? "active" : ""}`}
+            variant="tertiary"
             onClick={() => handleCategoryChange(cat.id)}
-            className="category-item"
           >
             {cat.name}
           </Button>
@@ -87,7 +83,7 @@ function ProductsPage() {
           <Text className="center">Chưa có sản phẩm trong danh mục này.</Text>
         </Box>
       ) : (
-        <Box className="product-grid" p={2} flex flexWrap="wrap">
+        <Box className="product-grid">
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

@@ -4,6 +4,8 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import { getProductById } from "../services/api";
 
+const PLACEHOLDER_IMAGE = "https://via.placeholder.com/600x400?text=San+pham";
+
 function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -58,29 +60,26 @@ function ProductDetailPage() {
   return (
     <Page className="page product-detail-page">
       <Header title={product.name} />
-      <Box p={2}>
-        {product.image ? (
-          <img src={product.image} alt={product.name} className="detail-image" />
-        ) : (
-          <Box className="detail-image-placeholder" p={4} flex justifyContent="center" alignItems="center">
-            <Text size="small">Không có ảnh</Text>
-          </Box>
-        )}
-      </Box>
-      <Box p={2}>
-        <Text size="xLarge" bold>{product.name}</Text>
-        <Text className="detail-price" size="large" bold>
-          {product.price.toLocaleString("vi-VN")}đ
-        </Text>
-        {product.category && (
-          <Text size="small" className="detail-category">Danh mục: {product.category}</Text>
-        )}
-        <Text className="detail-desc" size="small">
+
+      {product.image ? (
+        <img src={product.image} alt={product.name} className="detail-image" onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }} />
+      ) : (
+        <Box className="detail-placeholder">
+          <Text size="small">Không có ảnh</Text>
+        </Box>
+      )}
+
+      <Box className="detail-body">
+        {product.category && <Text className="detail-category">{product.category}</Text>}
+        <Text className="detail-name">{product.name}</Text>
+        <Text className="detail-price">{product.price.toLocaleString("vi-VN")}đ</Text>
+        <Text className="detail-desc">
           {product.description || "Liên hệ cửa hàng để biết thêm chi tiết về sản phẩm."}
         </Text>
-      </Box>
-      <Box p={2}>
-        <Button variant="primary" fullWidth onClick={() => navigate("/contact")}>
+        {product.stock > 0 && (
+          <Text className="detail-stock">✓ Còn hàng ({product.stock} sản phẩm)</Text>
+        )}
+        <Button fullWidth onClick={() => navigate("/contact")}>
           Liên hệ mua hàng
         </Button>
       </Box>

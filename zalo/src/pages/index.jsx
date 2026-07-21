@@ -1,25 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Page, Swiper, Box, Text, Button, Spinner } from "zmp-ui";
+import { Page, Box, Text, Button, Spinner } from "zmp-ui";
 import { useNavigate } from "react-router-dom";
 import { closeLoading, configAppView } from "zmp-sdk/apis";
 
 import { getFeaturedProducts } from "../services/api";
 import ProductCard from "../components/product-card";
 
-const banners = [
-  "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800",
-  "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800",
-  "https://images.unsplash.com/photo-1574269909862-7e0d70c7c7a5?w=800",
-];
-
 const categories = [
   { id: "all", name: "Tất cả" },
-  { id: "Tivi", name: "Tivi" },
-  { id: "Tu lanh", name: "Tủ lạnh" },
-  { id: "May giat", name: "Máy giặt" },
-  { id: "Dieu hoa", name: "Điều hòa" },
-  { id: "May loc nuoc", name: "Máy lọc nước" },
   { id: "Gia dung", name: "Gia dụng" },
+  { id: "San pham 3D", name: "In 3D" },
+  { id: "Dien may", name: "Điện máy" },
 ];
 
 function HomePage() {
@@ -51,42 +42,47 @@ function HomePage() {
 
   return (
     <Page className="page home-page">
-      <Box className="banner-swiper" p={2}>
-        <Swiper autoplay duration={4000} loop>
-          {banners.map((src, idx) => (
-            <Swiper.Item key={idx}>
-              <img src={src} alt={`banner-${idx}`} className="banner-img" />
-            </Swiper.Item>
-          ))}
-        </Swiper>
+      {/* Hero Section */}
+      <Box className="hero-section">
+        <Text className="hero-title">Điện Máy Hiếu</Text>
+        <Text className="hero-subtitle">
+          Hệ sinh thái bán lẻ, dịch vụ sửa chữa & in mô hình 3D trên nền tảng công nghệ số.
+        </Text>
+        <Box className="hero-actions">
+          <Button className="btn-primary" fullWidth onClick={() => navigate("/products")}>
+            Khám phá sản phẩm
+          </Button>
+          <Button className="btn-secondary" fullWidth onClick={() => navigate("/contact")}>
+            Đặt lịch gọi thợ
+          </Button>
+        </Box>
       </Box>
 
-      <Box p={2} pb={0}>
-        <Text size="large" bold className="section-title">
-          Khám phá danh mục
+      {/* Categories */}
+      <Box className="section-header">
+        <Text className="section-title">
+          Danh mục <span>nổi bật</span>
         </Text>
       </Box>
-      <Box className="category-list" p={2} flex flexWrap="wrap">
+      <Box className="category-chips">
         {categories.map((cat) => (
           <Button
             key={cat.id}
-            size="small"
-            variant="secondary"
+            className={`category-chip ${cat.id === "all" ? "" : ""}`}
+            variant="tertiary"
             onClick={() => navigate(`/products?category=${encodeURIComponent(cat.id)}`)}
-            className="category-item"
           >
             {cat.name}
           </Button>
         ))}
       </Box>
 
-      <Box p={2} pb={0} flex justifyContent="space-between" alignItems="center">
-        <Text size="large" bold className="section-title">
-          Sản phẩm nổi bật
+      {/* Featured Products */}
+      <Box className="section-header">
+        <Text className="section-title">
+          Sản phẩm <span>nổi bật</span>
         </Text>
-        <Text size="xSmall" className="product-count" onClick={() => navigate("/products")}>
-          Xem tất cả →
-        </Text>
+        <Text className="section-link" onClick={() => navigate("/products")}>Xem tất cả →</Text>
       </Box>
 
       {loading ? (
@@ -103,7 +99,7 @@ function HomePage() {
           </Box>
         </Box>
       ) : (
-        <Box className="product-grid" p={2} flex flexWrap="wrap">
+        <Box className="product-grid">
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

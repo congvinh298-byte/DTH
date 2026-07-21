@@ -9,27 +9,30 @@ function ProductCard({ product }) {
   const imageUrl = product.image || PLACEHOLDER_IMAGE;
 
   return (
-    <Box className="product-card" p={2}>
+    <Box className="product-card">
       <div className="product-image">
-        <img src={imageUrl} alt={product.name} loading="lazy" onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }} />
+        <img
+          src={imageUrl}
+          alt={product.name}
+          loading="lazy"
+          onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }}
+        />
       </div>
-      <Text className="product-name" size="small" bold>
-        {product.name}
-      </Text>
-      {product.category && (
-        <Text className="product-category" size="xSmall">{product.category}</Text>
-      )}
-      <Text className="product-price" size="xSmall">
-        {product.price.toLocaleString("vi-VN")}đ
-      </Text>
-      <Button
-        size="small"
-        variant="primary"
-        onClick={() => navigate(`/product/${product.id}`)}
-        fullWidth
-      >
-        Xem chi tiết
-      </Button>
+      <div className="product-body">
+        {product.category && (
+          <Text className="product-category">{product.category}</Text>
+        )}
+        <Text className="product-name">{product.name}</Text>
+        <Text className="product-price">{product.price.toLocaleString("vi-VN")}đ</Text>
+        <Button
+          size="small"
+          variant="primary"
+          fullWidth
+          onClick={() => navigate(`/product/${product.id}`)}
+        >
+          Xem chi tiết
+        </Button>
+      </div>
     </Box>
   );
 }
