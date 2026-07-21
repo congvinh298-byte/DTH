@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { cartApi, formatPrice, getDeviceId } from '../services/api';
 
-export default function CartPage() {
+export default function CartPage({ onBack }) {
   const [items, setItems] = useState([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -54,6 +54,7 @@ export default function CartPage() {
   return (
     <div className="wrap" style={{ padding: '20px 16px 80px' }}>
       <div className="title" style={{ marginBottom: '24px' }}>
+        <button onClick={onBack} className="btn" style={{ marginBottom: '12px', background: 'rgba(0,0,0,0.1)', padding: '8px 14px', fontSize: '13px' }}><i className="fa-solid fa-arrow-left"></i> Tiếp tục mua</button>
         <h2><i className="fa-solid fa-cart-shopping"></i> Giỏ Hàng</h2>
         <span className="muted">{count} sản phẩm</span>
       </div>
