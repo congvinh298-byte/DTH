@@ -1,15 +1,26 @@
 {
-  "app": {
-    "title": "Điện Máy Hiếu",
-    "headerColor": "#0f172a",
-    "textColor": "white",
-    "statusBar": "transparent",
-    "actionBarHidden": true,
-    "hideAndroidBottomNavigationBar": false,
-    "hideIOSSafeAreaBottom": true,
-    "selfControlLoading": false
+  "appTitle": "\u0110i\u1ec7n M\u00e1y Hi\u1ebfu",
+  "appUrl": "https://dienmayhieu.com/zalo/",
+  "zaloConfig": {
+    "zaloOaId": ""
   },
-  "listCSS": [],
-  "listSyncJS": [],
-  "listAsyncJS": []
+  "httpConfig": {
+    "timeout": 30000,
+    "cacheTimeout": 60000
+  },
+  "tabbar": {
+    "color": "#64748b",
+    "selectedColor": "#38bdf8",
+    "backgroundColor": "#0f172a",
+    "borderStyle": "white",
+    "hide": false,
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "Trang ch\u1ee7",
+        "icon": "icon-home.png",
+        "selectedIcon": "icon-home-active.png"
+      }
+    ]
+  }
 }

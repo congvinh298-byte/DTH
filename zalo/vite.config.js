@@ -1,22 +1,25 @@
-import { defineConfig } from "vite";
-import zaloMiniApp from "zmp-vite-plugin";
-import react from "@vitejs/plugin-react";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
-export default () => {
-  return defineConfig({
-    root: "./src",
-    base: "",
-    plugins: [zaloMiniApp(), react()],
-    build: {
-      outDir: "../dist",
-      emptyOutDir: true,
-      assetsInlineLimit: 0,
-      polyfillModulePreload: false
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  base: './',
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+      },
     },
-    resolve: {
-      alias: {
-        "@": "/src"
-      }
-    }
-  });
-};
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: '',
+      },
+    },
+  },
+})

@@ -1,6 +1,0 @@
-{
-  "zalo-mini-app.appId": "1271764499975436667",
-  "zalo-mini-app.root": ".",
-  "zalo-mini-app.buildCommand": "npm run build",
-  "zalo-mini-app.previewCommand": "npm run dev"
-}
