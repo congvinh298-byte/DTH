@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { fetchProducts, formatPrice } from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import { fetchProducts, formatPrice, cartApi } from '../../services/api';
 
 const DEFAULT_LOCATION = [10.357422, 105.522124];
 
@@ -37,13 +38,14 @@ export default function HomePage() {
   const [form, setForm] = useState({ name: '', phone: '', address: '', note: '', vat: false, lat: '', lng: '', mapLocation: '' });
   const [modalProduct, setModalProduct] = useState(null);
   const [cartCount, setCartCount] = useState(0);
-  const productsRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProducts({ featured: true }).then(res => {
       if (res?.data) setProducts(res.data);
       setLoading(false);
     });
+    updateCartCount();
   }, []);
 
   const filteredProducts = useMemo(() => {
@@ -88,45 +90,28 @@ export default function HomePage() {
   }
 
   async function addToCart(productId) {
-    try {
-      const res = await fetch('/controller/client/CartAction.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ action: 'add_to_cart', product_id: productId }),
-        credentials: 'include'
-      });
-      const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); } catch { data = {}; }
-      if (data.status === 'success') {
-        updateCartCount();
-        alert('Đã thêm vào giỏ hàng!');
-      } else {
-        alert(data.msg || 'Không thể thêm vào giỏ hàng');
-      }
-    } catch (e) {
-      alert('Lỗi kết nối');
+    const res = await cartApi('add', { product_id: productId });
+    if (res.status === 'success') {
+      setCartCount(res.count || 0);
+      alert('Đã thêm vào giỏ hàng!');
+    } else {
+      alert(res.msg || 'Không thể thêm vào giỏ hàng');
     }
   }
 
   async function buyNow(productId) {
-    await addToCart(productId);
-    window.location.href = '/GioHang.php';
+    const res = await cartApi('add', { product_id: productId });
+    if (res.status === 'success') {
+      setCartCount(res.count || 0);
+    }
+    navigate('/cart');
   }
 
   async function updateCartCount() {
-    try {
-      const res = await fetch('/controller/client/CartAction.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ action: 'cart_count' }),
-        credentials: 'include'
-      });
-      const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); } catch { data = {}; }
-      setCartCount(data.count || 0);
-    } catch (e) {}
+    const res = await cartApi('count');
+    if (res.status === 'success') {
+      setCartCount(res.count || 0);
+    }
   }
 
   function submitBooking() {
@@ -181,7 +166,7 @@ export default function HomePage() {
             <a className="btn dark" href="/in-3d.php">In 3D</a>
             <a className="btn dark" href="/goi-tho.php">Gọi thợ</a>
             <a className="btn dark" href="/tra-cuu-don.php">Tra cứu đơn</a>
-            <a className="btn" href="/GioHang.php" style={{ background: 'var(--brand-accent)', color: 'white', position: 'relative', padding: '10px 15px' }}>
+            <a className="btn" onClick={() => navigate('/cart')} style={{ background: 'var(--brand-accent)', color: 'white', position: 'relative', padding: '10px 15px', cursor: 'pointer' }}>
               <i className="fa-solid fa-cart-shopping"></i> Giỏ Hàng
               {cartCount > 0 && (
                 <span id="cartCountBadge" style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#f43f5e', color: 'white', borderRadius: '50%', width: '22px', height: '22px', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }}>{cartCount}</span>

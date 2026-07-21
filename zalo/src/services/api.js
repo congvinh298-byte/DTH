@@ -1,5 +1,14 @@
 const API_BASE = 'https://dienmayhieu.com/api';
 
+export function getDeviceId() {
+  let id = localStorage.getItem('dmh_device_id');
+  if (!id) {
+    id = 'dmh_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('dmh_device_id', id);
+  }
+  return id;
+}
+
 export async function fetchProducts(options = {}) {
   const params = new URLSearchParams();
   if (options.featured) params.set('featured', '1');
@@ -25,6 +34,26 @@ export async function fetchProduct(id) {
   } catch (err) {
     console.error('fetchProduct error:', err);
     return { status: 'error', data: null };
+  }
+}
+
+export async function cartApi(action, payload = {}) {
+  const body = {
+    action,
+    device_id: getDeviceId(),
+    ...payload,
+  };
+  try {
+    const res = await fetch(`${API_BASE}/miniapp-cart.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error('Network response was not ok');
+    return await res.json();
+  } catch (err) {
+    console.error('cartApi error:', err);
+    return { status: 'error', msg: 'Lỗi kết nối' };
   }
 }
 

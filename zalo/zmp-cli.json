@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "appId": "",
+  "projectName": "dienmayhieu-zalo-miniapp",
+  "packageManager": "npm",
+  "template": "reactjs",
+  "startCommand": "npm run dev",
+  "buildCommand": "npm run build",
+  "appConfig": "./app-config.json",
+  "distDir": "./dist",
+  "sourceDir": "./src"
+}
