@@ -2,7 +2,7 @@
   "name": "dienmayhieu-zalo-miniapp",
   "private": true,
   "version": "1.0.0",
-  "description": "Điện Máy Hiếu - Zalo Mini App (webview wrapper)",
+  "description": "Điện Máy Hiếu - Zalo Mini App native UI",
   "license": "UNLICENSED",
   "browserslist": [
     "Android >= 5",
@@ -17,7 +17,7 @@
     "login": "zmp login",
     "start": "zmp start",
     "build": "vite build && powershell -Command \"Copy-Item -Path app-config.json -Destination dist/app-config.json -Force\"",
-    "zip": "powershell -Command \"Compress-Archive -Path dist\\* -DestinationPath C:\\\\Users\\\\pcpv\\\\OneDrive\\\\Desktop\\\\DTH\\\\zalo-production.zip -Force\"",
+    "zip": "powershell -Command \"Compress-Archive -Path dist\\* -DestinationPath C:\\\\Projects\\\\dth-zalo\\\\zalo-production.zip -Force\"",
     "deploy": "zmp deploy",
     "deploy:testing": "zmp deploy --testing"
   },

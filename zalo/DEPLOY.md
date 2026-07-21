@@ -40,7 +40,7 @@ File `app-config.json` chỉ gồm:
 ## Build production
 
 ```bash
-cd "C:\Users\pcpv\OneDrive\Desktop\DTH\zalo"
+cd "C:\Projects\dth-zalo"
 npm install      # chỉ cần lần đầu hoặc khi package.json thay đổi
 npm run build    # build ra dist/ + copy app-config.json gốc
 npm run zip      # tạo file zalo-production.zip
@@ -50,13 +50,13 @@ Hoặc thủ công:
 
 ```powershell
 npm run build
-Compress-Archive -Path "dist\*" -DestinationPath "C:\Users\pcpv\OneDrive\Desktop\DTH\zalo-production.zip" -Force
+Compress-Archive -Path "dist\*" -DestinationPath "C:\Projects\dth-zalo\zalo-production.zip" -Force
 ```
 
 ## File sẵn sàng upload
 
 ```
-C:\Users\pcpv\OneDrive\Desktop\DTH\zalo-production.zip
+C:\Projects\dth-zalo\zalo-production.zip
 ```
 
 ## Upload lên Zalo Mini App Platform
