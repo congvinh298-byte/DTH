@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
-import { Page, Swiper, Box, Text, Button } from "zmp-ui";
+import React, { useEffect, useState } from "react";
+import { Page, Swiper, Box, Text, Button, Spinner } from "zmp-ui";
 import { useNavigate } from "react-router-dom";
 import { closeLoading, configAppView } from "zmp-sdk/apis";
 
-import CategoryList from "../components/category-list";
+import { getFeaturedProducts } from "../services/api";
 import ProductCard from "../components/product-card";
 
 const banners = [
@@ -12,15 +12,21 @@ const banners = [
   "https://images.unsplash.com/photo-1574269909862-7e0d70c7c7a5?w=800",
 ];
 
-const featuredProducts = [
-  { id: 1, name: "Tivi Samsung 55 inch 4K", price: 8990000, image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400" },
-  { id: 2, name: "Tủ lạnh Toshiba Inverter", price: 7590000, image: "https://images.unsplash.com/photo-1571175443880-49e1d58b2f17?w=400" },
-  { id: 3, name: "Máy giặt LG 10kg", price: 6290000, image: "https://images.unsplash.com/photo-1626806775351-538068a21838?w=400" },
-  { id: 4, name: "Điều hòa Daikin 1.5HP", price: 8290000, image: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=400" },
+const categories = [
+  { id: "all", name: "Tất cả" },
+  { id: "Tivi", name: "Tivi" },
+  { id: "Tu lanh", name: "Tủ lạnh" },
+  { id: "May giat", name: "Máy giặt" },
+  { id: "Dieu hoa", name: "Điều hòa" },
+  { id: "May loc nuoc", name: "Máy lọc nước" },
+  { id: "Gia dung", name: "Gia dụng" },
 ];
 
 function HomePage() {
   const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     closeLoading().catch(() => {});
@@ -30,6 +36,17 @@ function HomePage() {
       actionBar: "hide",
       hideBottomNavigationBar: false,
     }).catch(() => {});
+
+    getFeaturedProducts()
+      .then((data) => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("[DMH] getFeaturedProducts error:", err);
+        setError("Không tải được sản phẩm. Vui lòng thử lại.");
+        setLoading(false);
+      });
   }, []);
 
   return (
@@ -46,27 +63,52 @@ function HomePage() {
 
       <Box p={2} pb={0}>
         <Text size="large" bold className="section-title">
-          Danh mục sản phẩm
+          Khám phá danh mục
         </Text>
       </Box>
-      <CategoryList active="all" onChange={(id) => navigate(`/products?category=${id}`)} />
-
-      <Box p={2} pb={0}>
-        <Text size="large" bold className="section-title">
-          Sản phẩm nổi bật
-        </Text>
-      </Box>
-      <Box className="product-grid" p={2} flex flexWrap="wrap">
-        {featuredProducts.map((p) => (
-          <ProductCard key={p.id} product={p} />
+      <Box className="category-list" p={2} flex flexWrap="wrap">
+        {categories.map((cat) => (
+          <Button
+            key={cat.id}
+            size="small"
+            variant="secondary"
+            onClick={() => navigate(`/products?category=${encodeURIComponent(cat.id)}`)}
+            className="category-item"
+          >
+            {cat.name}
+          </Button>
         ))}
       </Box>
 
-      <Box p={2}>
-        <Button fullWidth variant="primary" onClick={() => navigate("/products")}>
-          Xem tất cả sản phẩm
-        </Button>
+      <Box p={2} pb={0} flex justifyContent="space-between" alignItems="center">
+        <Text size="large" bold className="section-title">
+          Sản phẩm nổi bật
+        </Text>
+        <Text size="xSmall" className="product-count" onClick={() => navigate("/products")}>
+          Xem tất cả →
+        </Text>
       </Box>
+
+      {loading ? (
+        <Box className="center" p={4} flex justifyContent="center">
+          <Spinner />
+        </Box>
+      ) : error ? (
+        <Box p={4}>
+          <Text className="center error-text">{error}</Text>
+          <Box mt={2}>
+            <Button fullWidth variant="primary" onClick={() => window.location.reload()}>
+              Thử lại
+            </Button>
+          </Box>
+        </Box>
+      ) : (
+        <Box className="product-grid" p={2} flex flexWrap="wrap">
+          {products.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </Box>
+      )}
     </Page>
   );
 }

@@ -1,52 +1,38 @@
-:TASTE-GATE 1.0
-# Zalo Mini App - Điện Máy Hiếu
+# Điện Máy Hiếu - Zalo Mini App
 
-## Nguyên tắc: SSOT (Single Source of Truth)
+Zalo Mini App chuẩn cho cửa hàng Điện Máy Hiếu tại Lấp Vò, Đồng Tháp.
 
-Mini App này chủ yếu là một "cửa sổ" nhúng trực tiếp website chính `https://dienmayhieu.com/`.
+## Công nghệ
 
-Khi website cập nhật, Mini App sẽ tự động cập nhật theo. **Không cần build lại mỗi lần website thay đổi**.
+- React 18
+- zmp-ui (ZaUI) - UI kit chuẩn Zalo Mini App
+- zmp-sdk - Zalo Mini App SDK
+- zmp-vite-plugin - Plugin Vite cho ZMP
+- Vite 5 + SCSS
 
-## 2 chế độ hoạt động
+## Cấu trúc
 
-### 1. Production (deploy lên Zalo)
-- Entry point: `/zalo/index.html` (file nằm ở root thư mục `zalo/`)
-- File này nhúng iframe web trực tiếp.
-- `app-config.json` chỉ khai báo `index.html` (root).
+- `src/app.jsx` - Root app với ZMPRouter
+- `src/pages/` - Các trang Mini App
+- `src/components/` - UI components tái sử dụng
+- `src/css/app.scss` - Style chung
 
-### 2. Dev / VS Code Extension
-- Cấu trúc `/zalo/src/` chứa React/Vite tối thiểu để VS Code extension Zalo Mini App nhận diện project.
-- `src/index.html` là template dev.
-- Chạy `npm install` rồi `npm run dev` để preview trong VS Code.
+## Chạy dev
 
-## Cấu trúc thư mục
-
-```
-zalo/
-├── app-config.json              # Cấu hình Zalo Mini App
-├── index.html                   # ⭐ ENTRY POINT PRODUCTION
-├── manifest.json                # PWA manifest
-├── package.json                 # Để VS Code extension nhận diện
-├── vite.config.js               # Cấu hình Vite
-├── robots.txt                   # Chặn bot
-├── DEPLOY.md                    # Hướng dẫn deploy
-├── README.md                    # File này
-├── src/                         # Dành cho dev/VS Code
-│   ├── index.html
-│   ├── main.jsx
-│   ├── App.jsx
-│   └── pages/
-│       └── index.jsx
-└── www/
-    └── index.html               # Backup entry point
+```bash
+npm install
+npm run dev
 ```
 
-## Triển khai Production
+## Build production
+
+```bash
+npm run build
+npm run zip
+```
+
+File sẵn sàng upload: `zalo-production.zip`
+
+## Triển khai
 
 Xem `DEPLOY.md`.
-
-## Lưu ý quan trọng
-
-- **KHÔNG xóa `/zalo/index.html` root** — đây là entry point thực tế khi upload lên Zalo.
-- `/zalo/src/` chỉ để VS Code/dev mode nhận diện, không phải entry point production.
-- Khi upload ZIP lên Zalo, đảm bảo `app-config.json` + root `index.html` nằm ở root ZIP.

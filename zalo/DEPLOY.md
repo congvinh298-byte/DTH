@@ -1,6 +1,6 @@
 # TRIỂN KHAI ZALO MINI APP - ĐIỆN MÁY HIẾU
 
-## Cấu trúc mới (đã chuẩn hóa theo Zalo Platforms)
+## Cấu trúc chuẩn Zalo Mini App (native UI)
 
 ```
 zalo/
@@ -11,11 +11,19 @@ zalo/
 ├── zmp-cli.json                 # Cấu hình ZMP CLI
 ├── src/
 │   ├── index.html               # HTML template cho build
-│   ├── app.jsx                  # Mount React app
-│   ├── pages/
-│   │   └── index.jsx            # Trang chính: mở webview
+│   ├── app.jsx                  # Root app: ZMPRouter + AnimationRoutes
+│   ├── components/              # Các UI component tái sử dụng
+│   │   ├── bottom-nav.jsx
+│   │   ├── category-list.jsx
+│   │   └── product-card.jsx
+│   ├── pages/                   # Các trang Mini App
+│   │   ├── index.jsx            # Trang chủ
+│   │   ├── products.jsx         # Danh sách sản phẩm
+│   │   ├── product-detail.jsx   # Chi tiết sản phẩm
+│   │   ├── cart.jsx             # Giỏ hàng
+│   │   └── contact.jsx          # Liên hệ
 │   └── css/
-│       └── app.scss             # Style
+│       └── app.scss             # Style theo brand Điện Máy Hiếu
 └── dist/                        # Output production build
 ```
 
@@ -30,12 +38,13 @@ File `app-config.json` chỉ gồm:
 - `listSyncJS`: Danh sách JS load đồng bộ
 - `listAsyncJS`: Danh sách JS load bất đồng bộ
 
-## Nguyên lý hoạt động
+## Nguyên lý hoạt động (native Mini App)
 
-- Khi mở Mini App: hiển thị màn hình chào **Điện Máy Hiếu**
-- Sau 300ms: tự động gọi `openWebview({ url: 'https://dienmayhieu.com/' })`
-- Webview sẽ mở website chính trong Zalo
-- Nếu webview không tự mở, khách bấm nút **"Mở website"**
+- Khi mở Mini App: hiển thị **trang chủ Điện Máy Hiếu** với banner, danh mục, sản phẩm nổi bật.
+- Người dùng điều hướng qua các tab: **Trang chủ / Sản phẩm / Giỏ hàng / Liên hệ**.
+- Sử dụng **ZaUI components** (`Page`, `Header`, `Box`, `Button`, `List`, `BottomNavigation`, ...).
+- Định tuyến bằng **`ZMPRouter` + `AnimationRoutes`** từ `zmp-ui`.
+- Dữ liệu sản phẩm hiện tại là dữ liệu mẫu; sau này tích hợp API từ `dienmayhieu.com`.
 
 ## Build production
 
@@ -68,22 +77,27 @@ C:\Projects\dth-zalo\zalo-production.zip
 5. Đợi Zalo xử lý → bấm **Preview** để test
 6. Kiểm tra:
    - Header màu `#0f172a`
-   - Tự động mở webview `https://dienmayhieu.com/`
-   - Không còn cảnh báo `index.html` hay `robots.txt`
+   - Có thanh điều hướng dưới cùng (4 tab)
+   - Chuyển trang có hiệu ứng
+   - Không còn cảnh báo `robots.txt`, `manifest.json`, hay iframe tự do
 7. Bấm **Gửi duyệt** nếu OK
 
 ## Lưu ý quan trọng
 
 - **KHÔNG** để file `robots.txt` trong ZIP — Zalo không hỗ trợ `.txt`
-- **KHÔNG** dùng `index.html` tự do chứa iframe — phải qua `app-config.json` + React/Vite build
-- **KHÔNG** để `manifest.json` tham chiếu file không tồn tại — đã xóa
+- **KHÔNG** dùng `index.html` chứa iframe/webview tự do — phải là native UI
+- **KHÔNG** để `manifest.json` tham chiếu file không tồn tại
+- Dùng **ZMPRouter + AnimationRoutes** thay vì react-router-dom thuần
+- Các hình ảnh sản phẩm tạm dùng ảnh mẫu từ Unsplash; khi có API thay bằng ảnh thật
 - Nếu dùng `zmp-cli deploy`, cần Node.js v18 hoặc v20 (Node v26 trên máy anh hiện bị lỗi zmp-cli)
 
 ## Điều gì đã sửa so với bản cũ?
 
 | Vấn đề cũ | Giải pháp |
 |---|---|
-| `index.html` will NOT be uploaded | Dùng template ZMP chuẩn, build bằng Vite |
+| Chỉ là webview wrapper | Xây dựng native Mini App với ZaUI |
+| Một trang duy nhất | Thêm router + 5 trang chuẩn Zalo |
+| `openWebview()` mở website ngay | Giữ webview chỉ cho link bên ngoài nếu cần |
+| Thiếu navigation | Thêm `BottomNavigation` 4 tab |
 | `robots.txt` unsupported extension | Xóa file `robots.txt` |
 | `manifest.json` tham chiếu logo không tồn tại | Xóa `manifest.json` |
-| App chạy lỗi Internal Server Error | Dùng `openWebview()` chuẩn thay vì iframe tự do |

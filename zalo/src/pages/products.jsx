@@ -1,48 +1,94 @@
-import React, { useState, useEffect } from "react";
-import { Page, Header, Box, Text, Spinner } from "zmp-ui";
+import React, { useEffect, useState } from "react";
+import { Page, Header, Box, Text, Spinner, Input, Button } from "zmp-ui";
+import { useSearchParams } from "react-router-dom";
 
-import CategoryList from "../components/category-list";
+import { getProducts } from "../services/api";
 import ProductCard from "../components/product-card";
 
-const allProducts = [
-  { id: 1, category: "tivi", name: "Tivi Samsung 55 inch 4K", price: 8990000, image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400" },
-  { id: 2, category: "tu-lanh", name: "Tủ lạnh Toshiba Inverter", price: 7590000, image: "https://images.unsplash.com/photo-1571175443880-49e1d58b2f17?w=400" },
-  { id: 3, category: "may-giat", name: "Máy giặt LG 10kg", price: 6290000, image: "https://images.unsplash.com/photo-1626806775351-538068a21838?w=400" },
-  { id: 4, category: "dieu-hoa", name: "Điều hòa Daikin 1.5HP", price: 8290000, image: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=400" },
-  { id: 5, category: "may-loc-nuoc", name: "Máy lọc nước Kangaroo", price: 3490000, image: "https://images.unsplash.com/photo-1585776245991-cf89dd7fc73a?w=400" },
-  { id: 6, category: "tivi", name: "Tivi Sony 65 inch OLED", price: 22900000, image: "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=400" },
+const categories = [
+  { id: "all", name: "Tất cả" },
+  { id: "Tivi", name: "Tivi" },
+  { id: "Tu lanh", name: "Tủ lạnh" },
+  { id: "May giat", name: "Máy giặt" },
+  { id: "Dieu hoa", name: "Điều hòa" },
+  { id: "May loc nuoc", name: "Máy lọc nước" },
+  { id: "Gia dung", name: "Gia dụng" },
 ];
 
 function ProductsPage() {
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialCategory = searchParams.get("category") || "all";
+
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
+  const [search, setSearch] = useState("");
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(t);
-  }, []);
+    setLoading(true);
+    setError(null);
+    getProducts(activeCategory, search)
+      .then((data) => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("[DMH] getProducts error:", err);
+        setError("Không tải được sản phẩm.");
+        setLoading(false);
+      });
+  }, [activeCategory, search]);
 
-  const filtered = activeCategory === "all"
-    ? allProducts
-    : allProducts.filter((p) => p.category === activeCategory);
+  const handleCategoryChange = (id) => {
+    setActiveCategory(id);
+    const params = {};
+    if (id !== "all") params.category = id;
+    setSearchParams(params);
+  };
 
   return (
     <Page className="page products-page">
       <Header title="Sản phẩm" showBackIcon={false} />
 
-      <CategoryList active={activeCategory} onChange={setActiveCategory} />
+      <Box p={2}>
+        <Input
+          placeholder="Tìm sản phẩm..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          clearable
+        />
+      </Box>
+
+      <Box className="category-list" p={2} flex flexWrap="wrap">
+        {categories.map((cat) => (
+          <Button
+            key={cat.id}
+            size="small"
+            variant={activeCategory === cat.id ? "primary" : "secondary"}
+            onClick={() => handleCategoryChange(cat.id)}
+            className="category-item"
+          >
+            {cat.name}
+          </Button>
+        ))}
+      </Box>
 
       {loading ? (
         <Box className="center" p={4} flex justifyContent="center">
           <Spinner />
         </Box>
-      ) : filtered.length === 0 ? (
+      ) : error ? (
+        <Box p={4}>
+          <Text className="center error-text">{error}</Text>
+        </Box>
+      ) : products.length === 0 ? (
         <Box p={4}>
           <Text className="center">Chưa có sản phẩm trong danh mục này.</Text>
         </Box>
       ) : (
         <Box className="product-grid" p={2} flex flexWrap="wrap">
-          {filtered.map((p) => (
+          {products.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </Box>
