@@ -105,6 +105,7 @@ $tho = $DMH->get_list("SELECT * FROM `users` WHERE `level` = 'tho' ORDER BY id D
                                 <?php endif; ?>
                             </td>
                             <td>
+                                <button onclick="openResetPassword(<?= (int)$t['id'] ?>, '<?= htmlspecialchars(addslashes($t['name'] ?? $t['username']), ENT_QUOTES) ?>')" style="padding:6px 12px; border-radius:6px; border:none; background:#f59e0b; color:#0f172a; font-weight:700; font-size:12px; cursor:pointer; margin-right:4px;"><i class="fa-solid fa-key"></i> Đổi MK</button>
                                 <button onclick="xemLichSu(<?= (int)$t['id'] ?>)" style="padding:6px 12px; border-radius:6px; border:none; background:#6366f1; color:#fff; font-weight:700; font-size:12px; cursor:pointer; margin-right:4px;"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</button>
                                 <button id="btn-toggle-<?= (int)$t['id'] ?>" onclick="toggleThoStatus(<?= (int)$t['id'] ?>)" style="padding:6px 12px; border-radius:6px; border:none; background:<?= $t['banned'] == 'ON' ? '#dc2626' : '#16a34a' ?>; color:#fff; font-weight:700; font-size:12px; cursor:pointer;">
                                     <?= $t['banned'] == 'ON' ? '<i class="fa-solid fa-lock"></i> Khóa' : '<i class="fa-solid fa-lock-open"></i> Mở khóa' ?>
@@ -126,12 +127,59 @@ $tho = $DMH->get_list("SELECT * FROM `users` WHERE `level` = 'tho' ORDER BY id D
         <div id="lichsu_stats" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin-bottom:16px;"></div>
         <div id="lichsu_table"></div>
         <div class="modal-actions">
-            <button class="btn-modal-secondary" onclick="document.getElementById('lichSuModal').classList.remove('active')">Dóng</button>
+            <button class="btn-modal-secondary" onclick="document.getElementById('lichSuModal').classList.remove('active')">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Đổi Mật Khẩu Thợ -->
+<div class="modal-backdrop" id="resetPassModal">
+    <div class="modal-box" style="max-width:420px;">
+        <h3><i class="fa-solid fa-key"></i> Đặt mật khẩu cho Thợ</h3>
+        <p style="color:#64748b; font-size:13px; margin:4px 0 16px;">Thợ: <strong id="resetPass_thoName" style="color:#0f172a;"></strong></p>
+        <input type="hidden" id="resetPass_thoId">
+        <div class="form-group">
+            <label>Mật khẩu mới <span style="color:#dc2626;">*</span></label>
+            <input type="password" id="resetPass_newPass" class="form-control" placeholder="Tối thiểu 6 ký tự" minlength="6">
+        </div>
+        <div class="modal-actions" style="margin-top:20px;">
+            <button class="btn-modal-secondary" onclick="document.getElementById('resetPassModal').classList.remove('active')">Đóng</button>
+            <button onclick="saveResetPassword()" style="padding:10px 18px; border-radius:8px; border:none; background:#f59e0b; color:#0f172a; font-weight:800; cursor:pointer;"><i class="fa-solid fa-check"></i> Cập nhật MK</button>
         </div>
     </div>
 </div>
 
 <script>
+function openResetPassword(thoId, thoName) {
+    document.getElementById('resetPass_thoId').value = thoId;
+    document.getElementById('resetPass_thoName').textContent = thoName;
+    document.getElementById('resetPass_newPass').value = '';
+    document.getElementById('resetPassModal').classList.add('active');
+}
+
+function saveResetPassword() {
+    var thoId = document.getElementById('resetPass_thoId').value;
+    var pass = document.getElementById('resetPass_newPass').value.trim();
+    if (!pass || pass.length < 6) {
+        return Swal.fire('Cảnh báo', 'Vui lòng nhập mật khẩu tối thiểu 6 ký tự', 'warning');
+    }
+    fetch('/controller/admin/ResetThoPassword.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'id=' + thoId + '&new_password=' + encodeURIComponent(pass)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.status === 'success') {
+            document.getElementById('resetPassModal').classList.remove('active');
+            Swal.fire('Thành công', res.msg, 'success');
+        } else {
+            Swal.fire('Lỗi', res.msg, 'error');
+        }
+    })
+    .catch(() => Swal.fire('Lỗi', 'Không thể kết nối máy chủ', 'error'));
+}
+
 function toggleThoStatus(id) {
     fetch('/controller/admin/ToggleThoStatus.php', {
         method: 'POST',
