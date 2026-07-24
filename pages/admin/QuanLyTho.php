@@ -89,7 +89,7 @@ $tho = $DMH->get_list("SELECT * FROM `users` WHERE `level` = 'tho' ORDER BY id D
         <?php else: ?>
             <div style="overflow-x:auto;">
                 <table class="table">
-                    <thead><tr><th>ID</th><th>Tài khoản</th><th>Họ tên</th><th>Số điện thoại</th><th>Trạng thái</th></tr></thead>
+                    <thead><tr><th>ID</th><th>Tài khoản</th><th>Họ tên</th><th>Số điện thoại</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
                     <tbody>
                     <?php foreach ($tho as $t): ?>
                         <tr>
@@ -104,6 +104,12 @@ $tho = $DMH->get_list("SELECT * FROM `users` WHERE `level` = 'tho' ORDER BY id D
                                     <span class="badge badge-cancelled">Khóa</span>
                                 <?php endif; ?>
                             </td>
+                            <td>
+                                <button onclick="xemLichSu(<?= (int)$t['id'] ?>)" style="padding:6px 12px; border-radius:6px; border:none; background:#6366f1; color:#fff; font-weight:700; font-size:12px; cursor:pointer; margin-right:4px;"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</button>
+                                <button id="btn-toggle-<?= (int)$t['id'] ?>" onclick="toggleThoStatus(<?= (int)$t['id'] ?>)" style="padding:6px 12px; border-radius:6px; border:none; background:<?= $t['banned'] == 'ON' ? '#dc2626' : '#16a34a' ?>; color:#fff; font-weight:700; font-size:12px; cursor:pointer;">
+                                    <?= $t['banned'] == 'ON' ? '<i class="fa-solid fa-lock"></i> Khóa' : '<i class="fa-solid fa-lock-open"></i> Mở khóa' ?>
+                                </button>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
@@ -112,5 +118,104 @@ $tho = $DMH->get_list("SELECT * FROM `users` WHERE `level` = 'tho' ORDER BY id D
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Modal lịch sử đơn của thợ -->
+<div class="modal-backdrop" id="lichSuModal">
+    <div class="modal-box" style="max-width:680px; max-height:80vh; overflow-y:auto;">
+        <h3 id="lichsu_title"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đơn</h3>
+        <div id="lichsu_stats" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin-bottom:16px;"></div>
+        <div id="lichsu_table"></div>
+        <div class="modal-actions">
+            <button class="btn-modal-secondary" onclick="document.getElementById('lichSuModal').classList.remove('active')">Dóng</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleThoStatus(id) {
+    fetch('/controller/admin/ToggleThoStatus.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'id=' + id
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.status === 'success') {
+            Swal.fire('Thành công', res.msg, 'success').then(() => location.reload());
+        } else {
+            Swal.fire('Lỗi', res.msg, 'error');
+        }
+    })
+    .catch(() => Swal.fire('Lỗi', 'Không thể kết nối', 'error'));
+}
+
+function xemLichSu(thoId) {
+    document.getElementById('lichsu_stats').innerHTML = '<p style="color:#64748b;">Dang tải...</p>';
+    document.getElementById('lichsu_table').innerHTML = '';
+    document.getElementById('lichSuModal').classList.add('active');
+
+    fetch('/controller/admin/ThoHistory.php?tho_id=' + thoId)
+    .then(r => r.json())
+    .then(res => {
+        if (res.status !== 'success') {
+            document.getElementById('lichsu_stats').innerHTML = '<p style="color:#dc2626">Lỗi: ' + res.msg + '</p>';
+            return;
+        }
+        var t = res.tho;
+        var s = res.stats;
+        document.getElementById('lichsu_title').innerHTML =
+            '<i class="fa-solid fa-clock-rotate-left"></i> ' + (t.name || t.username) + ' — Lịch sử';
+
+        // Thống kê
+        var fmtMoney = n => new Intl.NumberFormat('vi-VN').format(n);
+        var stats = [
+            { label: 'Tổng đơn', val: s.total, color: '#6366f1' },
+            { label: 'Hoàn thành', val: s.hoan_thanh, color: '#16a34a' },
+            { label: 'Đang xử lý', val: s.dang_xu_ly, color: '#f59e0b' },
+            { label: 'Phát sinh', val: fmtMoney(s.tong_phatsinh) + 'đ', color: '#9333ea' },
+            { label: 'Điểm TB', val: s.diem_tb ? s.diem_tb + '★' : 'Chưa có', color: '#0ea5e9' },
+        ];
+        var statsHtml = stats.map(x =>
+            '<div style="background:#f8fafc; border-radius:10px; padding:14px; text-align:center; border:1px solid #e2e8f0;">' +
+            '<div style="font-size:22px; font-weight:900; color:' + x.color + ';">' + x.val + '</div>' +
+            '<div style="font-size:12px; color:#64748b; margin-top:4px;">' + x.label + '</div></div>'
+        ).join('');
+        // Trạng thái + nợ phí
+        var feeColor = t.money < 0 ? '#dc2626' : '#16a34a';
+        statsHtml += '<div style="background:#f8fafc; border-radius:10px; padding:14px; text-align:center; border:1px solid ' + feeColor + '20;">' +
+            '<div style="font-size:18px; font-weight:900; color:' + feeColor + ';">' + fmtMoney(t.money) + 'đ</div>' +
+            '<div style="font-size:12px; color:#64748b; margin-top:4px;">Tiền nợ/Đặt cọc</div></div>';
+        document.getElementById('lichsu_stats').innerHTML = statsHtml;
+
+        // Bảng đơn hàng
+        if (!res.orders || res.orders.length === 0) {
+            document.getElementById('lichsu_table').innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">Chưa có đơn nào.</p>';
+            return;
+        }
+        var statusMap = {
+            'HOAN_THANH': { text: 'Hoàn thành', color: '#16a34a' },
+            'DANG_XU_LY': { text: 'Đang xử lý', color: '#f59e0b' },
+            'CHO_XU_LY':  { text: 'Chờ', color: '#6366f1' },
+            'DA_HUY':     { text: 'Đã hủy', color: '#dc2626' }
+        };
+        var rows = res.orders.map(o => {
+            var st = statusMap[o.trangthai] || { text: o.trangthai, color: '#64748b' };
+            var date = o.thoigian ? new Date(o.thoigian * 1000).toLocaleString('vi-VN') : '-';
+            var stars = o.danhgia_sao ? '★'.repeat(o.danhgia_sao) : '-';
+            return '<tr><td>#' + o.id + '</td><td>' + (o.dichvu || '-') + '</td><td>' + (o.ten || '-') + '</td>' +
+                   '<td>' + date + '</td>' +
+                   '<td><span style="color:' + st.color + '; font-weight:800; font-size:12px;">' + st.text + '</span></td>' +
+                   '<td>' + stars + '</td></tr>';
+        }).join('');
+        document.getElementById('lichsu_table').innerHTML =
+            '<div style="overflow-x:auto;"><table class="table">' +
+            '<thead><tr><th>ID</th><th>DV</th><th>Khách</th><th>Ngày</th><th>TT</th><th>ĐG</th></tr></thead>' +
+            '<tbody>' + rows + '</tbody></table></div>';
+    })
+    .catch(() => {
+        document.getElementById('lichsu_stats').innerHTML = '<p style="color:#dc2626">Lỗi kết nối</p>';
+    });
+}
+</script>
 
 <?php require_once(__DIR__."/../../pages/admin/Footer.php"); ?>

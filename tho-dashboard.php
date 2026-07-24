@@ -91,6 +91,18 @@ require_once(__DIR__."/pages/client/Head.php");
     
     .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; letter-spacing: 0.5px; }
     .status-done { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+
+    /* Notification pulse khi có đơn mới */
+    @keyframes pulse-ring { 0%{transform:scale(.8);opacity:1} 100%{transform:scale(2);opacity:0} }
+    .notif-dot { position:relative; display:inline-flex; }
+    .notif-dot::after { content:''; position:absolute; top:-3px; right:-3px; width:10px; height:10px; background:#f59e0b; border-radius:50%; animation:pulse-ring 1.2s ease-out infinite; }
+    
+    /* Upload ảnh nghiệm thu */
+    .upload-preview { width:100%; height:160px; background:#0f172a; border:2px dashed rgba(139,92,246,0.4); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:#6b7280; cursor:pointer; transition:0.3s; overflow:hidden; position:relative; }
+    .upload-preview:hover { border-color:#8b5cf6; color:#a78bfa; }
+    .upload-preview img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:8px; }
+    .upload-preview .upload-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:0.3s; border-radius:8px; }
+    .upload-preview:hover .upload-overlay { opacity:1; }
     
     @media (max-width: 600px) {
         .tab-content.active { grid-template-columns: 1fr; }
@@ -254,18 +266,37 @@ require_once(__DIR__."/pages/client/Head.php");
     </div>
 </div>
 
-<!-- Modal Nghiệm thu -->
-<div id="modalNghiemthu" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
-    <div style="background:#1e293b; border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:24px; width:90%; max-width:420px; color:#fff;">
-        <div style="font-weight:800; font-size:18px; margin-bottom:12px;">📸 Nghiệm thu công việc</div>
+<!-- Modal Nghiệm thu — Upload ảnh từ camera -->
+<div id="modalNghiemthu" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:1000; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:#1e293b; border:1px solid rgba(139,92,246,0.3); border-radius:20px; padding:24px; width:100%; max-width:440px; color:#fff; max-height:90vh; overflow-y:auto;">
+        <div style="font-weight:800; font-size:18px; margin-bottom:4px;">📸 Nghiệm thu công việc</div>
+        <p style="color:#64748b; font-size:13px; margin:0 0 16px;">Chụp ảnh trực tiếp hoặc chọn từ thư viện</p>
         <input type="hidden" id="nt_id">
-        <label style="display:block; margin-bottom:6px; color:#94a3b8; font-size:13px;">Link ảnh nghiệm thu (Google Drive / imgur / v.v.)</label>
-        <input type="url" id="nt_anh" placeholder="https://..." style="width:100%; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:12px; border-radius:8px; margin-bottom:12px;">
-        <label style="display:block; margin-bottom:6px; color:#94a3b8; font-size:13px;">Ghi chú nghiệm thu</label>
-        <textarea id="nt_note" rows="2" style="width:100%; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:12px; border-radius:8px; margin-bottom:16px;"></textarea>
+        
+        <!-- Khu vực upload ảnh -->
+        <label for="nt_file_input" class="upload-preview" id="nt_preview_area">
+            <i class="fa-solid fa-camera-retro" style="font-size:36px;"></i>
+            <span style="font-size:13px; font-weight:700;">Nhấn để chụp / chọn ảnh</span>
+            <span style="font-size:11px; color:#4b5563;">JPG, PNG, WEBP · Tối đa 5MB</span>
+            <div class="upload-overlay"><i class="fa-solid fa-rotate" style="font-size:24px; color:#fff;"></i></div>
+        </label>
+        <!-- capture=environment → mở camera sau trên điện thoại -->
+        <input type="file" id="nt_file_input" accept="image/*" capture="environment" style="display:none;" onchange="previewNghiemThuFile(this)">
+        <input type="hidden" id="nt_anh_url">
+        
+        <label style="display:block; margin:14px 0 6px; color:#94a3b8; font-size:13px;">Ghi chú nghiệm thu</label>
+        <textarea id="nt_note" rows="2" placeholder="Mô tả công việc đã làm..." style="width:100%; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:12px; border-radius:8px; margin-bottom:16px; resize:none; font-size:14px;"></textarea>
+        
+        <div id="nt_upload_progress" style="display:none; margin-bottom:12px;">
+            <div style="background:#0f172a; border-radius:8px; overflow:hidden; height:6px;">
+                <div id="nt_progress_bar" style="height:100%; background:linear-gradient(90deg,#8b5cf6,#a78bfa); width:0%; transition:width 0.3s;"></div>
+            </div>
+            <p style="color:#94a3b8; font-size:12px; margin-top:6px; text-align:center;">Đang upload ảnh...</p>
+        </div>
+        
         <div style="display:flex; gap:10px; justify-content:flex-end;">
-            <button onclick="closeModal('modalNghiemthu')" style="padding:8px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#fff; cursor:pointer;">Đóng</button>
-            <button onclick="saveNghiemthu()" style="padding:8px 16px; border-radius:8px; border:none; background:#8b5cf6; color:#fff; font-weight:800; cursor:pointer;">Lưu nghiệm thu</button>
+            <button onclick="closeModal('modalNghiemthu')" style="padding:10px 18px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#fff; cursor:pointer; font-weight:600;">Đóng</button>
+            <button id="btn_save_nghiemthu" onclick="saveNghiemthu()" style="padding:10px 20px; border-radius:10px; border:none; background:#8b5cf6; color:#fff; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu nghiệm thu</button>
         </div>
     </div>
 </div>
@@ -274,6 +305,84 @@ require_once(__DIR__."/pages/client/Head.php");
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+// =====================================================
+// POLLING — Kiểm tra đơn mới mỗi 30 giây
+// =====================================================
+var _lastMaxId = <?= !empty($don_cho_xu_ly) ? (int)$don_cho_xu_ly[0]['id'] : 0 ?>;
+var _lastCount = <?= count($don_cho_xu_ly) ?>;
+var _pollingActive = true;
+
+// Tạo audio cảnh báo (beep tổng hợp bằng Web Audio API)
+function playAlert() {
+    try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        [0, 0.15, 0.3].forEach(function(t) {
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, ctx.currentTime + t);
+            gain.gain.setValueAtTime(0.4, ctx.currentTime + t);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.12);
+            osc.start(ctx.currentTime + t);
+            osc.stop(ctx.currentTime + t + 0.15);
+        });
+    } catch(e) {}
+}
+
+function checkNewOrders() {
+    if (!_pollingActive) return;
+    fetch('/api/tho_check_new.php', { credentials: 'include' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.status !== 'success') return;
+            var newCount = data.count;
+            var newMaxId = data.max_id;
+
+            // Cập nhật badge số đơn trên tab
+            var tabBadge = document.querySelector('#tab-cho');
+            var navBadge = document.querySelector('.nav-tabs button:first-child .badge');
+            if (navBadge) navBadge.textContent = newCount;
+
+            // Phát alert nếu có đơn mới xuất hiện
+            if (newMaxId > _lastMaxId && _lastMaxId > 0) {
+                playAlert();
+                var added = newCount - _lastCount;
+                Swal.fire({
+                    title: '🔔 Có đơn mới!',
+                    html: '<p style="font-size:16px; color:#e2e8f0;">Vừa có <b style="color:#f59e0b;">' + (added > 0 ? added : 1) + ' đơn mới</b> đang chờ nhận.<br>Hãy vào tab <b>Đơn Mới</b> để nhận.</p>',
+                    icon: 'info',
+                    background: '#1e293b',
+                    color: '#fff',
+                    confirmButtonColor: '#f59e0b',
+                    confirmButtonText: 'Xem ngay',
+                    timer: 12000,
+                    timerProgressBar: true,
+                    showCancelButton: true,
+                    cancelButtonText: 'Để sau',
+                    cancelButtonColor: 'rgba(100,116,139,0.4)'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        location.reload();
+                    }
+                });
+            }
+            _lastMaxId = newMaxId;
+            _lastCount = newCount;
+        })
+        .catch(function() {}); // Silent fail khi mất mạng
+}
+
+// Bắt đầu polling sau 30 giây
+setTimeout(function startPolling() {
+    checkNewOrders();
+    setTimeout(startPolling, 30000);
+}, 30000);
+
+// =====================================================
+// TAB & MODAL HELPERS
+// =====================================================
 function switchTab(tabId, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
@@ -313,32 +422,108 @@ function saveBaogia() {
     closeModal('modalBaogia');
 }
 
+// =====================================================
+// NGHIỆM THU — Upload ảnh từ camera
+// =====================================================
 function nghiemThu(id) {
     document.getElementById('nt_id').value = id;
-    document.getElementById('nt_anh').value = '';
+    document.getElementById('nt_anh_url').value = '';
     document.getElementById('nt_note').value = '';
+    document.getElementById('nt_file_input').value = '';
+    // Reset preview
+    var area = document.getElementById('nt_preview_area');
+    area.innerHTML = '<i class="fa-solid fa-camera-retro" style="font-size:36px;"></i>' +
+        '<span style="font-size:13px; font-weight:700;">Nhấn để chụp / chọn ảnh</span>' +
+        '<span style="font-size:11px; color:#4b5563;">JPG, PNG, WEBP · Tối đa 5MB</span>' +
+        '<div class="upload-overlay"><i class="fa-solid fa-rotate" style="font-size:24px; color:#fff;"></i></div>';
+    document.getElementById('nt_upload_progress').style.display = 'none';
     openModal('modalNghiemthu');
 }
+
+function previewNghiemThuFile(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    var area = document.getElementById('nt_preview_area');
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        area.innerHTML = '<img src="' + e.target.result + '" alt="preview">' +
+            '<div class="upload-overlay"><i class="fa-solid fa-rotate" style="font-size:24px; color:#fff;"></i><span style="color:#fff;font-size:12px;margin-top:4px;">Đổi ảnh</span></div>';
+    };
+    reader.readAsDataURL(file);
+}
+
 function saveNghiemthu() {
-    var id = document.getElementById('nt_id').value;
-    var anh = document.getElementById('nt_anh').value.trim();
+    var id   = document.getElementById('nt_id').value;
     var note = document.getElementById('nt_note').value.trim();
-    if(!anh) return Swal.fire('Thiếu thông tin', 'Vui lòng nhập link ảnh nghiệm thu', 'warning');
-    $.ajax({
-        url: '/controller/client/NghiemThu.php',
-        method: 'POST',
-        data: { id: id, anh: anh, note: note },
-        dataType: 'json',
-        success: function(r) {
-            if(r.status == 'success') {
-                Swal.fire('Thành công', r.msg, 'success').then(() => location.reload());
-            } else {
-                Swal.fire('Lỗi', r.msg, 'error');
-            }
-        },
-        error: function() { Swal.fire('Lỗi', 'Không thể kết nối máy chủ', 'error'); }
+    var fileInput = document.getElementById('nt_file_input');
+    var existingUrl = document.getElementById('nt_anh_url').value;
+
+    if (!fileInput.files || !fileInput.files[0]) {
+        return Swal.fire('Thiếu ảnh', 'Vui lòng chụp hoặc chọn ảnh nghiệm thu', 'warning');
+    }
+
+    var btn = document.getElementById('btn_save_nghiemthu');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang upload...';
+    document.getElementById('nt_upload_progress').style.display = 'block';
+
+    // Bước 1: Upload ảnh lên server
+    var formData = new FormData();
+    formData.append('anh', fileInput.files[0]);
+    formData.append('id', id);
+
+    var xhr = new XMLHttpRequest();
+    xhr.upload.addEventListener('progress', function(e) {
+        if (e.lengthComputable) {
+            var pct = Math.round(e.loaded / e.total * 100);
+            document.getElementById('nt_progress_bar').style.width = pct + '%';
+        }
     });
-    closeModal('modalNghiemthu');
+    xhr.addEventListener('load', function() {
+        try {
+            var res = JSON.parse(xhr.responseText);
+            if (res.status !== 'success') {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Lưu nghiệm thu';
+                document.getElementById('nt_upload_progress').style.display = 'none';
+                return Swal.fire('Upload thất bại', res.msg || 'Lỗi không xác định', 'error');
+            }
+            // Bước 2: Lưu path vào dat_lich
+            $.ajax({
+                url: '/controller/client/NghiemThu.php',
+                method: 'POST',
+                data: { id: id, anh: res.url, note: note },
+                dataType: 'json',
+                success: function(r) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Lưu nghiệm thu';
+                    document.getElementById('nt_upload_progress').style.display = 'none';
+                    if(r.status == 'success') {
+                        closeModal('modalNghiemthu');
+                        Swal.fire('Đã lưu!', r.msg, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Lỗi', r.msg, 'error');
+                    }
+                },
+                error: function() {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Lưu nghiệm thu';
+                    Swal.fire('Lỗi', 'Không thể kết nối máy chủ', 'error');
+                }
+            });
+        } catch(e) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Lưu nghiệm thu';
+            Swal.fire('Lỗi', 'Phản hồi server không hợp lệ', 'error');
+        }
+    });
+    xhr.addEventListener('error', function() {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Lưu nghiệm thu';
+        Swal.fire('Lỗi', 'Mất kết nối khi upload', 'error');
+    });
+    xhr.open('POST', '/controller/client/UploadNghiemThu.php');
+    xhr.send(formData);
 }
 
 function nhanDon(id) {

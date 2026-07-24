@@ -46,6 +46,16 @@ $status_map = [
   .order-body strong { color: #94a3b8; display: inline-block; min-width: 110px; }
   .empty-msg { text-align: center; color: #94a3b8; padding: 40px 20px; }
   .cancel-btn { margin-top: 12px; background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 700; }
+  /* Star rating */
+  .star-rating { display: flex; gap: 6px; flex-direction: row-reverse; justify-content: flex-end; margin: 8px 0; }
+  .star-rating input { display: none; }
+  .star-rating label { font-size: 30px; color: #334155; cursor: pointer; transition: color 0.15s; line-height: 1; }
+  .star-rating input:checked ~ label,
+  .star-rating label:hover,
+  .star-rating label:hover ~ label { color: #f59e0b; }
+  .review-box { margin-top: 16px; background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 14px; padding: 16px; }
+  .review-box h4 { margin: 0 0 10px; color: #10b981; font-size: 15px; font-weight: 800; }
+  .done-review { margin-top: 12px; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 8px; }
   @media (max-width: 600px) { .tc-form { flex-direction: column; } }
 </style>
 
@@ -81,6 +91,27 @@ $status_map = [
             <p><strong>Thời gian đặt:</strong> <?= date('H:i d/m/Y', $don['thoigian']) ?></p>
             <?php if ($don['trangthai'] == 'CHO_XU_LY'): ?>
               <button class="cancel-btn" onclick="huyDon(<?= (int)$don['id'] ?>)">❌ Hủy đơn này</button>
+            <?php endif; ?>
+            <?php if ($don['trangthai'] == 'HOAN_THANH'): ?>
+              <?php if (!empty($don['danhgia_sao'])): ?>
+                <div class="done-review">
+                  <span style="font-size:20px;"><?= str_repeat('&#9733;', (int)$don['danhgia_sao']) ?><?= str_repeat('&#9734;', 5 - (int)$don['danhgia_sao']) ?></span>
+                  <span style="color:#94a3b8; font-size:13px;">Đã đánh giá <?= (int)$don['danhgia_sao'] ?>/5 sao<?= $don['danhgia_noidung'] ? ' — &ldquo;' . htmlspecialchars($don['danhgia_noidung']) . '&rdquo;' : '' ?></span>
+                </div>
+              <?php else: ?>
+                <div class="review-box" id="review-box-<?= (int)$don['id'] ?>">
+                  <h4>❤️ Đánh giá dịch vụ</h4>
+                  <p style="color:#94a3b8; font-size:13px; margin:0 0 10px;">Hài lòng với dịch vụ không? Rất mong bạn cho biết ý kiến!</p>
+                  <div class="star-rating" id="stars-<?= (int)$don['id'] ?>">
+                    <?php for ($s = 5; $s >= 1; $s--): ?>
+                      <input type="radio" id="star<?= $s ?>-<?= (int)$don['id'] ?>" name="sao_<?= (int)$don['id'] ?>" value="<?= $s ?>">
+                      <label for="star<?= $s ?>-<?= (int)$don['id'] ?>">&#9733;</label>
+                    <?php endfor; ?>
+                  </div>
+                  <textarea id="review-note-<?= (int)$don['id'] ?>" placeholder="Nhận xét (tùy chọn)..." maxlength="500" style="width:100%; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:10px; border-radius:8px; margin:10px 0; resize:none; font-size:13px;"></textarea>
+                  <button onclick="guiDanhGia(<?= (int)$don['id'] ?>)" style="background:#10b981; color:#fff; border:none; padding:10px 20px; border-radius:10px; font-weight:800; cursor:pointer; font-size:14px;"><i class="fa-solid fa-paper-plane"></i> Gửi đánh giá</button>
+                </div>
+              <?php endif; ?>
             <?php endif; ?>
           </div>
         </div>
@@ -119,6 +150,30 @@ function huyDon(id) {
       .catch(() => Swal.fire('Lỗi', 'Không thể kết nối máy chủ', 'error'));
     }
   });
+}
+
+function guiDanhGia(donId) {
+  var checked = document.querySelector('input[name="sao_' + donId + '"]:checked');
+  if (!checked) {
+    return Swal.fire('Chưa chọn sao', 'Vui lòng chọn số sao đánh giá (1–5)', 'warning');
+  }
+  var sao = checked.value;
+  var note = document.getElementById('review-note-' + donId).value.trim();
+
+  fetch('/controller/client/DanhGiaDon.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'id=' + donId + '&danhgia_sao=' + sao + '&danhgia_noidung=' + encodeURIComponent(note)
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.status === 'success') {
+      Swal.fire('❤️ Cảm ơn bạn!', res.msg, 'success').then(() => location.reload());
+    } else {
+      Swal.fire('Lỗi', res.msg, 'error');
+    }
+  })
+  .catch(() => Swal.fire('Lỗi', 'Không thể kết nối máy chủ', 'error'));
 }
 </script>
 

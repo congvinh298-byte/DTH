@@ -35,6 +35,16 @@ try {
             if($update) {
                 // Trừ phí nền tảng 20,000 VND
                 $DMH->tru("users", "money", 20000, " `id` = '$my_id' ");
+                
+                // Gửi Telegram thông báo hoàn thành cho admin
+                $tho_name = $getUser['name'] ?: $getUser['username'];
+                $khach    = $check['ten']   ?? '?';
+                $sdt      = $check['sdt']   ?? '?';
+                $dichvu   = $check['dichvu'] ?? '?';
+                $link_dg  = 'https://' . $_SERVER['SERVER_NAME'] . '/tra-cuu-don.php?sdt=' . urlencode($sdt);
+                $text = "✅ ĐƠN HOÀN THÀNH\nĐơn #{$id}\nDịch vụ: {$dichvu}\nKhách: {$khach} | SĐT: {$sdt}\nThợ: {$tho_name}\n—\n💬 Yêu cầu khách đánh giá: {$link_dg}";
+                send_tele($text);
+                
                 echo json_encode(['status' => 'success', 'msg' => 'Tuyệt vời! Bạn đã hoàn thành đơn hàng này. Trừ 20,000đ phí nền tảng.']);
             } else {
                 echo json_encode(['status' => 'error', 'msg' => 'Có lỗi khi cập nhật CSDL, vui lòng thử lại!']);
