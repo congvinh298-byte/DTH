@@ -4,7 +4,7 @@ require_once(__DIR__."/../../core/config.php");
 require_once(__DIR__."/../../core/function.php");
 CheckAdmin();
 
-$tieude = 'Gian hàng 3D | Điện Máy Hiếu';
+$tieude = 'Gian hàng 3D / Mô hình | Điện Máy Hiếu';
 require_once(__DIR__."/../../pages/admin/Head.php");
 require_once(__DIR__."/../../pages/admin/Header.php");
 
@@ -13,7 +13,8 @@ $view = in_array($_GET['view'] ?? '', ['categories', 'products']) ? ($_GET['view
 $catFilter = isset($_GET['cat']) ? (int)$_GET['cat'] : 0;
 $editId = isset($_GET['edit']) ? (int)$_GET['edit'] : 0;
 
-$categories = $DMH->get_list("SELECT * FROM `product_categories` WHERE `type` = '$type' ORDER BY `sort_order`, `name`");
+$categories = $DMH->get_list("SELECT * FROM `product_categories` WHERE `type` = '$type' ORDER BY `sort_order`, `name` ");
+if (!is_array($categories)) $categories = [];
 
 $editProduct = null;
 if ($editId > 0) {
@@ -24,6 +25,7 @@ if ($editId > 0) {
 $whereProduct = "`type` = '$type'";
 if ($catFilter > 0) $whereProduct .= " AND `category_id` = $catFilter";
 $products = $DMH->get_list("SELECT p.*, c.name AS cat_name FROM `products` p LEFT JOIN `product_categories` c ON c.id = p.category_id WHERE $whereProduct ORDER BY p.id DESC LIMIT 200");
+if (!is_array($products)) $products = [];
 
 function flash() {
     if (!empty($_SESSION['flash'])) {
@@ -34,81 +36,85 @@ function flash() {
         echo '<div style="padding:12px 16px;border-radius:8px;margin-bottom:16px;background:'.$bg.';color:'.$color.';font-weight:700;">'.htmlspecialchars($f['msg']).'</div>';
     }
 }
-?}
+?>
 
 <h2 style="margin:0 0 20px; font-size:18px; font-weight:800; color:#0f172a;"><i class="fa-solid fa-cube" style="color:#0ea5e9;"></i> Gian hàng 3D / Mô hình Store</h2>
 
 <div class="tabs">
-    <a href="?view=products" class="<?= $view == 'products' ? 'active' : '' ?">Sản phẩm</a>
-    <a href="?view=categories" class="<?= $view == 'categories' ? 'active' : '' ?">Danh mục</a>
+    <a href="?view=products" class="<?= $view == 'products' ? 'active' : '' ?>">Sản phẩm</a>
+    <a href="?view=categories" class="<?= $view == 'categories' ? 'active' : '' ?>">Danh mục</a>
 </div>
 
 <?php if ($view == 'products'): ?>
 
 <div class="card" style="margin-bottom:24px;">
     <div class="card-header">
-        <h3><i class="fa-solid <?= $editProduct ? 'fa-pen' : 'fa-plus' ?"></i> <?= $editProduct ? 'Sửa sản phẩm' : 'Thêm sản phẩm' ?></h3>
-        <small style="color:#64748b;">Điền thông tin bên dưới, dán link ảnh hoặc upload ảnh từ máy tính.</small>
+        <h3><i class="fa-solid <?= $editProduct ? 'fa-pen' : 'fa-plus' ?>"></i> <?= $editProduct ? 'Sửa sản phẩm 3D' : 'Thêm sản phẩm 3D mới' ?></h3>
+        <small style="color:#64748b;">Điền đầy đủ thông tin bên dưới, dán link ảnh/video hoặc upload ảnh từ máy tính.</small>
     </div>
     <div class="card-body">
         <form method="POST" action="/controller/admin/SaveProduct.php" enctype="multipart/form-data">
-            <input type="hidden" name="id" value="<?= $editProduct ? (int)$editProduct['id'] : '' ?">
+            <input type="hidden" name="id" value="<?= $editProduct ? (int)$editProduct['id'] : '' ?>">
             <input type="hidden" name="type" value="3d">
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
                 <div class="form-group">
-                    <label>Tên sản phẩm *</label>
-                    <input type="text" name="name" class="form-control" value="<?= $editProduct ? htmlspecialchars($editProduct['name']) : '' ?" required placeholder="VD: Tủ lạnh Samsung 300L">
+                    <label>Tên sản phẩm <span style="color:#dc2626;">*</span></label>
+                    <input type="text" name="name" class="form-control" value="<?= $editProduct ? htmlspecialchars($editProduct['name']) : '' ?>" required placeholder="VD: Mô hình linh kiện 3D">
                 </div>
                 <div class="form-group">
                     <label>Slug (tùy chọn)</label>
-                    <input type="text" name="slug" class="form-control" value="<?= $editProduct ? htmlspecialchars($editProduct['slug']) : '' ?" placeholder="tu-lanh-samsung-300l">
+                    <input type="text" name="slug" class="form-control" value="<?= $editProduct ? htmlspecialchars($editProduct['slug']) : '' ?>" placeholder="mo-hinh-linh-kien-3d">
                 </div>
                 <div class="form-group">
-                    <label>Danh mục *</label>
+                    <label>Danh mục <span style="color:#dc2626;">*</span></label>
                     <select name="category_id" class="form-control" required>
                         <option value="">-- Chọn danh mục --</option>
                         <?php foreach ($categories as $c): ?>
-                            <option value="<?= (int)$c['id'] ?" <?= ($editProduct && $editProduct['category_id'] == $c['id']) ? 'selected' : '' ?><?= htmlspecialchars($c['name']) ?></option>
+                            <option value="<?= (int)$c['id'] ?>" <?= ($editProduct && $editProduct['category_id'] == $c['id']) ? 'selected' : '' ?>><?= htmlspecialchars($c['name']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Giá (VNĐ)</label>
-                    <input type="number" name="price" class="form-control" value="<?= $editProduct ? (int)$editProduct['price'] : 0 ?" min="0">
+                    <label>Giá bán (VNĐ)</label>
+                    <input type="number" name="price" class="form-control" value="<?= $editProduct ? (int)$editProduct['price'] : 0 ?>" min="0">
                 </div>
                 <div class="form-group">
                     <label>Tồn kho</label>
-                    <input type="number" name="stock" class="form-control" value="<?= $editProduct ? (int)$editProduct['stock'] : 0 ?" min="0">
+                    <input type="number" name="stock" class="form-control" value="<?= $editProduct ? (int)$editProduct['stock'] : 0 ?>" min="0">
                 </div>
                 <div class="form-group">
                     <label>Trạng thái</label>
                     <select name="status" class="form-control">
-                        <option value="1" <?= ($editProduct && $editProduct['status']) ? 'selected' : '' ?>Hiển thị</option>
-                        <option value="0" <?= ($editProduct && !$editProduct['status']) ? 'selected' : '' ?>Ẩn</option>
+                        <option value="1" <?= ($editProduct && $editProduct['status']) ? 'selected' : '' ?>>Hiển thị</option>
+                        <option value="0" <?= ($editProduct && !$editProduct['status']) ? 'selected' : '' ?>>Ẩn</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Đưa lên trang chủ?</label>
                     <select name="featured" class="form-control">
-                        <option value="0" <?= ($editProduct && !$editProduct['featured']) ? 'selected' : '' ?>Không</option>
-                        <option value="1" <?= ($editProduct && $editProduct['featured']) ? 'selected' : '' ?>Có</option>
+                        <option value="0" <?= ($editProduct && !$editProduct['featured']) ? 'selected' : '' ?>>Không</option>
+                        <option value="1" <?= ($editProduct && $editProduct['featured']) ? 'selected' : '' ?>>Có</option>
                     </select>
                 </div>
                 <div class="form-group" style="grid-column: 1 / -1;">
                     <label>Hình ảnh (URL)</label>
-                    <input type="text" name="image_url" class="form-control" value="<?= $editProduct ? htmlspecialchars($editProduct['image']) : '' ?" placeholder="https://example.com/image.jpg">
+                    <input type="text" name="image_url" class="form-control" value="<?= $editProduct ? htmlspecialchars($editProduct['image'] ?? '') : '' ?>" placeholder="https://example.com/image.jpg">
                 </div>
                 <div class="form-group" style="grid-column: 1 / -1;">
-                    <label>Hoặc upload ảnh từ máy tính</label>
+                    <label>Hoặc Upload ảnh từ máy tính</label>
                     <input type="file" name="image_file" class="form-control" accept="image/*">
                 </div>
                 <div class="form-group" style="grid-column: 1 / -1;">
-                    <label>Mô tả sản phẩm</label>
-                    <textarea name="description" class="form-control" rows="3" placeholder="Mô tả ngắn..."><?= $editProduct ? htmlspecialchars($editProduct['description'] ?? '') : '' ?></textarea>
+                    <label>Video sản phẩm (Link Youtube / MP4 / Embed)</label>
+                    <input type="text" name="video" class="form-control" value="<?= $editProduct ? htmlspecialchars($editProduct['video'] ?? '') : '' ?>" placeholder="https://www.youtube.com/watch?v=... hoặc link mp4">
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Mô tả chi tiết sản phẩm 3D</label>
+                    <textarea name="description" class="form-control" rows="4" placeholder="Nhập mô tả chi tiết sản phẩm 3D..."><?= $editProduct ? htmlspecialchars($editProduct['description'] ?? '') : '' ?></textarea>
                 </div>
             </div>
             <div style="margin-top:16px; display:flex; gap:10px;">
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> <?= $editProduct ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm' ?></button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> <?= $editProduct ? 'Cập nhật sản phẩm' : 'Lưu & Đăng sản phẩm' ?></button>
                 <?php if ($editProduct): ?>
                     <a href="?view=products" class="btn btn-secondary"><i class="fa-solid fa-plus"></i> Thêm mới</a>
                 <?php endif; ?>
@@ -119,7 +125,7 @@ function flash() {
 
 <div class="card">
     <div class="card-header">
-        <h3>Danh sách sản phẩm</h3>
+        <h3>Danh sách sản phẩm 3D</h3>
         <form method="GET" style="display:flex; gap:8px;">
             <input type="hidden" name="view" value="products">
             <select name="cat" class="form-control" style="width:auto;">
@@ -137,11 +143,12 @@ function flash() {
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Hình</th>
+                        <th>Hình ảnh</th>
                         <th>Tên sản phẩm</th>
                         <th>Danh mục</th>
-                        <th>Giá</th>
+                        <th>Giá bán</th>
                         <th>Tồn kho</th>
+                        <th>Media</th>
                         <th>Nổi bật</th>
                         <th>Trạng thái</th>
                         <th>Thao tác</th>
@@ -150,22 +157,34 @@ function flash() {
                 <tbody>
                 <?php flash(); ?>
                 <?php if (empty($products)): ?>
-                    <tr><td colspan="9" style="text-align:center; color:#64748b; padding:30px;">Chưa có sản phẩm nào. Hãy thêm sản phẩm ở form bên trên.</td></tr>
+                    <tr><td colspan="10" style="text-align:center; color:#64748b; padding:30px;">Chưa có sản phẩm nào. Hãy thêm sản phẩm ở form bên trên.</td></tr>
                 <?php else: ?>
                 <?php foreach ($products as $p): ?>
                     <tr>
                         <td><?= (int)$p['id'] ?></td>
                         <td>
                             <?php if (!empty($p['image'])): ?>
-                                <img src="<?= htmlspecialchars($p['image']) ?" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid #e2e8f0;">
+                                <img src="<?= htmlspecialchars($p['image']) ?>" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid #e2e8f0;">
                             <?php else: ?>
-                                <span style="color:#94a3b8;">Chưa có hình</span>
+                                <span style="color:#94a3b8; font-size:12px;">Chưa có hình</span>
                             <?php endif; ?>
                         </td>
-                        <td><strong><?= htmlspecialchars($p['name']) ?></strong></td>
+                        <td>
+                            <strong><?= htmlspecialchars($p['name']) ?></strong>
+                            <?php if (!empty($p['slug'])): ?>
+                                <div style="font-size:11px; color:#64748b;"><?= htmlspecialchars($p['slug']) ?></div>
+                            <?php endif; ?>
+                        </td>
                         <td><?= htmlspecialchars($p['cat_name'] ?? '-') ?></td>
                         <td><strong style="color:#dc2626;"><?= number_format((int)$p['price']) ?>đ</strong></td>
                         <td><?= (int)$p['stock'] ?></td>
+                        <td>
+                            <?php if (!empty($p['video'])): ?>
+                                <span class="badge" style="background:#8b5cf6; color:#fff;" title="<?= htmlspecialchars($p['video']) ?>"><i class="fa-solid fa-video"></i> Video</span>
+                            <?php else: ?>
+                                <span style="color:#cbd5e1;">-</span>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <?php if (!empty($p['featured'])): ?>
                                 <span class="badge badge-warning"><i class="fa-solid fa-star"></i> Trang chủ</span>
@@ -182,8 +201,8 @@ function flash() {
                         </td>
                         <td>
                             <a href="?view=products&edit=<?= (int)$p['id'] ?>" class="btn btn-info btn-sm"><i class="fa-solid fa-pen"></i> Sửa</a>
-                            <button class="btn btn-warning btn-sm" onclick="toggleFeatured(<?= (int)$p['id'] ?>, <?= (int)$p['featured'] ?)"><i class="fa-solid fa-star"></i> <?= $p['featured'] ? 'Gỡ' : 'Nổi bật' ?></button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteProduct(<?= (int)$p['id'] ?)"><i class="fa-solid fa-trash"></i> Xóa</button>
+                            <button class="btn btn-warning btn-sm" onclick="toggleFeatured(<?= (int)$p['id'] ?>, <?= (int)$p['featured'] ?>)"><i class="fa-solid fa-star"></i> <?= $p['featured'] ? 'Gỡ' : 'Nổi bật' ?></button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteProduct(<?= (int)$p['id'] ?>)"><i class="fa-solid fa-trash"></i> Xóa</button>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -223,7 +242,7 @@ function deleteProduct(id) {
 <!-- Categories view -->
 <div class="card">
     <div class="card-header">
-        <h3>Danh mục Gian hàng 3D / Mô hình Store</h3>
+        <h3>Danh mục Gian hàng 3D</h3>
         <button class="btn btn-primary btn-sm" onclick="document.getElementById('catModal').classList.add('active')"><i class="fa-solid fa-plus"></i> Thêm danh mục</button>
     </div>
     <div class="card-body" style="padding:0;">
@@ -232,14 +251,14 @@ function deleteProduct(id) {
                 <thead><tr><th>ID</th><th>Tên danh mục</th><th>Slug</th><th>Thứ tự</th><th>Thao tác</th></tr></thead>
                 <tbody>
                 <?php foreach ($categories as $c): ?>
-                    <tr data-id="<?= (int)$c['id'] ?" data-name="<?= htmlspecialchars($c['name']) ?" data-slug="<?= htmlspecialchars($c['slug']) ?" data-sort="<?= (int)$c['sort_order'] ?">
+                    <tr data-id="<?= (int)$c['id'] ?>" data-name="<?= htmlspecialchars($c['name']) ?>" data-slug="<?= htmlspecialchars($c['slug']) ?>" data-sort="<?= (int)$c['sort_order'] ?>">
                         <td><?= (int)$c['id'] ?></td>
                         <td><strong><?= htmlspecialchars($c['name']) ?></strong></td>
                         <td><?= htmlspecialchars($c['slug']) ?></td>
                         <td><?= (int)$c['sort_order'] ?></td>
                         <td>
                             <button class="btn btn-info btn-sm" onclick="editCat(this)"><i class="fa-solid fa-pen"></i> Sửa</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteCat(<?= (int)$c['id'] ?)"><i class="fa-solid fa-trash"></i> Xóa</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteCat(<?= (int)$c['id'] ?>)"><i class="fa-solid fa-trash"></i> Xóa</button>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -251,7 +270,7 @@ function deleteProduct(id) {
 
 <div class="modal-backdrop" id="catModal">
     <div class="modal-box">
-        <h3>Danh mục Gian hàng 3D / Mô hình Store</h3>
+        <h3>Danh mục Gian hàng 3D</h3>
         <form id="catForm" method="POST" action="/controller/admin/SaveCategory.php">
             <input type="hidden" name="id" id="catId">
             <input type="hidden" name="type" value="3d">
@@ -298,4 +317,4 @@ function deleteCat(id) {
 
 <?php endif; ?>
 
-<?php require_once(__DIR__."/../../pages/admin/Footer.php"); ?
+<?php require_once(__DIR__."/../../pages/admin/Footer.php"); ?>

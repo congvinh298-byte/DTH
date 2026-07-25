@@ -21,11 +21,13 @@
             <li><a href="/pages/admin/QuanLyDonHang.php" class="<?= adminMenuActive('QuanLyDonHang', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-box"></i> Đơn hàng sản phẩm</span></a></li>
             <li><a href="/pages/admin/QuanLyDatLich.php" class="<?= adminMenuActive('QuanLyDatLich', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-calendar-check"></i> Đơn gọi thợ</span></a></li>
             <li><a href="/pages/admin/QuanLyKhachHang.php" class="<?= adminMenuActive('QuanLyKhachHang', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-users"></i> Khách hàng</span></a></li>
-            <li><a href="/pages/admin/QuanLyTho.php" class="<?= adminMenuActive('QuanLyTho', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-wrench"></i> Thợ</span></a></li>
-            <li><a href="/pages/admin/GianHangDienMay.php" class="<?= adminMenuActive('GianHangDienMay', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-plug"></i> Gian hàng điện máy</span></a></li>
-            <li><a href="/pages/admin/GianHang3D.php" class="<?= adminMenuActive('GianHang3D', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-cube"></i> Gian hàng mô hình 3D</span></a></li>
-            <li><a href="/pages/admin/BaoCao.php" class="<?= adminMenuActive('BaoCao', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-chart-line"></i> Báo cáo</span></a></li>
-            <li><a href="/pages/admin/CaiDat.php" class="<?= adminMenuActive('CaiDat', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-gear"></i> Cài đặt</span></a></li>
+            <li><a href="/pages/admin/QuanLyTho.php" class="<?= adminMenuActive('QuanLyTho', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-wrench"></i> Thợ kỹ thuật</span></a></li>
+            <li style="margin-top:10px; padding: 4px 16px; font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Quản Lý Hàng Hóa</li>
+            <li><a href="/pages/admin/GianHangDienMay.php" class="<?= adminMenuActive('GianHangDienMay', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-plug"></i> Đăng SP Điện máy & Gia dụng</span></a></li>
+            <li><a href="/pages/admin/GianHang3D.php" class="<?= adminMenuActive('GianHang3D', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-cube"></i> Đăng SP Mô hình 3D</span></a></li>
+            <li style="margin-top:10px; padding: 4px 16px; font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Hệ Thống</li>
+            <li><a href="/pages/admin/BaoCao.php" class="<?= adminMenuActive('BaoCao', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-chart-line"></i> Báo cáo doanh thu</span></a></li>
+            <li><a href="/pages/admin/CaiDat.php" class="<?= adminMenuActive('CaiDat', $currentUri) ? 'active' : '' ?>"><span><i class="fa-solid fa-gear"></i> Cài đặt hệ thống</span></a></li>
         </ul>
     </aside>
     <div class="admin-main">

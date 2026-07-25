@@ -57,7 +57,12 @@ if (!is_array($products)) {
                             <div class="body">
                                 <div class="cat"><?= htmlspecialchars($category) ?></div>
                                 <div class="name" title="<?= htmlspecialchars($name) ?>"><?= htmlspecialchars($name) ?></div>
-                                <div class="price"><?= number_format($price, 0, ',', '.') ?>đ</div>
+                                <div class="price">
+                                    <?= number_format($price, 0, ',', '.') ?>đ
+                                    <?php if (!empty($p['video'])): ?>
+                                        <a href="<?= htmlspecialchars($p['video']) ?>" target="_blank" style="float:right; color:#8b5cf6; font-size:12px; font-weight:700; text-decoration:none;" title="Xem video sản phẩm"><i class="fa-solid fa-video"></i> Video demo</a>
+                                    <?php endif; ?>
+                                </div>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
                                     <button onclick="addToCart(<?= (int)$p['id'] ?>)" class="btn outline" style="width: 100%; padding: 8px; font-size: 13px; border-color: rgba(255,255,255,0.2);"><i class="fa-solid fa-cart-plus"></i> Thêm giỏ</button>
                                     <button onclick="buyNow(<?= (int)$p['id'] ?>)" class="btn accent" style="width: 100%; padding: 8px; font-size: 13px;"><i class="fa-solid fa-bolt"></i> Mua Ngay</button>

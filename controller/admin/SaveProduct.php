@@ -85,6 +85,8 @@ try {
         }
     }
 
+    $video = trim($_POST['video'] ?? '');
+
     $data = [
         'category_id' => $category_id,
         'name' => $name,
@@ -95,6 +97,7 @@ try {
         'type' => $type,
         'status' => $status,
         'featured' => $featured,
+        'video' => $video,
     ];
     if ($image !== '') {
         $data['image'] = $image;

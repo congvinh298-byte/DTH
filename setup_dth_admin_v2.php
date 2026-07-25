@@ -45,6 +45,7 @@ $productCols = [
     'price' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `price` INT(11) DEFAULT 0",
     'stock' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `stock` INT(11) DEFAULT 0",
     'image' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `image` VARCHAR(500) DEFAULT NULL",
+    'video' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `video` VARCHAR(500) DEFAULT NULL",
     'type' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `type` ENUM('dienmay','3d') NOT NULL DEFAULT 'dienmay'",
     'status' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `status` TINYINT(1) DEFAULT 1",
     'created_at' => "ALTER TABLE `products` ADD COLUMN IF NOT EXISTS `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP",

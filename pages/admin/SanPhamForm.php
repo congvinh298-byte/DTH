@@ -13,7 +13,7 @@ $categories = $DMH->get_list("SELECT * FROM `product_categories` WHERE `type` = 
 
 $product = [
     'id' => 0, 'category_id' => 0, 'name' => '', 'slug' => '', 'description' => '',
-    'price' => 0, 'stock' => 0, 'image' => '', 'status' => 1, 'featured' => 0
+    'price' => 0, 'stock' => 0, 'image' => '', 'video' => '', 'status' => 1, 'featured' => 0
 ];
 if ($id > 0) {
     $row = $DMH->get_row("SELECT * FROM `products` WHERE `id` = $id AND `type` = '$type'");
@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = isset($_POST['status']) ? 1 : 0;
     $featured = isset($_POST['featured']) ? 1 : 0;
     $image_url = trim($_POST['image_url'] ?? '');
+    $video = trim($_POST['video'] ?? '');
 
     if ($name == '') {
         $error = 'Vui lòng nhập tên sản phẩm.';
@@ -82,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'type' => $type,
             'status' => $status,
             'featured' => $featured,
+            'video' => $video,
         ];
         if ($image !== '') $data['image'] = $image;
 
@@ -193,6 +195,10 @@ require_once(__DIR__."/../../pages/admin/Header.php");
                         <img src="<?= htmlspecialchars($product['image']) ?>" style="max-height:120px; border-radius:8px; border:1px solid #e2e8f0;">
                     </div>
                 <?php endif; ?>
+            </div>
+            <div class="form-group">
+                <label>Video sản phẩm (Link Youtube / MP4 / Embed)</label>
+                <input type="text" name="video" class="form-control" value="<?= htmlspecialchars($product['video'] ?? '') ?>" placeholder="https://www.youtube.com/watch?v=... hoặc link mp4">
             </div>
             <div class="form-group">
                 <label>Mô tả</label>
